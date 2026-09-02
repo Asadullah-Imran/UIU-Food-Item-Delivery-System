@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Sun, Clock, CheckCircle2, ChevronDown, ListOrdered, Truck,
   CheckCircle, Banknote, MapPin, Phone, MessageSquare,
-  Navigation, Star, Send
+  Navigation, Star, Send, Store
 } from 'lucide-react';
 import RunnerLayout from '../components/RunnerLayout';
 import runnerData from '../data/runner.json';

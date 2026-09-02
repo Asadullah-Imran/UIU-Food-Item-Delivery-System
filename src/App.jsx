@@ -10,6 +10,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import ChatPage from './pages/ChatPage';
+import RunnerDashboard from './pages/RunnerDashboard';
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/order-success" element={<OrderSuccessPage />} />
       <Route path="/dashboard/student/orders" element={<MyOrdersPage />} />
       <Route path="/dashboard/student/chat" element={<ChatPage />} />
+      <Route path="/dashboard/runner" element={<RunnerDashboard />} />
     </Routes>
   );
 }
