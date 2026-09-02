@@ -8,6 +8,8 @@ import BrowseShops from './pages/BrowseShops';
 import ShopDetails from './pages/ShopDetails';
 import CheckoutPage from './pages/CheckoutPage';
 import OrderSuccessPage from './pages/OrderSuccessPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import ChatPage from './pages/ChatPage';
 
 export default function App() {
   return (
@@ -20,6 +22,8 @@ export default function App() {
       <Route path="/dashboard/student/shops/:shopId" element={<ShopDetails />} />
       <Route path="/checkout" element={<CheckoutPage />} />
       <Route path="/order-success" element={<OrderSuccessPage />} />
+      <Route path="/dashboard/student/orders" element={<MyOrdersPage />} />
+      <Route path="/dashboard/student/chat" element={<ChatPage />} />
     </Routes>
   );
 }

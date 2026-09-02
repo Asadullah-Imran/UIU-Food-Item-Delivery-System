@@ -1,0 +1,80 @@
+{
+  "conversations": [
+    {
+      "id": "c1",
+      "name": "Chef's table",
+      "avatar": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80",
+      "lastMessage": "Your order is being prepared...",
+      "time": "10:45 AM",
+      "unread": 2,
+      "online": true,
+      "active": false
+    },
+    {
+      "id": "c2",
+      "name": "Tanvir Ahmed",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+      "lastMessage": "I'm arriving in 3 minutes.",
+      "time": "Just now",
+      "unread": 0,
+      "online": true,
+      "active": true
+    },
+    {
+      "id": "c3",
+      "name": "Admin",
+      "avatar": "default",
+      "lastMessage": "Files received. Please collect.",
+      "time": "Yesterday",
+      "unread": 0,
+      "online": false,
+      "active": false
+    }
+  ],
+  "activeChat": {
+    "contactName": "Tanvir Ahmed",
+    "contactAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+    "subtitle": "Order #UIU-9821",
+    "status": "Online",
+    "messages": [
+      {
+        "id": "m1",
+        "sender": "me",
+        "text": "Could you make it less spicy?",
+        "time": "10:40 AM",
+        "status": "Read"
+      },
+      {
+        "id": "m2",
+        "sender": "shop",
+        "avatar": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80",
+        "text": "Sure! We've noted your request for less spice.",
+        "time": "10:41 AM"
+      },
+      {
+        "id": "m3",
+        "sender": "runner",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "text": "I'm outside the Academic Building. Ready to hand over your order!",
+        "time": "10:55 AM"
+      },
+      {
+        "id": "m4",
+        "sender": "me",
+        "text": "I'll be there in one minute. Just coming down from the 4th floor.",
+        "time": "10:56 AM"
+      }
+    ]
+  },
+  "orderDetails": {
+    "orderId": "#UIU-9821",
+    "shopName": "Chef's Table",
+    "runner": "Tanvir Ahmed",
+    "status": "ON THE WAY",
+    "eta": "5 mins",
+    "items": [
+      { "quantity": 1, "name": "Chicken Curry Bowl" },
+      { "quantity": 2, "name": "Fresh Lime Soda" }
+    ]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "profile": {
+    "name": "Tanvir Ahmed",
+    "runnerId": "#4092",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+    "status": "Accepting Orders",
+    "onlineDuration": "4h 12m"
+  },
+  "metrics": {
+    "nearbyRequests": 12,
+    "activeDeliveries": 1,
+    "completedToday": {
+      "current": 8,
+      "target": 10
+    },
+    "todaysEarnings": 540
+  },
+  "activeDelivery": {
+    "shopName": "Khans Kitchen",
+    "orderId": "#3392",
+    "itemsCount": 2,
+    "eta": "6 mins",
+    "distance": "0.8km",
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80",
+    "customer": {
+      "name": "Rafiqul Haque",
+      "initials": "RH",
+      "phone": "+880 1712-345678"
+    },
+    "timeline": {
+      "pickup": "Chef's Table",
+      "dropoff": "UIU main gate"
+    },
+    "progress": {
+      "status": "Picked up, on the way",
+      "percentage": 75
+    }
+  },
+  "nearbyRequests": [
+    {
+      "id": "req-1",
+      "shopName": "Chef's table",
+      "rating": 4.2,
+      "location": "Academic Building",
+      "distance": "0.4km away",
+      "time": "15 mins total"
+    },
+    {
+      "id": "req-2",
+      "shopName": "Chillox",
+      "rating": 4.8,
+      "location": "Library Block",
+      "distance": "0.6km away",
+      "time": "18 mins total"
+    }
+  ],
+  "earnings": {
+    "today": 540,
+    "thisWeek": 3480,
+    "thisMonth": 12150,
+    "availableToWithdraw": 1200
+  },
+  "performance": {
+    "rating": 4.9,
+    "deliveries": 156,
+    "onTimePercent": 98,
+    "acceptancePercent": 95
+  }
+}
