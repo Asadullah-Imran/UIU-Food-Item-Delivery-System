@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import RunnerLayout from '../components/RunnerLayout';
+import SharedLayout from '../components/SharedLayout';
+import { runnerNavigation, runnerUser } from '../config/navigation';
 import chatData from '../data/chatData.json';
 import { 
   Phone, Video, MoreVertical, Plus, Smile, Send, CheckCheck
@@ -10,7 +11,7 @@ export default function SharedChat() {
   const tabs = ['All', 'Students', 'Shops', 'Support'];
 
   return (
-    <RunnerLayout>
+    <SharedLayout navigation={runnerNavigation} user={runnerUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
       <div className="h-[calc(100vh-120px)] bg-white rounded-3xl shadow-sm border border-slate-200 flex overflow-hidden">
         
         {/* Left Pane: Inbox List */}
@@ -190,6 +191,6 @@ export default function SharedChat() {
 
         </div>
       </div>
-    </RunnerLayout>
+    </SharedLayout>
   );
 }

@@ -1,43 +1,58 @@
 import React, { useState } from 'react';
 import { 
-  LayoutDashboard, Truck, PackageCheck, History, 
-  Wallet, MessageSquare, User, LogOut, Search, Bell, Menu, X, ArrowLeftRight
+  LogOut, Search, Menu, X, ArrowLeftRight
 } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import runnerData from '../data/runner.json';
 import RoleTransitionOverlay from './RoleTransitionOverlay';
+import { useAuth } from '../context/AuthContext';
 
-export default function RunnerLayout({ children, noPadding = false }) {
+export default function SharedLayout({ 
+  children, 
+  noPadding = false, 
+  navigation = [], 
+  user = {}, 
+  switchRoleText, 
+  switchRolePath 
+}) {
   const location = useLocation();
   const navigate = useNavigate();
   const currentPath = location.pathname;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const { profile } = runnerData;
+  const { logout } = useAuth();
 
   const handleSwitchRole = (e) => {
     e.preventDefault();
+    if (!switchRolePath) return;
     setIsMobileMenuOpen(false);
     setIsTransitioning(true);
     setTimeout(() => {
-      navigate('/dashboard/student');
+      navigate(switchRolePath);
     }, 1200);
   };
 
-  const navLinks = [
-    { name: 'Dashboard', path: '/dashboard/runner', icon: LayoutDashboard },
-    { name: 'Available Deliveries', path: '/dashboard/runner/deliveries', icon: Truck },
-    { name: 'Active Deliveries', path: '/dashboard/runner/active/accepted', icon: PackageCheck },
-    { name: 'Delivery History', path: '/dashboard/runner/history', icon: History },
-    { name: 'Earnings', path: '/dashboard/runner/earnings', icon: Wallet },
-    { name: 'Chat', path: '/dashboard/runner/chat', icon: MessageSquare },
-    { name: 'Profile', path: '#', icon: User },
-  ];
+  const handleLogout = (e) => {
+    e.preventDefault();
+    logout();
+    navigate('/login');
+  };
+
+  // Default user if not provided fully
+  const displayUser = {
+    name: user.name || 'User',
+    idLabel: user.idLabel || 'ID',
+    idNumber: user.idNumber || '#0000',
+    avatar: user.avatar || 'https://i.pravatar.cc/150'
+  };
 
   return (
     <>
-    <RoleTransitionOverlay isVisible={isTransitioning} toRole="student" />
+    {isTransitioning && switchRolePath && (
+      <RoleTransitionOverlay 
+        isVisible={isTransitioning} 
+        toRole={switchRolePath.split('/').pop()} 
+      />
+    )}
     <div className="flex h-screen bg-[#F0F2F5] font-sans text-slate-800 overflow-hidden relative animate-page-transition">
       
       {/* Mobile Menu Overlay */}
@@ -67,7 +82,7 @@ export default function RunnerLayout({ children, noPadding = false }) {
         </div>
 
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
-          {navLinks.map((link) => {
+          {navigation.map((link) => {
             const Icon = link.icon;
             const isActive = currentPath === link.path;
             return (
@@ -77,22 +92,27 @@ export default function RunnerLayout({ children, noPadding = false }) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={`flex items-center px-4 py-3 rounded-xl font-semibold transition-all ${isActive ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20' : 'text-slate-600 hover:bg-slate-100 hover:text-orange-500'}`}
               >
-                <Icon className="w-5 h-5 mr-3" /> {link.name}
+                {Icon && <Icon className="w-5 h-5 mr-3" />} {link.name}
               </Link>
             );
           })}
         </nav>
 
         <div className="p-4 border-t border-slate-200/60 space-y-2">
+          {switchRoleText && switchRolePath && (
+            <button 
+              onClick={handleSwitchRole}
+              className="w-full flex items-center justify-center px-4 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors"
+            >
+              <ArrowLeftRight className="w-4 h-4 mr-2" /> {switchRoleText}
+            </button>
+          )}
           <button 
-            onClick={handleSwitchRole}
-            className="w-full flex items-center justify-center px-4 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors"
+            onClick={handleLogout} 
+            className="w-full flex items-center justify-center px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold transition-colors"
           >
-            <ArrowLeftRight className="w-4 h-4 mr-2" /> Switch to Student
-          </button>
-          <Link to="/login" className="flex items-center justify-center px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold transition-colors">
             <LogOut className="w-5 h-5 mr-2" /> Logout
-          </Link>
+          </button>
         </div>
       </div>
 
@@ -121,10 +141,10 @@ export default function RunnerLayout({ children, noPadding = false }) {
           <div className="flex items-center">
             <div className="flex items-center bg-white p-2 pr-4 rounded-full shadow-sm border border-slate-100">
               <div className="text-right mr-3 pl-3">
-                <p className="text-sm font-bold text-slate-800 leading-none">{profile.name}</p>
-                <p className="text-[10px] text-slate-500 mt-1 font-semibold">Runner ID: {profile.runnerId}</p>
+                <p className="text-sm font-bold text-slate-800 leading-none">{displayUser.name}</p>
+                <p className="text-[10px] text-slate-500 mt-1 font-semibold">{displayUser.idLabel}: {displayUser.idNumber}</p>
               </div>
-              <img src={profile.avatar} alt="Runner" className="w-10 h-10 rounded-full object-cover shadow-sm" />
+              <img src={displayUser.avatar} alt="Profile" className="w-10 h-10 rounded-full object-cover shadow-sm" />
             </div>
           </div>
         </header>

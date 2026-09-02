@@ -1,5 +1,6 @@
 import React from 'react';
-import RunnerLayout from '../components/RunnerLayout';
+import SharedLayout from '../components/SharedLayout';
+import { runnerNavigation, runnerUser } from '../config/navigation';
 import { Link } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, MapPin, Clock, 
@@ -12,7 +13,7 @@ export default function RunnerOrderAccepted() {
   const { orderId, shop, customer, deliveryDetails, orderItems, studentNote } = activeDeliveryData;
 
   return (
-    <RunnerLayout>
+    <SharedLayout navigation={runnerNavigation} user={runnerUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
       <div className="max-w-[1200px] mx-auto pt-4 pb-12">
         
         {/* Header */}
@@ -233,6 +234,6 @@ export default function RunnerOrderAccepted() {
           </div>
         </div>
       </div>
-    </RunnerLayout>
+    </SharedLayout>
   );
 }

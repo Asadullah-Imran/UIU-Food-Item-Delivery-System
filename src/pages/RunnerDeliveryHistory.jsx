@@ -1,5 +1,6 @@
 import React from 'react';
-import RunnerLayout from '../components/RunnerLayout';
+import SharedLayout from '../components/SharedLayout';
+import { runnerNavigation, runnerUser } from '../config/navigation';
 import { 
   Truck, Banknote, Star, Clock, Award, Zap, CheckCircle2,
   Search, Calendar, ChevronDown, Download, Wallet, Rocket,
@@ -22,7 +23,7 @@ export default function RunnerDeliveryHistory() {
   ];
 
   return (
-    <RunnerLayout>
+    <SharedLayout navigation={runnerNavigation} user={runnerUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
       <div className="max-w-[1200px] mx-auto pt-4 pb-12 space-y-6">
         
         {/* Header */}
@@ -293,6 +294,6 @@ export default function RunnerDeliveryHistory() {
         </div>
 
       </div>
-    </RunnerLayout>
+    </SharedLayout>
   );
 }

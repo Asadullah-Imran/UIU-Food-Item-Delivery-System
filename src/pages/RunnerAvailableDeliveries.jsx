@@ -1,5 +1,6 @@
 import React from 'react';
-import RunnerLayout from '../components/RunnerLayout';
+import SharedLayout from '../components/SharedLayout';
+import { runnerNavigation, runnerUser } from '../config/navigation';
 import { 
   Package, Store, Banknote, Clock, MapPin, Check,
   Search, ChevronDown, SlidersHorizontal, Navigation,
@@ -11,7 +12,7 @@ export default function RunnerAvailableDeliveries() {
   const { stats, recommendedDelivery, queue } = availableDeliveriesData;
 
   return (
-    <RunnerLayout>
+    <SharedLayout navigation={runnerNavigation} user={runnerUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
       <div className="max-w-[1200px] mx-auto space-y-8 pt-4">
         
         {/* Header Section */}
@@ -247,6 +248,6 @@ export default function RunnerAvailableDeliveries() {
         </div>
 
       </div>
-    </RunnerLayout>
+    </SharedLayout>
   );
 }
