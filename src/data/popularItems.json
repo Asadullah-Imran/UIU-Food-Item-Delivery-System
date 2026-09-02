@@ -1,0 +1,34 @@
+[
+  {
+    "id": "1",
+    "name": "Premium Beef Burger",
+    "shopName": "Chef's Table",
+    "rating": 4.9,
+    "price": 250,
+    "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=200&q=80"
+  },
+  {
+    "id": "2",
+    "name": "Iced Americano",
+    "shopName": "North End",
+    "rating": 4.8,
+    "price": 380,
+    "image": "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?w=200&q=80"
+  },
+  {
+    "id": "3",
+    "name": "Lunch Menu",
+    "shopName": "Pizzaburg",
+    "rating": 4.7,
+    "price": 220,
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80"
+  },
+  {
+    "id": "4",
+    "name": "Molten Brownie",
+    "shopName": "Pizzaburg",
+    "rating": 5.0,
+    "price": 180,
+    "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=200&q=80"
+  }
+]

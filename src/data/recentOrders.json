@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "shopName": "Chef's Table",
+    "date": "Jul 24, 2026",
+    "status": "Delivered"
+  },
+  {
+    "id": "2",
+    "shopName": "Pixels",
+    "date": "Jul 05, 2026",
+    "status": "Delivered"
+  },
+  {
+    "id": "3",
+    "shopName": "Pizzaburg",
+    "date": "Jun 20, 2026",
+    "status": "Delivered"
+  }
+]

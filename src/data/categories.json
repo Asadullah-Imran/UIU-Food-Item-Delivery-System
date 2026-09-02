@@ -1,0 +1,8 @@
+[
+  { "id": "1", "name": "Food", "icon": "utensils" },
+  { "id": "2", "name": "Drinks", "icon": "coffee" },
+  { "id": "3", "name": "Snacks", "icon": "cookie" },
+  { "id": "4", "name": "Stationery", "icon": "book" },
+  { "id": "5", "name": "Grocery", "icon": "shopping-cart" },
+  { "id": "6", "name": "Desserts", "icon": "cake" }
+]
