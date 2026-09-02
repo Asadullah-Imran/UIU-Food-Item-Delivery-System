@@ -5,7 +5,9 @@ import {
   History, 
   Wallet, 
   MessageSquare, 
-  User 
+  User,
+  Store,
+  ClipboardList
 } from 'lucide-react';
 
 export const runnerNavigation = [
@@ -23,4 +25,18 @@ export const runnerUser = {
   idLabel: 'Runner ID',
   idNumber: '#4092',
   avatar: 'https://i.pravatar.cc/150?u=runner'
+};
+
+export const studentNavigation = [
+  { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard },
+  { name: 'Browse Shops', path: '/dashboard/student/shops', icon: Store },
+  { name: 'My Orders', path: '/dashboard/student/orders', icon: ClipboardList },
+  { name: 'Chat', path: '/dashboard/student/chat', icon: MessageSquare },
+];
+
+export const studentUser = {
+  name: 'Rafiqul Haque',
+  idLabel: 'Student ID',
+  idNumber: '011201124',
+  avatar: 'https://i.pravatar.cc/150?u=student'
 };

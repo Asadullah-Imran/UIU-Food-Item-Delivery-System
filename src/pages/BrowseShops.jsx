@@ -1,14 +1,15 @@
 import React from 'react';
 import { Heart, Clock, Truck, ChevronDown, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import StudentLayout from '../components/StudentLayout';
+import SharedLayout from '../components/SharedLayout';
+import { studentNavigation, studentUser } from '../config/navigation';
 import shopsData from '../data/shops.json';
 
 export default function BrowseShops() {
   const filters = ["All", "Food", "Café", "Snacks", "Stationery", "Grocery"];
 
   return (
-    <StudentLayout>
+    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner">
       <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-6">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 mb-1">Browse Campus Shops</h2>
@@ -151,6 +152,6 @@ export default function BrowseShops() {
           </div>
         ))}
       </div>
-    </StudentLayout>
+    </SharedLayout>
   );
 }

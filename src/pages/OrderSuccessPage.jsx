@@ -6,12 +6,13 @@ import {
   FileText, MapPin as MapPinIcon, Banknote,
   Plus, ArrowRight
 } from 'lucide-react';
-import StudentLayout from '../components/StudentLayout';
+import SharedLayout from '../components/SharedLayout';
+import { studentNavigation, studentUser } from '../config/navigation';
 import popularItemsData from '../data/popularItems.json';
 
 export default function OrderSuccessPage() {
   return (
-    <StudentLayout>
+    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner">
       <div className="max-w-5xl mx-auto space-y-6">
         
         {/* Top Card: Status & Tracker */}
@@ -178,6 +179,6 @@ export default function OrderSuccessPage() {
         </div>
 
       </div>
-    </StudentLayout>
+    </SharedLayout>
   );
 }

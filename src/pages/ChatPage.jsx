@@ -4,14 +4,15 @@ import {
   Edit3, MoreVertical, Phone, Paperclip, Smile, 
   FileText, PhoneCall, Store, ChevronRight
 } from 'lucide-react';
-import StudentLayout from '../components/StudentLayout';
+import SharedLayout from '../components/SharedLayout';
+import { studentNavigation, studentUser } from '../config/navigation';
 import chatData from '../data/chat.json';
 
 export default function ChatPage() {
   const { conversations, activeChat, orderDetails } = chatData;
 
   return (
-    <StudentLayout noPadding={true}>
+    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner" noPadding>
       <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden">
         
         {/* Left Pane - Conversations List */}
@@ -207,6 +208,6 @@ export default function ChatPage() {
         </div>
 
       </div>
-    </StudentLayout>
+    </SharedLayout>
   );
 }

@@ -5,7 +5,8 @@ import {
   ChefHat, Navigation, ChevronLeft, ChevronRight, MoreHorizontal
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import StudentLayout from '../components/StudentLayout';
+import SharedLayout from '../components/SharedLayout';
+import { studentNavigation, studentUser } from '../config/navigation';
 import ordersData from '../data/myOrders.json';
 
 export default function MyOrdersPage() {
@@ -13,7 +14,7 @@ export default function MyOrdersPage() {
   const tabs = ['All Orders', 'Completed', 'Active', 'Cancelled'];
 
   return (
-    <StudentLayout>
+    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner">
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Breadcrumbs & Header */}
@@ -222,7 +223,7 @@ export default function MyOrdersPage() {
         </div>
 
       </div>
-    </StudentLayout>
+    </SharedLayout>
   );
 }
 

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRight } from 'lucide-react';
-import StudentLayout from '../components/StudentLayout';
+import SharedLayout from '../components/SharedLayout';
+import { studentNavigation, studentUser } from '../config/navigation';
 
 // Mock Data
 import shopsData from '../data/shops.json';
@@ -32,7 +33,7 @@ export default function ShopDetails() {
   const total = subtotal + deliveryFee;
 
   return (
-    <StudentLayout>
+    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner">
       
       {/* Breadcrumbs */}
       <div className="flex items-center text-sm font-medium text-slate-500 mb-6">
@@ -268,6 +269,6 @@ export default function ShopDetails() {
         </div>
 
       </div>
-    </StudentLayout>
+    </SharedLayout>
   );
 }
