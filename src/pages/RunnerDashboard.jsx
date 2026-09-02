@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Sun, Clock, CheckCircle2, ChevronDown, ListOrdered, Truck,
   CheckCircle, Banknote, MapPin, Phone, MessageSquare,
@@ -8,6 +9,7 @@ import RunnerLayout from '../components/RunnerLayout';
 import runnerData from '../data/runner.json';
 
 export default function RunnerDashboard() {
+  const navigate = useNavigate();
   const { profile, metrics, activeDelivery, nearbyRequests, earnings, performance } = runnerData;
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
 
@@ -194,12 +196,9 @@ export default function RunnerDashboard() {
                   </div>
                   
                   {/* Action Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4">
-                    <button className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-orange-500/20 flex items-center justify-center">
+                  <div className="w-full">
+                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-orange-500/20 flex items-center justify-center">
                       <CheckCircle2 className="w-5 h-5 mr-2" /> Update Status
-                    </button>
-                    <button className="flex-1 border-2 border-orange-500 text-orange-500 hover:bg-orange-50 font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center">
-                      <Navigation className="w-5 h-5 mr-2" /> Navigate
                     </button>
                   </div>
                 </div>

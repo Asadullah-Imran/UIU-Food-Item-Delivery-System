@@ -1,10 +1,11 @@
 import React from 'react';
 import { ShieldCheck, Store, Bike, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import DeliveryAnimation from '../components/DeliveryAnimation';
 
 export default function SelectionPage() {
   const navigate = useNavigate();
-  
+
   const roles = [
     {
       id: 'admin',
@@ -35,21 +36,22 @@ export default function SelectionPage() {
   return (
     <div className="flex min-h-screen bg-white font-sans text-slate-800">
       {/* Left Panel - Image Background */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900">
+      <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center">
         <img
           src="/bg.jpg"
           alt="UIU Campus"
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          className="absolute inset-0 w-full h-full object-cover opacity-80"
         />
         {/* Gradient Overlay for Text Readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent"></div>
-        
-        {/* Text Content */}
-        <div className="relative z-10 flex flex-col justify-end p-12 lg:p-20 h-full text-white">
-          <h1 className="text-4xl lg:text-5xl font-bold mb-4 tracking-tight leading-tight">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"></div>
+
+        {/* The Animated Story */}
+        <div className="relative z-10 w-full flex flex-col items-center justify-center p-12 lg:p-20 h-full text-white">
+          <DeliveryAnimation />
+          <h1 className="text-4xl lg:text-5xl font-bold mb-4 tracking-tight leading-tight text-center">
             Empowering Campus <br /> Logistics
           </h1>
-          <p className="text-base lg:text-lg text-slate-200 max-w-md leading-relaxed">
+          <p className="text-base lg:text-lg text-slate-200 max-w-md leading-relaxed text-center">
             Providing a seamless connection between campus shops, student runners, and the university community.
           </p>
         </div>
