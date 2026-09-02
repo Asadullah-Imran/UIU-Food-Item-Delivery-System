@@ -21,6 +21,8 @@ import SharedChat from './pages/SharedChat';
 import ShopDashboard from './pages/ShopDashboard';
 import ShopIncomingOrders from './pages/ShopIncomingOrders';
 import ShopOrderDetails from './pages/ShopOrderDetails';
+import ShopMenuManagement from './pages/ShopMenuManagement';
+import ShopSalesReports from './pages/ShopSalesReports';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -130,6 +132,11 @@ export default function App() {
         <Route path="/dashboard/shop/menu" element={
           <ProtectedRoute allowedRoles={['shop']}>
             <ShopMenuManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/shop/reports" element={
+          <ProtectedRoute allowedRoles={['shop']}>
+            <ShopSalesReports />
           </ProtectedRoute>
         } />
       </Routes>
