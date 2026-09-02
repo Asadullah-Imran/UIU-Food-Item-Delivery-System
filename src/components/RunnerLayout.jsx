@@ -24,7 +24,7 @@ export default function RunnerLayout({ children, noPadding = false }) {
   ];
 
   return (
-    <div className="flex h-screen bg-[#F0F2F5] font-sans text-slate-800 overflow-hidden relative">
+    <div className="flex h-screen bg-[#F0F2F5] font-sans text-slate-800 overflow-hidden relative animate-page-transition">
       
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (

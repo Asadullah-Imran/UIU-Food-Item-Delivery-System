@@ -12,7 +12,7 @@ export default function StudentLayout({ children, noPadding = false }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-[#F9FAFB] font-sans text-slate-800 overflow-hidden relative">
+    <div className="flex h-screen bg-[#F9FAFB] font-sans text-slate-800 overflow-hidden relative animate-page-transition">
       
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
