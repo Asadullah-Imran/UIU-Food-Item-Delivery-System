@@ -29,7 +29,7 @@ export default function RunnerLayout({ children, noPadding = false }) {
     { name: 'Dashboard', path: '/dashboard/runner', icon: LayoutDashboard },
     { name: 'Available Deliveries', path: '/dashboard/runner/deliveries', icon: Truck },
     { name: 'Active Deliveries', path: '/dashboard/runner/active/accepted', icon: PackageCheck },
-    { name: 'Delivery History', path: '#', icon: History },
+    { name: 'Delivery History', path: '/dashboard/runner/history', icon: History },
     { name: 'Earnings', path: '#', icon: Wallet },
     { name: 'Chat', path: '#', icon: MessageSquare },
     { name: 'Profile', path: '#', icon: User },
