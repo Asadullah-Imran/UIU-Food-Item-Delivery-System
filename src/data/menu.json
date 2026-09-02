@@ -1,0 +1,46 @@
+[
+  {
+    "id": "1",
+    "shopId": "1",
+    "category": "Popular",
+    "name": "Set Menu",
+    "description": "Crispy seasoned chicken patty with fresh lettuce, tomato, and our secret sauce.",
+    "price": 180,
+    "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80",
+    "isBestSeller": true,
+    "type": "vertical"
+  },
+  {
+    "id": "2",
+    "shopId": "1",
+    "category": "Popular",
+    "name": "Molten Brownie",
+    "description": "Classic thin-crust pizza loaded with premium mozzarella and fresh tomato.",
+    "price": 350,
+    "image": "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=400&q=80",
+    "isBestSeller": false,
+    "type": "vertical"
+  },
+  {
+    "id": "3",
+    "shopId": "1",
+    "category": "Snacks & Sides",
+    "name": "French Fries",
+    "description": "Classic salted golden fries served with ketchup.",
+    "price": 80,
+    "image": "https://images.unsplash.com/photo-1576107232684-1279f390859f?w=200&q=80",
+    "isBestSeller": false,
+    "type": "horizontal"
+  },
+  {
+    "id": "4",
+    "shopId": "1",
+    "category": "Snacks & Sides",
+    "name": "Chicken Sandwich",
+    "description": "Healthy club sandwich with grilled chicken and mayo.",
+    "price": 150,
+    "image": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=200&q=80",
+    "isBestSeller": false,
+    "type": "horizontal"
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1",
+    "shopId": "1",
+    "studentName": "Sabbir Hossain",
+    "initials": "SH",
+    "rating": 5,
+    "date": "2 days ago",
+    "comment": "The Chicken Burger here is definitely the best value for money on campus. Fresh and filling!"
+  },
+  {
+    "id": "2",
+    "shopId": "1",
+    "studentName": "Mariam Akter",
+    "initials": "MA",
+    "rating": 4,
+    "date": "1 week ago",
+    "comment": "Coffee is good, but sometimes the delivery takes a bit longer than 20 mins during peak lunch hours."
+  }
+]

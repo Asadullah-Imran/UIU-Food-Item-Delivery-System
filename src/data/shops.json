@@ -2,37 +2,73 @@
   {
     "id": "1",
     "name": "Chef's Table",
+    "description": "Providing a wide variety of nutritious and hygienic meals for students and...",
+    "tags": ["Food", "Café"],
     "rating": 4.8,
     "deliveryTime": "15-20 min",
+    "deliveryFee": 25,
     "isOpen": true,
     "image": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=400&q=80",
     "isFavorite": false
   },
   {
     "id": "2",
-    "name": "North End",
-    "rating": 4.5,
-    "deliveryTime": "10-15 min",
-    "isOpen": true,
-    "image": "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&q=80",
-    "isFavorite": true
-  },
-  {
-    "id": "3",
-    "name": "Pizzaburg",
+    "name": "Pizza burg",
+    "description": "Your favorite spot for premium coffee and freshly baked campus pastries.",
+    "tags": ["Food", "Snacks"],
     "rating": 4.9,
-    "deliveryTime": "12-18 min",
+    "deliveryTime": "10-15 min",
+    "deliveryFee": 15,
     "isOpen": true,
     "image": "https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&q=80",
     "isFavorite": false
   },
   {
+    "id": "3",
+    "name": "North End",
+    "description": "Guilt-free dining options including customizable salads and wholesome...",
+    "tags": ["Café", "Drinks"],
+    "rating": 4.6,
+    "deliveryTime": "20-25 min",
+    "deliveryFee": 30,
+    "isOpen": true,
+    "image": "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=400&q=80",
+    "isFavorite": true
+  },
+  {
     "id": "4",
-    "name": "Pixels",
+    "name": "Juice Corner",
+    "description": "Smoothies, Fresh Juices, Fruit Bowls. Refresh your day with 100% natural, cold-pressed fruit juices and...",
+    "tags": ["Drinks", "Snacks"],
     "rating": 4.7,
-    "deliveryTime": "5-10 min",
+    "deliveryTime": "12-18 min",
+    "deliveryFee": 20,
+    "isOpen": true,
+    "image": "https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&q=80",
+    "isFavorite": false
+  },
+  {
+    "id": "5",
+    "name": "Pixels",
+    "description": "Writing Tools, Notebooks, Art Supplies. All your academic essentials and creative tools delivered straight to your...",
+    "tags": ["Stationery"],
+    "rating": 4.5,
+    "deliveryTime": "30-40 min",
+    "deliveryFee": 10,
     "isOpen": true,
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=400&q=80",
+    "isFavorite": false
+  },
+  {
+    "id": "6",
+    "name": "Uni Mart",
+    "description": "Groceries, Snacks, Personal Care. Quick snacks and daily grocery needs for the busy university life. Opens at...",
+    "tags": ["Grocery", "Snacks"],
+    "rating": 4.4,
+    "deliveryTime": "20-30 min",
+    "deliveryFee": 15,
+    "isOpen": false,
+    "image": "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=400&q=80",
     "isFavorite": false
   }
 ]
