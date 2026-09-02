@@ -76,7 +76,7 @@ export default function DeliveryAnimation() {
         {/* --- GROUP 1 (0s Delay Sequence) --- */}
         {/* Shop 1 */}
         <div className="absolute left-6 top-[40px] z-10 flex flex-col items-center">
-          <div className="absolute -top-7 whitespace-nowrap bg-white text-slate-800 text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg" style={{ animation: 'popup-prep 20s ease-in-out infinite 0s' }}>
+          <div className="absolute -top-7 whitespace-nowrap bg-white text-slate-800 text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg opacity-0" style={{ animation: 'popup-prep 20s ease-in-out infinite 0s' }}>
             Preparing... 👨‍🍳
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white"></div>
           </div>
@@ -89,11 +89,11 @@ export default function DeliveryAnimation() {
         {/* Student 1 (Top Right) */}
         <div className="absolute left-[234px] top-[20px] z-10 flex flex-col items-center">
           {/* Popups moved to the left to prevent clipping at the top */}
-          <div className="absolute right-[50px] top-1/2 -translate-y-1/2 whitespace-nowrap bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg" style={{ animation: 'popup-req 20s ease-in-out infinite 0s' }}>
+          <div className="absolute right-[50px] top-1/2 -translate-y-1/2 whitespace-nowrap bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg opacity-0" style={{ animation: 'popup-req 20s ease-in-out infinite 0s' }}>
             Hungry! 🍔
             <div className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-blue-500"></div>
           </div>
-          <div className="absolute right-[50px] top-1/2 -translate-y-1/2 whitespace-nowrap bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg" style={{ animation: 'popup-del 20s ease-in-out infinite 0s' }}>
+          <div className="absolute right-[50px] top-1/2 -translate-y-1/2 whitespace-nowrap bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg opacity-0" style={{ animation: 'popup-del 20s ease-in-out infinite 0s' }}>
             Delivered! 🎉
             <div className="absolute top-1/2 -right-1 -translate-y-1/2 border-4 border-transparent border-l-green-500"></div>
           </div>
@@ -104,10 +104,10 @@ export default function DeliveryAnimation() {
         </div>
 
         {/* Rider 1 */}
-        <div className="absolute left-[24px] top-[40px] z-20" style={{ animation: 'r1-move 20s ease-in-out infinite 0s' }}>
+        <div className="absolute left-[24px] top-[40px] z-20 opacity-0" style={{ animation: 'r1-move 20s ease-in-out infinite 0s' }}>
           <div className="bg-white p-1.5 rounded-full shadow-lg border border-slate-100 relative">
             <Bike className="w-5 h-5 text-[#9B5110]" />
-            <div className="absolute -top-2 -right-2 bg-orange-500 p-0.5 rounded-md shadow-sm" style={{ animation: 'r-pkg 20s ease-in-out infinite 0s' }}>
+            <div className="absolute -top-2 -right-2 bg-orange-500 p-0.5 rounded-md shadow-sm opacity-0" style={{ animation: 'r-pkg 20s ease-in-out infinite 0s' }}>
               <Package className="w-3 h-3 text-white" />
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function DeliveryAnimation() {
         {/* --- GROUP 2 (10s Delay Sequence) --- */}
         {/* Shop 2 */}
         <div className="absolute left-6 top-[220px] z-10 flex flex-col items-center">
-           <div className="absolute -top-7 whitespace-nowrap bg-white text-slate-800 text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg" style={{ animation: 'popup-prep 20s ease-in-out infinite 10s' }}>
+           <div className="absolute -top-7 whitespace-nowrap bg-white text-slate-800 text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg opacity-0" style={{ animation: 'popup-prep 20s ease-in-out infinite 10s' }}>
             Preparing... 👨‍🍳
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-white"></div>
           </div>
@@ -128,11 +128,11 @@ export default function DeliveryAnimation() {
 
         {/* Student 2 */}
         <div className="absolute left-[234px] top-[120px] z-10 flex flex-col items-center">
-           <div className="absolute -top-7 whitespace-nowrap bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg" style={{ animation: 'popup-req 20s ease-in-out infinite 10s' }}>
+           <div className="absolute -top-7 whitespace-nowrap bg-blue-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg opacity-0" style={{ animation: 'popup-req 20s ease-in-out infinite 10s' }}>
             Ordering... 🍩
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-blue-500"></div>
           </div>
-          <div className="absolute -top-7 whitespace-nowrap bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg" style={{ animation: 'popup-del 20s ease-in-out infinite 10s' }}>
+          <div className="absolute -top-7 whitespace-nowrap bg-green-500 text-white text-[9px] font-bold px-2 py-1 rounded-lg shadow-lg opacity-0" style={{ animation: 'popup-del 20s ease-in-out infinite 10s' }}>
             Delivered! 🎉
             <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 border-4 border-transparent border-t-green-500"></div>
           </div>
@@ -151,10 +151,10 @@ export default function DeliveryAnimation() {
         </div>
 
         {/* Rider 2 */}
-        <div className="absolute left-[24px] top-[220px] z-20" style={{ animation: 'r2-move 20s ease-in-out infinite 10s' }}>
+        <div className="absolute left-[24px] top-[220px] z-20 opacity-0" style={{ animation: 'r2-move 20s ease-in-out infinite 10s' }}>
           <div className="bg-white p-1.5 rounded-full shadow-lg border border-slate-100 relative">
             <Bike className="w-5 h-5 text-[#9B5110]" />
-            <div className="absolute -top-2 -right-2 bg-orange-500 p-0.5 rounded-md shadow-sm" style={{ animation: 'r-pkg 20s ease-in-out infinite 10s' }}>
+            <div className="absolute -top-2 -right-2 bg-orange-500 p-0.5 rounded-md shadow-sm opacity-0" style={{ animation: 'r-pkg 20s ease-in-out infinite 10s' }}>
               <Package className="w-3 h-3 text-white" />
             </div>
           </div>
