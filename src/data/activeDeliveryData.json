@@ -1,0 +1,36 @@
+{
+  "orderId": "#3392",
+  "shop": {
+    "name": "Chillox UIU",
+    "location": "UIU Cafeteria Annex (North)",
+    "image": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=200&q=80"
+  },
+  "customer": {
+    "name": "Tahmid Ahmed",
+    "studentId": "111 201 002",
+    "department": "UIU CSE Dept.",
+    "phone": "+880 1712-345678",
+    "rating": "4.9",
+    "image": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80"
+  },
+  "deliveryDetails": {
+    "reward": 85,
+    "distance": "1.2 km",
+    "dropOffLocation": "UIU main Gate",
+    "expectedDelivery": "Within 25 mins",
+    "orderValue": "420.00"
+  },
+  "orderItems": [
+    { "qty": 2, "name": "Chicken Burger", "note": "Extra Cheese" },
+    { "qty": 1, "name": "French Fries", "note": "Large" },
+    { "qty": 2, "name": "Coke", "note": "Chilled" }
+  ],
+  "studentNote": "Please call when you arrive at the dormitory entrance.",
+  "timeline": [
+    { "id": "accepted", "label": "Delivery Accepted", "time": "11:15 AM", "status": "completed" },
+    { "id": "reached", "label": "Reached Shop", "time": "11:22 AM", "status": "completed" },
+    { "id": "picked", "label": "Picked Up", "time": "11:30 AM", "status": "completed" },
+    { "id": "ontheway", "label": "On the Way", "time": "Active Now", "status": "active" },
+    { "id": "delivered", "label": "Delivered", "time": "ETA 11:40 AM", "status": "pending" }
+  ]
+}

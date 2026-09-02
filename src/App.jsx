@@ -12,6 +12,9 @@ import MyOrdersPage from './pages/MyOrdersPage';
 import ChatPage from './pages/ChatPage';
 import RunnerDashboard from './pages/RunnerDashboard';
 import RunnerAvailableDeliveries from './pages/RunnerAvailableDeliveries';
+import RunnerOrderAccepted from './pages/RunnerOrderAccepted';
+import RunnerOrderTracking from './pages/RunnerOrderTracking';
+import RunnerDeliveryCompleted from './pages/RunnerDeliveryCompleted';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -69,6 +72,21 @@ export default function App() {
         <Route path="/dashboard/runner/deliveries" element={
           <ProtectedRoute allowedRoles={['runner']}>
             <RunnerAvailableDeliveries />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/runner/active/accepted" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <RunnerOrderAccepted />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/runner/active/tracking" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <RunnerOrderTracking />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/runner/active/completed" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <RunnerDeliveryCompleted />
           </ProtectedRoute>
         } />
       </Routes>
