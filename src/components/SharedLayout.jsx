@@ -12,7 +12,8 @@ export default function SharedLayout({
   navigation = [], 
   user = {}, 
   switchRoleText, 
-  switchRolePath 
+  switchRolePath,
+  headerActions 
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -138,7 +139,12 @@ export default function SharedLayout({
             </div>
           </div>
           
-          <div className="flex items-center">
+          <div className="flex items-center space-x-4">
+            {headerActions && (
+              <div className="flex items-center space-x-3">
+                {headerActions}
+              </div>
+            )}
             <div className="flex items-center bg-white p-2 pr-4 rounded-full shadow-sm border border-slate-100">
               <div className="text-right mr-3 pl-3">
                 <p className="text-sm font-bold text-slate-800 leading-none">{displayUser.name}</p>

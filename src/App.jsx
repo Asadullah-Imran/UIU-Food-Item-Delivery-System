@@ -127,6 +127,11 @@ export default function App() {
             <ShopOrderDetails />
           </ProtectedRoute>
         } />
+        <Route path="/dashboard/shop/menu" element={
+          <ProtectedRoute allowedRoles={['shop']}>
+            <ShopMenuManagement />
+          </ProtectedRoute>
+        } />
       </Routes>
     </AuthProvider>
   );
