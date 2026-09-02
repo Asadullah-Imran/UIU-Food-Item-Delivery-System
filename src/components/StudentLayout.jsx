@@ -3,15 +3,29 @@ import {
   LayoutDashboard, Store, ClipboardList, MessageSquare, LogOut, 
   Search, Bell, Menu, X, ArrowLeftRight
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import userData from '../data/user.json';
+import RoleTransitionOverlay from './RoleTransitionOverlay';
 
 export default function StudentLayout({ children, noPadding = false }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleSwitchRole = (e) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      navigate('/dashboard/runner');
+    }, 1200);
+  };
 
   return (
+    <>
+    <RoleTransitionOverlay isVisible={isTransitioning} toRole="runner" />
     <div className="flex h-screen bg-[#F9FAFB] font-sans text-slate-800 overflow-hidden relative animate-page-transition">
       
       {/* Mobile Menu Overlay */}
@@ -80,9 +94,12 @@ export default function StudentLayout({ children, noPadding = false }) {
         </nav>
 
         <div className="p-4 border-t border-slate-100 space-y-2">
-          <Link to="/dashboard/runner" className="flex items-center justify-center px-4 py-3 text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold transition-colors">
+          <button 
+            onClick={handleSwitchRole}
+            className="w-full flex items-center justify-center px-4 py-3 text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-xl font-bold transition-colors"
+          >
             <ArrowLeftRight className="w-4 h-4 mr-2" /> Switch to Runner
-          </Link>
+          </button>
           <Link to="/login" className="flex items-center justify-center px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-semibold transition-colors">
             <LogOut className="w-5 h-5 mr-2" /> Logout
           </Link>
@@ -136,5 +153,6 @@ export default function StudentLayout({ children, noPadding = false }) {
         </main>
       </div>
     </div>
+    </>
   );
 }

@@ -3,15 +3,27 @@ import {
   LayoutDashboard, Truck, PackageCheck, History, 
   Wallet, MessageSquare, User, LogOut, Search, Bell, Menu, X, ArrowLeftRight
 } from 'lucide-react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import runnerData from '../data/runner.json';
+import RoleTransitionOverlay from './RoleTransitionOverlay';
 
 export default function RunnerLayout({ children, noPadding = false }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentPath = location.pathname;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const { profile } = runnerData;
+
+  const handleSwitchRole = (e) => {
+    e.preventDefault();
+    setIsMobileMenuOpen(false);
+    setIsTransitioning(true);
+    setTimeout(() => {
+      navigate('/dashboard/student');
+    }, 1200);
+  };
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard/runner', icon: LayoutDashboard },
@@ -24,6 +36,8 @@ export default function RunnerLayout({ children, noPadding = false }) {
   ];
 
   return (
+    <>
+    <RoleTransitionOverlay isVisible={isTransitioning} toRole="student" />
     <div className="flex h-screen bg-[#F0F2F5] font-sans text-slate-800 overflow-hidden relative animate-page-transition">
       
       {/* Mobile Menu Overlay */}
@@ -70,9 +84,12 @@ export default function RunnerLayout({ children, noPadding = false }) {
         </nav>
 
         <div className="p-4 border-t border-slate-200/60 space-y-2">
-          <Link to="/dashboard/student" className="flex items-center justify-center px-4 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors">
+          <button 
+            onClick={handleSwitchRole}
+            className="w-full flex items-center justify-center px-4 py-3 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-bold transition-colors"
+          >
             <ArrowLeftRight className="w-4 h-4 mr-2" /> Switch to Student
-          </Link>
+          </button>
           <Link to="/login" className="flex items-center justify-center px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl font-bold transition-colors">
             <LogOut className="w-5 h-5 mr-2" /> Logout
           </Link>
@@ -118,5 +135,6 @@ export default function RunnerLayout({ children, noPadding = false }) {
         </main>
       </div>
     </div>
+    </>
   );
 }
