@@ -1,0 +1,80 @@
+{
+  "stats": {
+    "available": {
+      "value": 12,
+      "label": "AVAILABLE",
+      "progress": 30
+    },
+    "nearbyShops": {
+      "value": 5,
+      "label": "NEARBY SHOPS",
+      "subtext": "Within 500m radius",
+      "progress": 60
+    },
+    "potentialEarnings": {
+      "value": "450",
+      "label": "POTENTIAL EARNINGS",
+      "subtext": "৳120 more than avg",
+      "progress": 75
+    },
+    "avgTime": {
+      "value": "18m",
+      "label": "AVG. TIME"
+    }
+  },
+  "recommendedDelivery": {
+    "shopName": "Chillox UIU",
+    "image": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&q=80",
+    "orderId": "#UIU-8829",
+    "itemsCount": 3,
+    "price": "1,240",
+    "pickup": "Chillox UIU",
+    "dropoff": "UIU Main gate (Room 402)",
+    "distance": "0.4 km",
+    "estTime": "9 min",
+    "reasons": [
+      "Closest pickup to your current position (120m away)",
+      "Highest reward-to-distance ratio in the current pool",
+      "Order is ready for pickup now at UIU Cafeteria",
+      "Fits your typical delivery route to Academic Block"
+    ]
+  },
+  "queue": [
+    {
+      "id": "q1",
+      "shopName": "Chef's Table",
+      "isNew": true,
+      "image": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=200&q=80",
+      "pickup": "Library Annex",
+      "distance": "0.6km",
+      "reward": 55
+    },
+    {
+      "id": "q2",
+      "shopName": "Pixel",
+      "isNew": false,
+      "image": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=200&q=80",
+      "pickup": "Academic Block A",
+      "distance": "0.2km",
+      "reward": 40
+    },
+    {
+      "id": "q3",
+      "shopName": "Chillox",
+      "isNew": false,
+      "image": "https://images.unsplash.com/photo-1586816001966-79b736744398?w=200&q=80",
+      "pickup": "Cafeteria",
+      "distance": "0.4km",
+      "reward": 65
+    },
+    {
+      "id": "q4",
+      "shopName": "Pizzaburg",
+      "isNew": false,
+      "image": "https://images.unsplash.com/photo-1604382355076-af4b0eb60143?w=200&q=80",
+      "pickup": "Library",
+      "distance": "0.8km",
+      "reward": 35
+    }
+  ]
+}

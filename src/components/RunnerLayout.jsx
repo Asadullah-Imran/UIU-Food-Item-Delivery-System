@@ -27,7 +27,7 @@ export default function RunnerLayout({ children, noPadding = false }) {
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard/runner', icon: LayoutDashboard },
-    { name: 'Available Deliveries', path: '#', icon: Truck },
+    { name: 'Available Deliveries', path: '/dashboard/runner/deliveries', icon: Truck },
     { name: 'Active Deliveries', path: '#', icon: PackageCheck },
     { name: 'Delivery History', path: '#', icon: History },
     { name: 'Earnings', path: '#', icon: Wallet },

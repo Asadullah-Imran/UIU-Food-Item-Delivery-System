@@ -11,6 +11,7 @@ import OrderSuccessPage from './pages/OrderSuccessPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import ChatPage from './pages/ChatPage';
 import RunnerDashboard from './pages/RunnerDashboard';
+import RunnerAvailableDeliveries from './pages/RunnerAvailableDeliveries';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -63,6 +64,11 @@ export default function App() {
         <Route path="/dashboard/runner" element={
           <ProtectedRoute allowedRoles={['runner']}>
             <RunnerDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/runner/deliveries" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <RunnerAvailableDeliveries />
           </ProtectedRoute>
         } />
       </Routes>
