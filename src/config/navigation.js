@@ -7,7 +7,11 @@ import {
   MessageSquare, 
   User,
   Store,
-  ClipboardList
+  ClipboardList,
+  Inbox,
+  UtensilsCrossed,
+  BarChart3,
+  MessageSquareHeart
 } from 'lucide-react';
 
 export const runnerNavigation = [
@@ -39,4 +43,20 @@ export const studentUser = {
   idLabel: 'Student ID',
   idNumber: '011201124',
   avatar: 'https://i.pravatar.cc/150?u=student'
+};
+
+export const shopNavigation = [
+  { name: 'Dashboard', path: '/dashboard/shop', icon: LayoutDashboard },
+  { name: 'Incoming Orders', path: '/dashboard/shop/orders', icon: Inbox },
+  { name: 'Menu Management', path: '/dashboard/shop/menu', icon: UtensilsCrossed },
+  { name: 'Sales Reports', path: '/dashboard/shop/reports', icon: BarChart3 },
+  { name: 'Customer Reviews', path: '/dashboard/shop/reviews', icon: MessageSquareHeart },
+  { name: 'Shop Profile', path: '/dashboard/shop/profile', icon: Store },
+];
+
+export const shopUser = {
+  name: "Chef's Table",
+  idLabel: 'Owner',
+  idNumber: '#5029',
+  avatar: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=150&h=150&fit=crop'
 };

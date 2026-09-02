@@ -1,0 +1,88 @@
+{
+  "metrics": {
+    "newOrders": 12,
+    "preparing": 5,
+    "readyForPickup": 3,
+    "completedToday": 45
+  },
+  "priorityOrder": {
+    "orderId": "#ORD-9025",
+    "student": "Sifat Ullah",
+    "isAsap": true,
+    "total": 320,
+    "items": "Kacchi Biriyani (Full) x2"
+  },
+  "ordersList": [
+    {
+      "orderId": "#ORD-9031",
+      "studentName": "Tanvir Ahmed",
+      "studentId": "011 201 045",
+      "items": "Chicken Burger, Pepsi...",
+      "value": 245,
+      "payment": "Paid",
+      "placed": "2 mins ago"
+    },
+    {
+      "orderId": "#ORD-9029",
+      "studentName": "Nishat Jahan",
+      "studentId": "011 213 112",
+      "items": "Egg Fried Rice x2",
+      "value": 180,
+      "payment": "COD",
+      "placed": "8 mins ago"
+    },
+    {
+      "orderId": "#ORD-9020",
+      "studentName": "Rakib Hossain",
+      "studentId": "011 192 003",
+      "items": "Beef Tehari (Large)",
+      "value": 160,
+      "payment": "Paid",
+      "placed": "22 mins ago"
+    },
+    {
+      "orderId": "#ORD-8995",
+      "studentName": "Mehedi Hasan",
+      "studentId": "011 202 011",
+      "items": "Pasta Basta Special",
+      "value": 290,
+      "payment": "Paid",
+      "placed": "45 mins ago"
+    },
+    {
+      "orderId": "#ORD-8990",
+      "studentName": "Ayesha Siddika",
+      "studentId": "011 221 190",
+      "items": "Cold Coffee x3",
+      "value": 210,
+      "payment": "Failed",
+      "placed": "1 hour ago"
+    }
+  ],
+  "liveActivity": [
+    {
+      "type": "new_order",
+      "title": "New order received",
+      "description": "Order #ORD-9031 by Tanvir Ahmed.",
+      "time": "JUST NOW"
+    },
+    {
+      "type": "runner",
+      "title": "Runner arriving soon",
+      "description": "Runner \"Asif\" is within 200m for #ORD-9020.",
+      "time": "5 MINS AGO"
+    },
+    {
+      "type": "note",
+      "title": "Delivery note updated",
+      "description": "\"Please leave at the Civil Eng. dept gate.\"",
+      "time": "12 MINS AGO"
+    },
+    {
+      "type": "payment",
+      "title": "Payment confirmed",
+      "description": "bKash payment success for #ORD-9025.",
+      "time": "15 MINS AGO"
+    }
+  ]
+}
