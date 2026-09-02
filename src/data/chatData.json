@@ -1,0 +1,79 @@
+{
+  "conversations": [
+    {
+      "id": "1",
+      "name": "Tonmoy",
+      "type": "student",
+      "isOnline": true,
+      "lastMessage": "Wait, did you get the extra sauce?",
+      "time": "12:42 PM",
+      "unreadCount": 2,
+      "isActive": true,
+      "avatar": "https://i.pravatar.cc/150?u=tonmoy"
+    },
+    {
+      "id": "2",
+      "name": "Chillox",
+      "type": "shop",
+      "isOnline": false,
+      "lastMessage": "Order #3392 is ready for pickup.",
+      "time": "11:15 AM",
+      "unreadCount": 0,
+      "isActive": false,
+      "avatar": "https://i.pravatar.cc/150?u=chillox"
+    },
+    {
+      "id": "3",
+      "name": "Book Shop",
+      "type": "shop",
+      "isOnline": false,
+      "lastMessage": "We have the calculators in stock now.",
+      "time": "Yesterday",
+      "unreadCount": 0,
+      "isActive": false,
+      "avatar": "https://i.pravatar.cc/150?u=bookshop"
+    },
+    {
+      "id": "4",
+      "name": "Admin",
+      "type": "support",
+      "isOnline": false,
+      "lastMessage": "Your payout has been processed.",
+      "time": "Tuesday",
+      "unreadCount": 0,
+      "isActive": false,
+      "avatar": "https://i.pravatar.cc/150?u=admin"
+    }
+  ],
+  "activeChat": {
+    "id": "1",
+    "name": "Tonmoy",
+    "isOnline": true,
+    "avatar": "https://i.pravatar.cc/150?u=tonmoy",
+    "messages": [
+      {
+        "id": "m1",
+        "sender": "Tonmoy",
+        "isMe": false,
+        "text": "Hi! Just making sure you found the North Gate entrance? I'm waiting near the library stairs.",
+        "time": "12:35 PM"
+      },
+      {
+        "id": "m2",
+        "sender": "Me",
+        "isMe": true,
+        "text": "Yes, I just passed the main gate. I'll be at the library in about 5 minutes.",
+        "time": "12:38 PM",
+        "status": "read"
+      },
+      {
+        "id": "m3",
+        "sender": "Tonmoy",
+        "isMe": false,
+        "text": "Great! Wait, did you get the extra sauce? I mentioned it in the order note but forgot to double check with the shop.",
+        "time": "12:42 PM"
+      }
+    ],
+    "isTyping": true
+  }
+}

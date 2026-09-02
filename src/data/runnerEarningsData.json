@@ -1,0 +1,38 @@
+[
+  {
+    "transId": "#TRX-8821",
+    "date": "Mar 24, 2026",
+    "shop": "Chillox, Library Block",
+    "credits": 60.00,
+    "bonus": 5.00,
+    "finalAmount": 65.00,
+    "status": "SETTLED"
+  },
+  {
+    "transId": "#TRX-8819",
+    "date": "Jan 23, 2026",
+    "shop": "Stationery Pro",
+    "credits": 45.00,
+    "bonus": 0,
+    "finalAmount": 45.00,
+    "status": "SETTLED"
+  },
+  {
+    "transId": "#TRX-8815",
+    "date": "Feb 23, 2026",
+    "shop": "UIU Food Court",
+    "credits": 120.00,
+    "bonus": 12.00,
+    "finalAmount": 132.00,
+    "status": "PENDING"
+  },
+  {
+    "transId": "#TRX-8802",
+    "date": "Jul 22, 2026",
+    "shop": "Madchef Express",
+    "credits": 80.00,
+    "bonus": 8.00,
+    "finalAmount": 88.00,
+    "status": "SETTLED"
+  }
+]

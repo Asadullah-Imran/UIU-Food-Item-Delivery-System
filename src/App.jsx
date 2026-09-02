@@ -16,6 +16,8 @@ import RunnerOrderAccepted from './pages/RunnerOrderAccepted';
 import RunnerOrderTracking from './pages/RunnerOrderTracking';
 import RunnerDeliveryCompleted from './pages/RunnerDeliveryCompleted';
 import RunnerDeliveryHistory from './pages/RunnerDeliveryHistory';
+import RunnerEarnings from './pages/RunnerEarnings';
+import SharedChat from './pages/SharedChat';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -93,6 +95,16 @@ export default function App() {
         <Route path="/dashboard/runner/history" element={
           <ProtectedRoute allowedRoles={['runner']}>
             <RunnerDeliveryHistory />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/runner/earnings" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <RunnerEarnings />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/runner/chat" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <SharedChat />
           </ProtectedRoute>
         } />
       </Routes>

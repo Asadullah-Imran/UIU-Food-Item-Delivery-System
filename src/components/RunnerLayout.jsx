@@ -30,8 +30,8 @@ export default function RunnerLayout({ children, noPadding = false }) {
     { name: 'Available Deliveries', path: '/dashboard/runner/deliveries', icon: Truck },
     { name: 'Active Deliveries', path: '/dashboard/runner/active/accepted', icon: PackageCheck },
     { name: 'Delivery History', path: '/dashboard/runner/history', icon: History },
-    { name: 'Earnings', path: '#', icon: Wallet },
-    { name: 'Chat', path: '#', icon: MessageSquare },
+    { name: 'Earnings', path: '/dashboard/runner/earnings', icon: Wallet },
+    { name: 'Chat', path: '/dashboard/runner/chat', icon: MessageSquare },
     { name: 'Profile', path: '#', icon: User },
   ];
 
