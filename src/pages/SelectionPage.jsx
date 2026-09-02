@@ -73,7 +73,7 @@ export default function SelectionPage() {
             {roles.map((role) => (
               <button
                 key={role.id}
-                onClick={() => navigate('/login')}
+                onClick={() => navigate(`/login?role=${role.id}`)}
                 className="group flex items-center p-5 bg-[#F8F7F5] border border-transparent rounded-2xl transition-all duration-300 hover:bg-white hover:border-orange-200 hover:shadow-xl hover:shadow-orange-500/5 hover:-translate-y-1 text-left w-full"
               >
                 <div className="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-xl bg-orange-100/70 group-hover:bg-orange-100 transition-colors mr-5">

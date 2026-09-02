@@ -11,21 +11,61 @@ import OrderSuccessPage from './pages/OrderSuccessPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import ChatPage from './pages/ChatPage';
 import RunnerDashboard from './pages/RunnerDashboard';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<SelectionPage />} />
-      <Route path="/register" element={<RegistrationPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/dashboard/student" element={<StudentDashboard />} />
-      <Route path="/dashboard/student/shops" element={<BrowseShops />} />
-      <Route path="/dashboard/student/shops/:shopId" element={<ShopDetails />} />
-      <Route path="/checkout" element={<CheckoutPage />} />
-      <Route path="/order-success" element={<OrderSuccessPage />} />
-      <Route path="/dashboard/student/orders" element={<MyOrdersPage />} />
-      <Route path="/dashboard/student/chat" element={<ChatPage />} />
-      <Route path="/dashboard/runner" element={<RunnerDashboard />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        <Route path="/" element={<SelectionPage />} />
+        <Route path="/register" element={<RegistrationPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        
+        {/* Student Routes */}
+        <Route path="/dashboard/student" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <StudentDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/student/shops" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <BrowseShops />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/student/shops/:shopId" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <ShopDetails />
+          </ProtectedRoute>
+        } />
+        <Route path="/checkout" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <CheckoutPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/order-success" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <OrderSuccessPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/student/orders" element={
+          <ProtectedRoute allowedRoles={['student']}>
+            <MyOrdersPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/student/chat" element={
+          <ProtectedRoute allowedRoles={['student', 'runner', 'shop']}>
+            <ChatPage />
+          </ProtectedRoute>
+        } />
+        
+        {/* Runner Routes */}
+        <Route path="/dashboard/runner" element={
+          <ProtectedRoute allowedRoles={['runner']}>
+            <RunnerDashboard />
+          </ProtectedRoute>
+        } />
+      </Routes>
+    </AuthProvider>
   );
 }

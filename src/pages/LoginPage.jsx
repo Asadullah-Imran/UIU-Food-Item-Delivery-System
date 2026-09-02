@@ -1,9 +1,16 @@
 import React from 'react';
 import { Mail, Lock, Eye, ArrowRight, BookOpen } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const role = searchParams.get('role') || 'student'; // Default to student
+  const { login } = useAuth();
+  
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex flex-col items-center justify-center p-4 lg:p-8 font-sans">
@@ -63,7 +70,7 @@ export default function LoginPage() {
           </div>
 
           <div className="mb-8 text-center">
-            <h3 className="text-[28px] font-bold text-slate-900 mb-2 tracking-tight">Welcome Back</h3>
+            <h3 className="text-[28px] font-bold text-slate-900 mb-2 tracking-tight capitalize">Sign in as {role}</h3>
             <p className="text-slate-500 text-sm">Sign in with your UIU account to continue.</p>
           </div>
 
@@ -77,6 +84,8 @@ export default function LoginPage() {
                 <input 
                   type="email" 
                   placeholder="student@uiu.ac.bd"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 font-medium"
                 />
               </div>
@@ -94,6 +103,8 @@ export default function LoginPage() {
                 <input 
                   type="password" 
                   placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-12 pr-12 py-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 font-medium tracking-widest"
                 />
                 <button type="button" className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600">
@@ -115,7 +126,10 @@ export default function LoginPage() {
 
             <button 
               type="button" 
-              onClick={() => navigate('/dashboard/student')}
+              onClick={() => {
+                login({ email: email || `${role}@uiu.ac.bd`, role });
+                navigate(`/dashboard/${role}`);
+              }}
               className="w-full bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center mt-4 shadow-lg shadow-orange-500/30 group"
             >
               Sign in 
