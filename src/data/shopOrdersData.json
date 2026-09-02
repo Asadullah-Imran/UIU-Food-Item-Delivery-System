@@ -20,7 +20,8 @@
       "items": "Chicken Burger, Pepsi...",
       "value": 245,
       "payment": "Paid",
-      "placed": "2 mins ago"
+      "placed": "2 mins ago",
+      "status": "NEW"
     },
     {
       "orderId": "#ORD-9029",
@@ -29,7 +30,8 @@
       "items": "Egg Fried Rice x2",
       "value": 180,
       "payment": "COD",
-      "placed": "8 mins ago"
+      "placed": "8 mins ago",
+      "status": "PREPARING"
     },
     {
       "orderId": "#ORD-9020",
@@ -38,7 +40,8 @@
       "items": "Beef Tehari (Large)",
       "value": 160,
       "payment": "Paid",
-      "placed": "22 mins ago"
+      "placed": "22 mins ago",
+      "status": "READY"
     },
     {
       "orderId": "#ORD-8995",
@@ -47,7 +50,8 @@
       "items": "Pasta Basta Special",
       "value": 290,
       "payment": "Paid",
-      "placed": "45 mins ago"
+      "placed": "45 mins ago",
+      "status": "COMPLETED"
     },
     {
       "orderId": "#ORD-8990",
@@ -56,12 +60,13 @@
       "items": "Cold Coffee x3",
       "value": 210,
       "payment": "Failed",
-      "placed": "1 hour ago"
+      "placed": "1 hour ago",
+      "status": "REJECTED"
     }
   ],
   "liveActivity": [
     {
-      "type": "new_order",
+      "type": "new",
       "title": "New order received",
       "description": "Order #ORD-9031 by Tanvir Ahmed.",
       "time": "JUST NOW"
@@ -83,6 +88,114 @@
       "title": "Payment confirmed",
       "description": "bKash payment success for #ORD-9025.",
       "time": "15 MINS AGO"
+    }
+  ],
+  "orderDetails": {
+    "orderId": "#ORD-9025",
+    "status": "New",
+    "placedAt": "10:45 AM",
+    "paymentStatus": "Paid (bKash)",
+    "timeline": {
+      "orderPlaced": true,
+      "shopConfirmation": "active",
+      "preparing": false,
+      "readyForPickup": false,
+      "delivered": false
+    },
+    "student": {
+      "name": "Sifat Ullah",
+      "id": "011 213 045",
+      "phone": "+8801712345678",
+      "location": "Academic Building",
+      "room": "Room 402, 4th Floor",
+      "avatar": "https://i.pravatar.cc/150?u=sifat"
+    },
+    "items": [
+      {
+        "name": "Kachchi Biriyani (Full)",
+        "quantity": 2,
+        "unitPrice": 140,
+        "subtotal": 280,
+        "image": "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+      },
+      {
+        "name": "Cold Coffee",
+        "quantity": 1,
+        "unitPrice": 40,
+        "subtotal": 40,
+        "image": "https://images.unsplash.com/photo-1461023058943-0708e5224eeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80"
+      }
+    ],
+    "billing": {
+      "subtotal": 320,
+      "deliveryFee": 25,
+      "discount": 0,
+      "grandTotal": 345
+    },
+    "specialInstructions": "\"No mayonnaise. Extra spicy. Call before delivery.\""
+  },
+  "menuMetrics": {
+    "totalItems": 42,
+    "available": 38,
+    "unavailable": 4,
+    "bestSeller": "Chicken Biryani"
+  },
+  "inventoryAlerts": [
+    {
+      "id": 1,
+      "type": "critical",
+      "title": "Low stock: Lime",
+      "description": "Only 12 units remaining. Usual order: 50 units.",
+      "actionText": "Order Now"
+    },
+    {
+      "id": 2,
+      "type": "warning",
+      "title": "Stock warning: Coffee",
+      "description": "Stock predicted to last 2 more days."
+    }
+  ],
+  "menuData": [
+    {
+      "id": "item1",
+      "name": "Set Menu",
+      "price": 250,
+      "prepTime": "15-20 min",
+      "category": "Meal",
+      "image": "https://images.unsplash.com/photo-1544025162-8111f4e170f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      "available": true,
+      "badge": "BEST SELLER"
+    },
+    {
+      "id": "item2",
+      "name": "Set Menu 2",
+      "price": 245,
+      "prepTime": "10-15 min",
+      "category": "Meal",
+      "image": "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      "available": true,
+      "badge": "LOW STOCK"
+    },
+    {
+      "id": "item3",
+      "name": "Beef Burger",
+      "price": 350,
+      "prepTime": "25-30 min",
+      "category": "Meal",
+      "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      "available": true,
+      "badge": null
+    },
+    {
+      "id": "item4",
+      "name": "Cold Coffee",
+      "price": 120,
+      "prepTime": "8 min",
+      "category": "Drink",
+      "image": "https://images.unsplash.com/photo-1461023058943-0708e5224eeb?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+      "description": "Rich and creamy iced coffee blended with premium beans and a hint of...",
+      "available": false,
+      "badge": "OUT OF STOCK"
     }
   ]
 }

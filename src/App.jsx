@@ -20,6 +20,7 @@ import RunnerEarnings from './pages/RunnerEarnings';
 import SharedChat from './pages/SharedChat';
 import ShopDashboard from './pages/ShopDashboard';
 import ShopIncomingOrders from './pages/ShopIncomingOrders';
+import ShopOrderDetails from './pages/ShopOrderDetails';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -119,6 +120,11 @@ export default function App() {
         <Route path="/dashboard/shop/orders" element={
           <ProtectedRoute allowedRoles={['shop']}>
             <ShopIncomingOrders />
+          </ProtectedRoute>
+        } />
+        <Route path="/dashboard/shop/orders/:orderId" element={
+          <ProtectedRoute allowedRoles={['shop']}>
+            <ShopOrderDetails />
           </ProtectedRoute>
         } />
       </Routes>

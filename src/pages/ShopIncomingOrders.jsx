@@ -1,8 +1,9 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Inbox, Utensils, ShoppingBag, CheckCircle2,
   BellRing, CheckCircle, Banknote, XCircle, 
-  ChevronDown, Truck, FileText, Radio, MoreVertical
+  ChevronDown, Truck, FileText, Radio, Eye
 } from 'lucide-react';
 import SharedLayout from '../components/SharedLayout';
 import { shopNavigation, shopUser } from '../config/navigation';
@@ -117,14 +118,14 @@ export default function ShopIncomingOrders() {
         </div>
 
         {/* Main Content Split */}
-        <div className="flex flex-col xl:flex-row gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           
           {/* Left Column - Orders List */}
           <div className="flex-1 min-w-0 flex flex-col">
             
             {/* Priority Order Alert Card */}
-            <div className="bg-[#FFF8F1] rounded-2xl border border-orange-200 p-6 flex flex-col lg:flex-row lg:items-center justify-between mb-6 shadow-sm">
-              <div className="flex items-start mb-4 lg:mb-0">
+            <div className="bg-[#FFF8F1] rounded-2xl border border-orange-200 p-6 flex flex-col xl:flex-row xl:items-center justify-between mb-6 shadow-sm">
+              <div className="flex items-start mb-4 xl:mb-0">
                 <div className="w-12 h-12 rounded-xl bg-white text-orange-500 flex items-center justify-center shadow-sm mr-4 flex-shrink-0">
                   <BellRing className="w-6 h-6" />
                 </div>
@@ -140,14 +141,14 @@ export default function ShopIncomingOrders() {
               </div>
               
               <div className="flex flex-col sm:flex-row items-center gap-4 lg:gap-8 bg-[#FFF1E0] sm:bg-transparent p-4 sm:p-0 rounded-xl sm:rounded-none">
-                <div className="text-center lg:text-right">
+                <div className="text-center xl:text-right">
                   <h4 className="text-2xl font-extrabold text-orange-600">{priorityOrder.total} BDT</h4>
                   <p className="text-xs font-bold text-slate-500 w-32 truncate" title={priorityOrder.items}>{priorityOrder.items}</p>
                 </div>
                 <div className="flex space-x-3 w-full sm:w-auto">
-                  <button className="flex-1 sm:flex-none bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-sm whitespace-nowrap">
+                  <Link to={`/dashboard/shop/orders/${priorityOrder.orderId.replace('#', '')}`} className="flex-1 sm:flex-none bg-slate-700 hover:bg-slate-800 text-white font-bold py-3 px-6 rounded-xl transition-colors shadow-sm whitespace-nowrap text-center">
                     View Details
-                  </button>
+                  </Link>
                   <button className="flex-1 sm:flex-none bg-white text-red-600 border border-red-200 hover:bg-red-50 font-bold py-3 px-6 rounded-xl transition-colors shadow-sm whitespace-nowrap">
                     Reject
                   </button>
@@ -183,7 +184,9 @@ export default function ShopIncomingOrders() {
                       <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider">Items</th>
                       <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider text-right">Value</th>
                       <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider text-center">Payment</th>
-                      <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider pr-6 text-right">Placed</th>
+                      <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider text-right">Placed</th>
+                      <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider text-center">Status</th>
+                      <th className="py-4 font-bold text-slate-400 text-[10px] uppercase tracking-wider text-center pr-6">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-50">
@@ -218,8 +221,30 @@ export default function ShopIncomingOrders() {
                             </span>
                           )}
                         </td>
-                        <td className="py-5 pr-6 text-right whitespace-nowrap">
+                        <td className="py-5 text-right whitespace-nowrap">
                           <p className="text-xs font-semibold text-slate-400">{order.placed}</p>
+                        </td>
+                        <td className="py-5 text-center whitespace-nowrap">
+                          {order.status === 'NEW' && (
+                            <span className="px-3 py-1 bg-orange-100 text-orange-600 text-[10px] font-extrabold rounded-full uppercase tracking-wider">NEW</span>
+                          )}
+                          {order.status === 'PREPARING' && (
+                            <span className="px-3 py-1 bg-blue-100 text-blue-600 text-[10px] font-extrabold rounded-full uppercase tracking-wider">PREPARING</span>
+                          )}
+                          {order.status === 'READY' && (
+                            <span className="px-3 py-1 bg-indigo-100 text-indigo-500 text-[10px] font-extrabold rounded-full uppercase tracking-wider">READY</span>
+                          )}
+                          {order.status === 'COMPLETED' && (
+                            <span className="px-3 py-1 bg-slate-700 text-white text-[10px] font-extrabold rounded-full uppercase tracking-wider">COMPLETED</span>
+                          )}
+                          {order.status === 'REJECTED' && (
+                            <span className="px-3 py-1 bg-red-100 text-red-500 text-[10px] font-extrabold rounded-full uppercase tracking-wider">REJECTED</span>
+                          )}
+                        </td>
+                        <td className="py-5 pr-6 text-center whitespace-nowrap">
+                          <Link to={`/dashboard/shop/orders/${order.orderId.replace('#', '')}`} className="text-orange-500 hover:text-orange-600 transition-colors inline-block">
+                            <Eye className="w-5 h-5 mx-auto" />
+                          </Link>
                         </td>
                       </tr>
                     ))}
@@ -242,7 +267,7 @@ export default function ShopIncomingOrders() {
           </div>
 
           {/* Right Column - Live Activity */}
-          <div className="w-full xl:w-80 flex-shrink-0">
+          <div className="w-full lg:w-80 flex-shrink-0">
             <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-6 sticky top-24">
               <div className="flex justify-between items-center bg-slate-100 p-4 rounded-xl mb-6">
                 <h2 className="text-sm font-bold text-slate-800 flex items-center">
