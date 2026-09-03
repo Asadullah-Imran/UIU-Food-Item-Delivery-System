@@ -252,5 +252,68 @@
       "revenue": "22,400",
       "image": "https://images.unsplash.com/photo-1562967914-01efa7e87832?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80"
     }
+  ],
+  "reviewMetrics": {
+    "overallRating": "4.8",
+    "totalReviews": "1,248",
+    "positiveReviews": "94%"
+  },
+  "ratingBreakdown": [
+    { "stars": 5, "percentage": 82 },
+    { "stars": 4, "percentage": 12 },
+    { "stars": 3, "percentage": 4 },
+    { "stars": 2, "percentage": 1 },
+    { "stars": 1, "percentage": 1 }
+  ],
+  "sentimentKeywords": {
+    "positive": ["Delicious", "Fast Delivery", "Fresh", "Authentic", "Worth It"],
+    "negative": ["Packaging", "Slow Service"]
+  },
+  "mostPraisedItems": [
+    { "name": "Milkshake", "praise": "142", "image": "https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+    { "name": "Chicken Biryani", "praise": "128", "image": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" },
+    { "name": "Beef Burger", "praise": "95", "image": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80" }
+  ],
+  "customerReviewsList": [
+    {
+      "id": "rev1",
+      "user": "Zubair Ahmed",
+      "avatar": "https://i.pravatar.cc/150?u=zubair",
+      "verified": true,
+      "item": "Chicken Biryani",
+      "rating": 5,
+      "time": "2 hours ago",
+      "text": "Best Biryani on campus! The spice level was perfect and the chicken was so tender. I've ordered this three times this week and it never disappoints. Highly recommended for everyone in the campus dormitory!",
+      "helpful": 12,
+      "shopResponse": null
+    },
+    {
+      "id": "rev2",
+      "user": "Sadia Rahman",
+      "avatar": "https://i.pravatar.cc/150?u=sadia",
+      "verified": true,
+      "item": "Chocolate Milkshake",
+      "rating": 4,
+      "time": "Yesterday, 4:15 PM",
+      "text": "Delivery was quick and the milkshake was still cold! Just wish there was a bit more whipped cream as shown in the picture. Overall 4/5.",
+      "helpful": 0,
+      "shopResponse": {
+        "responder": "Chef's Table",
+        "time": "Yesterday, 8:30 PM",
+        "text": "Hi Sadia! Thank you for the feedback. We're glad you enjoyed the delivery speed. We'll make sure to be more generous with the whipped cream on your next order! 🧡"
+      }
+    },
+    {
+      "id": "rev3",
+      "user": "Imtiaz Hussain",
+      "avatar": "https://i.pravatar.cc/150?u=imtiaz",
+      "verified": true,
+      "item": "Beef Burger",
+      "rating": 5,
+      "time": "2 days ago",
+      "text": "The burger was massive! Definitely worth the price. The packaging was also very sturdy, no spills at all. My go-to place for dinner now.",
+      "helpful": 8,
+      "shopResponse": null
+    }
   ]
 }

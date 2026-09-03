@@ -5,15 +5,13 @@ import {
   BellRing, CheckCircle, Banknote, XCircle, 
   ChevronDown, Truck, FileText, Radio, Eye
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { shopNavigation, shopUser } from '../config/navigation';
 import shopOrdersData from '../data/shopOrdersData.json';
 
 export default function ShopIncomingOrders() {
   const { metrics, priorityOrder, ordersList, liveActivity } = shopOrdersData;
 
   return (
-    <SharedLayout navigation={shopNavigation} user={shopUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
+    <>
       <div className="max-w-[1400px] mx-auto space-y-8 pt-4">
         
         {/* Header Section */}
@@ -318,6 +316,6 @@ export default function ShopIncomingOrders() {
         </div>
 
       </div>
-    </SharedLayout>
+    </>
   );
 }

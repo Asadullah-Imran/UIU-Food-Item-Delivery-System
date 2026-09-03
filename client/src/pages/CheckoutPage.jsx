@@ -4,8 +4,6 @@ import {
   ChevronRight, MapPin, Phone, Clock, CreditCard, Wallet, 
   Banknote, ShoppingCart, ArrowRight 
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { studentNavigation, studentUser } from '../config/navigation';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -28,7 +26,7 @@ export default function CheckoutPage() {
   };
 
   return (
-    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner">
+    <>
       {/* Breadcrumbs */}
       <div className="flex items-center text-sm font-medium text-slate-500 mb-6">
         <Link to="/dashboard/student" className="hover:text-orange-500 transition-colors">Dashboard</Link>
@@ -228,6 +226,6 @@ export default function CheckoutPage() {
         </div>
 
       </div>
-    </SharedLayout>
+    </>
   );
 }

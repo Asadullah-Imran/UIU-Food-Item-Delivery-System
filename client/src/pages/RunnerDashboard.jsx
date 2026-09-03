@@ -5,8 +5,6 @@ import {
   CheckCircle, Banknote, MapPin, Phone, MessageSquare,
   Navigation, Star, Send, Store
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { runnerNavigation, runnerUser } from '../config/navigation';
 import runnerData from '../data/runner.json';
 
 export default function RunnerDashboard() {
@@ -15,7 +13,7 @@ export default function RunnerDashboard() {
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
 
   return (
-    <SharedLayout navigation={runnerNavigation} user={runnerUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
+    <>
       <div className="max-w-[1400px] mx-auto space-y-6 pt-4">
         
         {/* Top Header Row (Weather, Greeting, Status Toggle) */}
@@ -319,6 +317,6 @@ export default function RunnerDashboard() {
 
         </div>
       </div>
-    </SharedLayout>
+    </>
   );
 }

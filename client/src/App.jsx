@@ -23,123 +23,85 @@ import ShopIncomingOrders from './pages/ShopIncomingOrders';
 import ShopOrderDetails from './pages/ShopOrderDetails';
 import ShopMenuManagement from './pages/ShopMenuManagement';
 import ShopSalesReports from './pages/ShopSalesReports';
+import ShopCustomerReviews from './pages/ShopCustomerReviews';
+import ShopProfile from './pages/ShopProfile';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+
+// Layouts
+import { LayoutProvider } from './context/LayoutContext';
+import StudentLayout from './layouts/StudentLayout';
+import RunnerLayout from './layouts/RunnerLayout';
+import ShopLayout from './layouts/ShopLayout';
 
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route path="/" element={<SelectionPage />} />
-        <Route path="/register" element={<RegistrationPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        
-        {/* Student Routes */}
-        <Route path="/dashboard/student" element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <StudentDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/student/shops" element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <BrowseShops />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/student/shops/:shopId" element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <ShopDetails />
-          </ProtectedRoute>
-        } />
-        <Route path="/checkout" element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <CheckoutPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/order-success" element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <OrderSuccessPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/student/orders" element={
-          <ProtectedRoute allowedRoles={['student']}>
-            <MyOrdersPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/student/chat" element={
-          <ProtectedRoute allowedRoles={['student', 'runner', 'shop']}>
-            <ChatPage />
-          </ProtectedRoute>
-        } />
-        
-        {/* Runner Routes */}
-        <Route path="/dashboard/runner" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/deliveries" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerAvailableDeliveries />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/active/accepted" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerOrderAccepted />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/active/tracking" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerOrderTracking />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/active/completed" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerDeliveryCompleted />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/history" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerDeliveryHistory />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/earnings" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <RunnerEarnings />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/runner/chat" element={
-          <ProtectedRoute allowedRoles={['runner']}>
-            <SharedChat />
-          </ProtectedRoute>
-        } />
-        
-        {/* Shop Routes */}
-        <Route path="/dashboard/shop" element={
-          <ProtectedRoute allowedRoles={['shop']}>
-            <ShopDashboard />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/shop/orders" element={
-          <ProtectedRoute allowedRoles={['shop']}>
-            <ShopIncomingOrders />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/shop/orders/:orderId" element={
-          <ProtectedRoute allowedRoles={['shop']}>
-            <ShopOrderDetails />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/shop/menu" element={
-          <ProtectedRoute allowedRoles={['shop']}>
-            <ShopMenuManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard/shop/reports" element={
-          <ProtectedRoute allowedRoles={['shop']}>
-            <ShopSalesReports />
-          </ProtectedRoute>
-        } />
-      </Routes>
+      <LayoutProvider>
+        <Routes>
+          <Route path="/" element={<SelectionPage />} />
+          <Route path="/register" element={<RegistrationPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Student Routes */}
+          <Route path="/dashboard/student" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <StudentLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<StudentDashboard />} />
+            <Route path="shops" element={<BrowseShops />} />
+            <Route path="shops/:shopId" element={<ShopDetails />} />
+            <Route path="orders" element={<MyOrdersPage />} />
+            <Route path="chat" element={<ChatPage />} />
+          </Route>
+          
+          {/* Checkout & Order Success don't use the sidebar layout */}
+          <Route path="/checkout" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <CheckoutPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/order-success" element={
+            <ProtectedRoute allowedRoles={['student']}>
+              <OrderSuccessPage />
+            </ProtectedRoute>
+          } />
+          
+          {/* Runner Routes */}
+          <Route path="/dashboard/runner" element={
+            <ProtectedRoute allowedRoles={['runner']}>
+              <RunnerLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<RunnerDashboard />} />
+            <Route path="deliveries" element={<RunnerAvailableDeliveries />} />
+            <Route path="active/accepted" element={<RunnerOrderAccepted />} />
+            <Route path="active/tracking" element={<RunnerOrderTracking />} />
+            <Route path="active/completed" element={<RunnerDeliveryCompleted />} />
+            <Route path="history" element={<RunnerDeliveryHistory />} />
+            <Route path="earnings" element={<RunnerEarnings />} />
+            <Route path="chat" element={<SharedChat />} />
+          </Route>
+          
+          {/* Shop Routes */}
+          <Route path="/dashboard/shop" element={
+            <ProtectedRoute allowedRoles={['shop']}>
+              <ShopLayout />
+            </ProtectedRoute>
+          }>
+            <Route index element={<ShopDashboard />} />
+            <Route path="orders" element={<ShopIncomingOrders />} />
+            <Route path="orders/:orderId" element={<ShopOrderDetails />} />
+            <Route path="menu" element={<ShopMenuManagement />} />
+            <Route path="reports" element={<ShopSalesReports />} />
+            <Route path="reviews" element={<ShopCustomerReviews />} />
+            <Route path="profile" element={<ShopProfile />} />
+            <Route path="preview/:shopId" element={<ShopDetails />} />
+          </Route>
+
+        </Routes>
+      </LayoutProvider>
     </AuthProvider>
   );
 }

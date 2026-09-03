@@ -3,8 +3,6 @@ import {
   Clock, Heart, Plus, Store, MapPin, HeadphonesIcon, ChevronLeft, ChevronRight,
   Utensils, Coffee, Cookie, BookOpen, ShoppingCart, Cake
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { studentNavigation, studentUser } from '../config/navigation';
 
 // Import JSON Data
 import userData from '../data/user.json';
@@ -25,7 +23,7 @@ const iconMap = {
 
 export default function StudentDashboard() {
   return (
-    <SharedLayout navigation={studentNavigation} user={studentUser} switchRoleText="Switch to Runner" switchRolePath="/dashboard/runner">
+    <>
       <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-6">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 mb-1">Good Afternoon, {userData.name} 👋</h2>
@@ -231,6 +229,6 @@ export default function StudentDashboard() {
             </div>
         </div>
       </footer>
-    </SharedLayout>
+    </>
   );
 }

@@ -3,8 +3,6 @@ import {
   Bell, Settings, Plus, Package, CheckCircle2, XCircle, Star, 
   ChevronDown, ArrowDownUp, Edit3, Trash2, Eye, TriangleAlert
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { shopNavigation, shopUser } from '../config/navigation';
 import shopOrdersData from '../data/shopOrdersData.json';
 
 const ShopMenuManagement = () => {
@@ -26,7 +24,7 @@ const ShopMenuManagement = () => {
   );
 
   return (
-    <SharedLayout navigation={shopNavigation} user={shopUser} headerActions={headerActions}>
+    <>
       <div className="max-w-7xl mx-auto pb-10">
         
         {/* Page Header */}
@@ -211,7 +209,7 @@ const ShopMenuManagement = () => {
           
         </div>
       </div>
-    </SharedLayout>
+    </>
   );
 };
 

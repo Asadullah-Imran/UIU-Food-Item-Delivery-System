@@ -3,15 +3,13 @@ import {
   ShoppingBag, Timer, Utensils, CheckCircle2, Banknote, Star,
   ArrowRight, Plus, FileEdit, TrendingUp, ListOrdered, Eye, AlertTriangle, ChevronDown
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { shopNavigation, shopUser } from '../config/navigation';
 import shopData from '../data/shopDashboardData.json';
 
 export default function ShopDashboard() {
   const { metrics, revenueTrend, topSelling, recentOrders, lowStock, popularToday } = shopData;
 
   return (
-    <SharedLayout navigation={shopNavigation} user={shopUser} switchRoleText="Switch to Student" switchRolePath="/dashboard/student">
+    <>
       <div className="max-w-[1400px] mx-auto space-y-6 pt-4">
         
         {/* Top Hero Banner */}
@@ -308,6 +306,6 @@ export default function ShopDashboard() {
         </div>
 
       </div>
-    </SharedLayout>
+    </>
   );
 }

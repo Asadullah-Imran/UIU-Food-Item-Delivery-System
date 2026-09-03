@@ -4,8 +4,6 @@ import {
   Check, Clock, MapPin, Phone, MessageSquare, PhoneCall,
   Info, FileText, ChevronRight, BellRing, ChefHat, Package, CheckCircle2, XCircle
 } from 'lucide-react';
-import SharedLayout from '../components/SharedLayout';
-import { shopNavigation, shopUser } from '../config/navigation';
 import shopOrdersData from '../data/shopOrdersData.json';
 
 const ShopOrderDetails = () => {
@@ -14,7 +12,7 @@ const ShopOrderDetails = () => {
   const order = shopOrdersData.orderDetails;
 
   return (
-    <SharedLayout navigation={shopNavigation} user={shopUser}>
+    <>
       <div className="max-w-6xl mx-auto pb-10">
         
         {/* Breadcrumbs & Header */}
@@ -226,7 +224,7 @@ const ShopOrderDetails = () => {
           </div>
         </div>
       </div>
-    </SharedLayout>
+    </>
   );
 };
 

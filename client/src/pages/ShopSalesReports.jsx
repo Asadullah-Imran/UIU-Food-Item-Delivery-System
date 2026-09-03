@@ -4,8 +4,6 @@ import {
   Calendar, Download, FileText, MoreVertical, Star
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import SharedLayout from '../components/SharedLayout';
-import { shopNavigation, shopUser } from '../config/navigation';
 import shopOrdersData from '../data/shopOrdersData.json';
 
 const ShopSalesReports = () => {
@@ -28,7 +26,7 @@ const ShopSalesReports = () => {
   );
 
   return (
-    <SharedLayout navigation={shopNavigation} user={shopUser} headerActions={headerActions}>
+    <>
       <div className="max-w-7xl mx-auto pb-10">
         
         {/* Page Header */}
@@ -266,7 +264,7 @@ const ShopSalesReports = () => {
         </div>
 
       </div>
-    </SharedLayout>
+    </>
   );
 };
 

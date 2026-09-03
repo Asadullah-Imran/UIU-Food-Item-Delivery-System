@@ -2,18 +2,17 @@ import React, { useState } from 'react';
 import { 
   LogOut, Search, Menu, X, ArrowLeftRight
 } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import RoleTransitionOverlay from './RoleTransitionOverlay';
 import { useAuth } from '../context/AuthContext';
+import { useLayout } from '../context/LayoutContext';
 
 export default function SharedLayout({ 
-  children, 
-  noPadding = false, 
+  children, // Kept for backwards compatibility during migration
   navigation = [], 
   user = {}, 
   switchRoleText, 
-  switchRolePath,
-  headerActions 
+  switchRolePath
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -21,6 +20,7 @@ export default function SharedLayout({
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const { logout } = useAuth();
+  const { headerActions, hideGlobalSearch, noPadding } = useLayout();
 
   const handleSwitchRole = (e) => {
     e.preventDefault();
@@ -85,7 +85,9 @@ export default function SharedLayout({
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           {navigation.map((link) => {
             const Icon = link.icon;
-            const isActive = currentPath === link.path;
+            // Precise active state matching
+            const isActive = currentPath === link.path || (link.path !== '/dashboard/shop' && currentPath.startsWith(link.path));
+            
             return (
               <Link 
                 key={link.name}
@@ -129,14 +131,16 @@ export default function SharedLayout({
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div className="relative w-full max-w-md hidden sm:block">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input 
-                type="text" 
-                placeholder="Search orders, transactions..."
-                className="w-full pl-11 pr-4 py-3 bg-white/60 focus:bg-white border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all shadow-sm"
-              />
-            </div>
+            {!hideGlobalSearch && (
+              <div className="relative w-full max-w-md hidden sm:block">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input 
+                  type="text" 
+                  placeholder="Search orders, transactions..."
+                  className="w-full pl-11 pr-4 py-3 bg-white/60 focus:bg-white border-none rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/30 transition-all shadow-sm"
+                />
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-4">
@@ -157,7 +161,7 @@ export default function SharedLayout({
 
         {/* Dynamic Page Content */}
         <main className={`flex-1 overflow-y-auto bg-[#F0F2F5] ${noPadding ? 'p-0' : 'px-4 sm:px-8 pb-8'}`}>
-          {children}
+          {children ? children : <Outlet />}
         </main>
       </div>
     </div>
