@@ -27,6 +27,13 @@ import ShopCustomerReviews from './pages/shop/ShopCustomerReviews';
 import ShopProfile from './pages/shop/ShopProfile';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminShopOwnerApproval from './pages/admin/AdminShopOwnerApproval';
+import AdminRunnerApproval from './pages/admin/AdminRunnerApproval';
+import AdminComplaintManagement from './pages/admin/AdminComplaintManagement';
+import AdminReportsAnalytics from './pages/admin/AdminReportsAnalytics';
+import AdminProfile from './pages/admin/AdminProfile';
+import AdminManageShops from './pages/admin/AdminManageShops';
 
 // Layouts
 import { LayoutProvider } from './context/LayoutContext';
@@ -98,8 +105,73 @@ export default function App() {
             <Route path="reviews" element={<ShopCustomerReviews />} />
             <Route path="profile" element={<ShopProfile />} />
             <Route path="preview/:shopId" element={<ShopDetails />} />
-          </Route>
 
+          </Route>
+          {/* TEMPORARY - Admin UI Preview */}
+{/* Admin Routes */}
+{/* Admin Routes */}
+<Route
+  path="/dashboard/admin"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/dashboard/admin/shop-owners"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminShopOwnerApproval />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/dashboard/admin/runners"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminRunnerApproval />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/dashboard/admin/shops"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminManageShops />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/dashboard/admin/complaints"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminComplaintManagement />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/dashboard/admin/reports"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminReportsAnalytics />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/dashboard/admin/profile"
+  element={
+    <ProtectedRoute allowedRoles={['admin']}>
+      <AdminProfile />
+    </ProtectedRoute>
+  }
+/>
         </Routes>
       </LayoutProvider>
     </AuthProvider>
