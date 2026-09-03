@@ -3,9 +3,9 @@ import {
   Star, MessageSquare, Smile, ThumbsUp, ChevronDown, CheckCircle2,
   Search, Package, Clock, CornerDownRight, MoreVertical
 } from 'lucide-react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../../context/LayoutContext';
 import { useEffect } from 'react';
-import shopOrdersData from '../data/shopOrdersData.json';
+import shopOrdersData from '../../data/shopOrdersData.json';
 
 const ShopCustomerReviews = () => {
   const { reviewMetrics, ratingBreakdown, sentimentKeywords, mostPraisedItems, customerReviewsList } = shopOrdersData;

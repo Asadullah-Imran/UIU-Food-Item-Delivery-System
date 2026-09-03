@@ -4,7 +4,7 @@ import {
   Calendar, Download, FileText, MoreVertical, Star
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
-import shopOrdersData from '../data/shopOrdersData.json';
+import shopOrdersData from '../../data/shopOrdersData.json';
 
 const ShopSalesReports = () => {
   const { salesMetrics, revenueTrendsData, categoryPerformanceData, ordersByDayData, bestSellingItems } = shopOrdersData;

@@ -3,9 +3,9 @@ import { useParams, Link } from 'react-router-dom';
 import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRight } from 'lucide-react';
 
 // Mock Data
-import shopsData from '../data/shops.json';
-import menuData from '../data/menu.json';
-import reviewsData from '../data/reviews.json';
+import shopsData from '../../data/shops.json';
+import menuData from '../../data/menu.json';
+import reviewsData from '../../data/reviews.json';
 
 export default function ShopDetails() {
   const { shopId } = useParams();

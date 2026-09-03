@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShieldCheck, Store, Bike, ShoppingBag } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import DeliveryAnimation from '../components/DeliveryAnimation';
+import DeliveryAnimation from '../../components/DeliveryAnimation';
 
 export default function SelectionPage() {
   const navigate = useNavigate();

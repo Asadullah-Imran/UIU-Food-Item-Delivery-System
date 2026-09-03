@@ -4,7 +4,7 @@ import {
   Check, Clock, MapPin, Phone, MessageSquare, PhoneCall,
   Info, FileText, ChevronRight, BellRing, ChefHat, Package, CheckCircle2, XCircle
 } from 'lucide-react';
-import shopOrdersData from '../data/shopOrdersData.json';
+import shopOrdersData from '../../data/shopOrdersData.json';
 
 const ShopOrderDetails = () => {
   const { orderId } = useParams();

@@ -5,7 +5,7 @@ import {
   ChefHat, Navigation, ChevronLeft, ChevronRight, MoreHorizontal
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ordersData from '../data/myOrders.json';
+import ordersData from '../../data/myOrders.json';
 
 export default function MyOrdersPage() {
   const [activeTab, setActiveTab] = useState('All Orders');

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import chatData from '../data/chatData.json';
+import chatData from '../../data/chatData.json';
 import { 
   Phone, Video, MoreVertical, Plus, Smile, Send, CheckCheck
 } from 'lucide-react';

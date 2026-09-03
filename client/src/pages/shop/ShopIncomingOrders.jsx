@@ -5,7 +5,7 @@ import {
   BellRing, CheckCircle, Banknote, XCircle, 
   ChevronDown, Truck, FileText, Radio, Eye
 } from 'lucide-react';
-import shopOrdersData from '../data/shopOrdersData.json';
+import shopOrdersData from '../../data/shopOrdersData.json';
 
 export default function ShopIncomingOrders() {
   const { metrics, priorityOrder, ordersList, liveActivity } = shopOrdersData;

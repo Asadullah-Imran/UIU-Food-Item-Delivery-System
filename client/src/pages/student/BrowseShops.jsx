@@ -1,7 +1,7 @@
 import React from 'react';
 import { Heart, Clock, Truck, ChevronDown, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import shopsData from '../data/shops.json';
+import shopsData from '../../data/shops.json';
 
 export default function BrowseShops() {
   const filters = ["All", "Food", "Café", "Snacks", "Stationery", "Grocery"];

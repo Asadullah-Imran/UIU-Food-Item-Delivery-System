@@ -4,7 +4,7 @@ import {
   Search, Calendar, ChevronDown, Download, Wallet, Rocket,
   Circle
 } from 'lucide-react';
-import deliveryHistoryData from '../data/deliveryHistoryData.json';
+import deliveryHistoryData from '../../data/deliveryHistoryData.json';
 import { Link } from 'react-router-dom';
 
 export default function RunnerDeliveryHistory() {

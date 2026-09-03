@@ -5,7 +5,7 @@ import {
   MessageSquare, Phone, Store, Navigation,
   FileText, Check, CircleDot
 } from 'lucide-react';
-import activeDeliveryData from '../data/activeDeliveryData.json';
+import activeDeliveryData from '../../data/activeDeliveryData.json';
 
 export default function RunnerOrderAccepted() {
   const { orderId, shop, customer, deliveryDetails, orderItems, studentNote } = activeDeliveryData;

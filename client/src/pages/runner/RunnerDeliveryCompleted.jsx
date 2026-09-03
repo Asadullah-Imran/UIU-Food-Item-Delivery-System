@@ -4,7 +4,7 @@ import {
   Check, CheckCircle2, Store, User, Clock, 
   MapPin, Timer, Navigation, Hourglass
 } from 'lucide-react';
-import activeDeliveryData from '../data/activeDeliveryData.json';
+import activeDeliveryData from '../../data/activeDeliveryData.json';
 
 export default function RunnerDeliveryCompleted() {
   const { orderId, shop, customer, deliveryDetails } = activeDeliveryData;

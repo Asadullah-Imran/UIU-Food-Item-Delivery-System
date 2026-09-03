@@ -4,7 +4,7 @@ import {
   Edit3, MoreVertical, Phone, Paperclip, Smile, 
   FileText, PhoneCall, Store, ChevronRight
 } from 'lucide-react';
-import chatData from '../data/chat.json';
+import chatData from '../../data/chat.json';
 
 export default function ChatPage() {
   const { conversations, activeChat, orderDetails } = chatData;

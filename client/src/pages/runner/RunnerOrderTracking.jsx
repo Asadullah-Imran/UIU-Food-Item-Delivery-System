@@ -6,7 +6,7 @@ import {
   Navigation, Star, CornerUpLeft, Gauge,
   Utensils
 } from 'lucide-react';
-import activeDeliveryData from '../data/activeDeliveryData.json';
+import activeDeliveryData from '../../data/activeDeliveryData.json';
 
 export default function RunnerOrderTracking() {
   const { orderId, customer } = activeDeliveryData;

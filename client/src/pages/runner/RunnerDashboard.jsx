@@ -5,7 +5,7 @@ import {
   CheckCircle, Banknote, MapPin, Phone, MessageSquare,
   Navigation, Star, Send, Store
 } from 'lucide-react';
-import runnerData from '../data/runner.json';
+import runnerData from '../../data/runner.json';
 
 export default function RunnerDashboard() {
   const navigate = useNavigate();

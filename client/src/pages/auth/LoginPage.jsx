@@ -1,7 +1,7 @@
 import React from 'react';
 import { Mail, Lock, Eye, ArrowRight, BookOpen } from 'lucide-react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginPage() {
   const navigate = useNavigate();

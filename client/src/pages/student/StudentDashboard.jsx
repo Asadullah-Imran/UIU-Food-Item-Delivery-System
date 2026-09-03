@@ -5,11 +5,11 @@ import {
 } from 'lucide-react';
 
 // Import JSON Data
-import userData from '../data/user.json';
-import categoriesData from '../data/categories.json';
-import shopsData from '../data/shops.json';
-import popularItemsData from '../data/popularItems.json';
-import recentOrdersData from '../data/recentOrders.json';
+import userData from '../../data/user.json';
+import categoriesData from '../../data/categories.json';
+import shopsData from '../../data/shops.json';
+import popularItemsData from '../../data/popularItems.json';
+import recentOrdersData from '../../data/recentOrders.json';
 
 // Map icon strings to components
 const iconMap = {

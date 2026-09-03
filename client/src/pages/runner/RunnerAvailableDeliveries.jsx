@@ -4,7 +4,7 @@ import {
   Search, ChevronDown, SlidersHorizontal, Navigation,
   CheckCircle2, Sparkles
 } from 'lucide-react';
-import availableDeliveriesData from '../data/availableDeliveries.json';
+import availableDeliveriesData from '../../data/availableDeliveries.json';
 
 export default function RunnerAvailableDeliveries() {
   const { stats, recommendedDelivery, queue } = availableDeliveriesData;

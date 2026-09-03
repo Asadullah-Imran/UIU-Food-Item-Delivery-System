@@ -3,7 +3,7 @@ import {
   Bell, Settings, Plus, Package, CheckCircle2, XCircle, Star, 
   ChevronDown, ArrowDownUp, Edit3, Trash2, Eye, TriangleAlert
 } from 'lucide-react';
-import shopOrdersData from '../data/shopOrdersData.json';
+import shopOrdersData from '../../data/shopOrdersData.json';
 
 const ShopMenuManagement = () => {
   const { menuMetrics, inventoryAlerts, menuData } = shopOrdersData;

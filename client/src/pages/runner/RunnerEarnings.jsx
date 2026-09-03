@@ -3,7 +3,7 @@ import {
   Wallet, Clock, Star, CheckCircle2, Zap,
   Filter, Download, ChevronDown
 } from 'lucide-react';
-import runnerEarningsData from '../data/runnerEarningsData.json';
+import runnerEarningsData from '../../data/runnerEarningsData.json';
 
 export default function RunnerEarnings() {
   

@@ -6,7 +6,7 @@ import {
   FileText, MapPin as MapPinIcon, Banknote,
   Plus, ArrowRight
 } from 'lucide-react';
-import popularItemsData from '../data/popularItems.json';
+import popularItemsData from '../../data/popularItems.json';
 
 export default function OrderSuccessPage() {
   return (

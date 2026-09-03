@@ -3,7 +3,7 @@ import {
   ShoppingBag, Timer, Utensils, CheckCircle2, Banknote, Star,
   ArrowRight, Plus, FileEdit, TrendingUp, ListOrdered, Eye, AlertTriangle, ChevronDown
 } from 'lucide-react';
-import shopData from '../data/shopDashboardData.json';
+import shopData from '../../data/shopDashboardData.json';
 
 export default function ShopDashboard() {
   const { metrics, revenueTrend, topSelling, recentOrders, lowStock, popularToday } = shopData;

@@ -3,7 +3,7 @@ import {
   Search, Bell, Settings, User, Edit2, Camera, Star, ShoppingBag, 
   Wallet, Flame, CheckCircle2, Eye, Save, Lock, Shield, LogOut, ChevronRight
 } from 'lucide-react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../../context/LayoutContext';
 import { useEffect } from 'react';
 
 const ShopProfile = () => {
