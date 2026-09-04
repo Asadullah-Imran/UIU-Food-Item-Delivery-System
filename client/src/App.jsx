@@ -21,7 +21,10 @@ import SharedChat from './pages/runner/SharedChat';
 import ShopDashboard from './pages/shop/ShopDashboard';
 import ShopIncomingOrders from './pages/shop/ShopIncomingOrders';
 import ShopOrderDetails from './pages/shop/ShopOrderDetails';
+import ShopPreparingOrder from './pages/shop/ShopPreparingOrder';
+import ShopReadyForPickup from './pages/shop/ShopReadyForPickup';
 import ShopMenuManagement from './pages/shop/ShopMenuManagement';
+import ShopAddMenuItem from './pages/shop/ShopAddMenuItem';
 import ShopSalesReports from './pages/shop/ShopSalesReports';
 import ShopCustomerReviews from './pages/shop/ShopCustomerReviews';
 import ShopProfile from './pages/shop/ShopProfile';
@@ -34,6 +37,7 @@ import AdminComplaintManagement from './pages/admin/AdminComplaintManagement';
 import AdminReportsAnalytics from './pages/admin/AdminReportsAnalytics';
 import AdminProfile from './pages/admin/AdminProfile';
 import AdminManageShops from './pages/admin/AdminManageShops';
+
 
 // Layouts
 import { LayoutProvider } from './context/LayoutContext';
@@ -100,6 +104,17 @@ export default function App() {
             <Route index element={<ShopDashboard />} />
             <Route path="orders" element={<ShopIncomingOrders />} />
             <Route path="orders/:orderId" element={<ShopOrderDetails />} />
+            <Route path="orders/:orderId/preparing" element={<ShopPreparingOrder />}/>
+            <Route
+  path="orders/:orderId/ready"
+  element={<ShopReadyForPickup />}
+/>
+<Route path="menu" element={<ShopMenuManagement />} />
+
+<Route
+  path="menu/add"
+  element={<ShopAddMenuItem />}
+/>
             <Route path="menu" element={<ShopMenuManagement />} />
             <Route path="reports" element={<ShopSalesReports />} />
             <Route path="reviews" element={<ShopCustomerReviews />} />
