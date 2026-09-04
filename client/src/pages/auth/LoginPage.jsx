@@ -30,7 +30,7 @@ export default function LoginPage() {
           {/* Image */}
           <div className="w-full max-w-[320px] aspect-square rounded-[2rem] overflow-hidden shadow-lg border-4 border-white mb-8">
             <img 
-              src="/bg.jpg" 
+              src="/UIU.webp" 
               alt="UIU Campus" 
               className="w-full h-full object-cover"
             />

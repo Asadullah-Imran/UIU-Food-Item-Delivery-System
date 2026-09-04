@@ -27,7 +27,7 @@ export default function RegistrationPage() {
           <div className="flex-1 w-full flex items-center justify-center mb-10">
             <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border-4 border-white">
               <img 
-                src="/bg.jpg" 
+                src="/UIU.webp" 
                 alt="UIU Campus" 
                 className="w-full h-full object-cover"
               />

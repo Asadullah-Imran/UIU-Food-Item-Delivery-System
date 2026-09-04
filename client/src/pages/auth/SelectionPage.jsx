@@ -38,7 +38,7 @@ export default function SelectionPage() {
       {/* Left Panel - Image Background */}
       <div className="hidden lg:flex lg:w-1/2 relative bg-slate-900 overflow-hidden items-center justify-center">
         <img
-          src="/bg.jpg"
+          src="/UIU.webp"
           alt="UIU Campus"
           className="absolute inset-0 w-full h-full object-cover opacity-80"
         />
