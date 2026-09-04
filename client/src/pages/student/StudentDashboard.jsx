@@ -1,8 +1,10 @@
 import React from 'react';
 import { 
   Clock, Heart, Plus, Store, MapPin, HeadphonesIcon, ChevronLeft, ChevronRight,
-  Utensils, Coffee, Cookie, BookOpen, ShoppingCart, Cake
+  Utensils, Coffee, Cookie, BookOpen, ShoppingCart, Cake, Check
 } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useCart } from '../../context/CartContext';
 
 // Import JSON Data
 import userData from '../../data/user.json';
@@ -22,6 +24,10 @@ const iconMap = {
 };
 
 export default function StudentDashboard() {
+  const navigate = useNavigate();
+  const { addToCart, cartItemCount, cartTotal } = useCart();
+  const [recentlyAdded, setRecentlyAdded] = React.useState(null);
+
   React.useLayoutEffect(() => {
     const dashboardLink = document.querySelector('nav a:first-child');
     if (dashboardLink) {
@@ -37,6 +43,14 @@ export default function StudentDashboard() {
           background-color: #f97316 !important;
           color: #ffffff !important;
           box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2), 0 2px 4px -2px rgba(249, 115, 22, 0.2) !important;
+        }
+        @keyframes bounce-in {
+          0% { transform: translate(-50%, 100%); opacity: 0; }
+          60% { transform: translate(-50%, -10%); opacity: 1; }
+          100% { transform: translate(-50%, 0); opacity: 1; }
+        }
+        .animate-bounce-in {
+          animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
       `}</style>
       <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-6">
@@ -65,7 +79,7 @@ export default function StudentDashboard() {
 
       {/* Hero Banner */}
       <div className="relative rounded-3xl overflow-hidden mb-10 shadow-md">
-        <img src="/bg.jpg" alt="Campus Banner" className="w-full h-48 lg:h-56 object-cover" />
+        <img src="/UIU.webp" alt="Campus Banner" className="w-full h-48 lg:h-56 object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent flex items-center p-8 lg:p-12">
           <div className="max-w-md">
             <h3 className="text-3xl lg:text-4xl font-bold text-white leading-tight mb-4 tracking-tight">
@@ -133,7 +147,9 @@ export default function StudentDashboard() {
                 <div className="flex items-center text-xs text-slate-500 font-medium mb-4 mt-auto">
                   <Clock className="w-3.5 h-3.5 mr-1" /> {shop.deliveryTime}
                 </div>
-                <button className="w-full py-2 bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 font-bold rounded-xl text-sm transition-colors mt-auto">
+                <button 
+                  onClick={() => navigate(`/dashboard/student/shops/${shop.id}`)}
+                  className="w-full py-2 bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 font-bold rounded-xl text-sm transition-colors mt-auto">
                   Browse Menu
                 </button>
               </div>
@@ -158,8 +174,18 @@ export default function StudentDashboard() {
                   <p className="text-xs text-slate-500 mb-2">{item.shopName} • <span className="text-orange-400 font-bold">★ {item.rating}</span></p>
                   <div className="flex justify-between items-center">
                     <span className="font-bold text-orange-600">৳{item.price}</span>
-                    <button className="w-7 h-7 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center transition-colors shadow-sm">
-                      <Plus className="w-4 h-4" />
+                    <button 
+                      onClick={() => {
+                        addToCart({ ...item, price: parseInt(item.price.toString().replace(/,/g, '')) });
+                        setRecentlyAdded(item.id);
+                        setTimeout(() => setRecentlyAdded(null), 2000);
+                      }}
+                      className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors shadow-sm ${
+                        recentlyAdded === item.id 
+                          ? 'bg-green-500 text-white' 
+                          : 'bg-orange-500 hover:bg-orange-600 text-white'
+                      }`}>
+                      {recentlyAdded === item.id ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                     </button>
                   </div>
                 </div>
@@ -244,6 +270,26 @@ export default function StudentDashboard() {
             </div>
         </div>
       </footer>
+
+      {/* Floating Cart Summary */}
+      {cartItemCount > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-md bg-slate-900/95 backdrop-blur-md text-white px-6 py-4 rounded-2xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.5)] flex items-center justify-between z-50 animate-bounce-in border border-slate-700/50">
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center mr-4">
+              <ShoppingCart className="w-5 h-5 text-orange-400" />
+            </div>
+            <div>
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">Your Order</p>
+              <p className="font-bold text-base leading-none">{cartItemCount} item{cartItemCount > 1 ? 's' : ''} • ৳{cartTotal}</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => navigate('/checkout')}
+            className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95">
+            View Cart
+          </button>
+        </div>
+      )}
     </>
   );
 }

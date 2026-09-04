@@ -42,6 +42,7 @@ import AdminManageShops from './pages/admin/AdminManageShops';
 
 // Layouts
 import { LayoutProvider } from './context/LayoutContext';
+import { CartProvider } from './context/CartContext';
 import StudentLayout from './layouts/StudentLayout';
 import RunnerLayout from './layouts/RunnerLayout';
 import ShopLayout from './layouts/ShopLayout';
@@ -49,8 +50,9 @@ import ShopLayout from './layouts/ShopLayout';
 export default function App() {
   return (
     <AuthProvider>
-      <LayoutProvider>
-        <Routes>
+      <CartProvider>
+        <LayoutProvider>
+          <Routes>
           <Route path="/" element={<SelectionPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -68,12 +70,14 @@ export default function App() {
             <Route path="chat" element={<ChatPage />} />
           </Route>
           
-          {/* Checkout & Order Success don't use the sidebar layout */}
+          {/* Checkout & Order Success use the sidebar layout */}
           <Route path="/checkout" element={
             <ProtectedRoute allowedRoles={['student']}>
-              <CheckoutPage />
+              <StudentLayout />
             </ProtectedRoute>
-          } />
+          }>
+            <Route index element={<CheckoutPage />} />
+          </Route>
           <Route path="/order-success" element={
             <ProtectedRoute allowedRoles={['student']}>
               <OrderSuccessPage />
@@ -190,7 +194,8 @@ export default function App() {
   }
 />
         </Routes>
-      </LayoutProvider>
+        </LayoutProvider>
+      </CartProvider>
     </AuthProvider>
   );
 }
