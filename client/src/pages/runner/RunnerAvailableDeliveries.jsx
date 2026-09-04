@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import availableDeliveriesData from '../../data/availableDeliveries.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import { Link } from 'react-router-dom';
 
 export default function RunnerAvailableDeliveries() {
   const { stats, recommendedDelivery, queue } = availableDeliveriesData;
@@ -170,9 +171,12 @@ export default function RunnerAvailableDeliveries() {
               </div>
               
               <div className="mt-8">
-                <button className="flex items-center justify-center bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-orange-500/20 transition-all w-full sm:w-auto min-w-[200px]">
+                <Link 
+                  to="/dashboard/runner/active/accepted"
+                  className="flex items-center justify-center bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-orange-500/20 transition-all w-full sm:w-auto min-w-[200px]"
+                >
                   <CheckCircle2 className="w-5 h-5 mr-2" /> Accept Delivery
-                </button>
+                </Link>
               </div>
             </div>
           </div>
