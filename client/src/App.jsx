@@ -43,6 +43,7 @@ import AdminManageShops from './pages/admin/AdminManageShops';
 // Layouts
 import { LayoutProvider } from './context/LayoutContext';
 import { CartProvider } from './context/CartContext';
+import { FavoritesProvider } from './context/FavoritesContext';
 import StudentLayout from './layouts/StudentLayout';
 import RunnerLayout from './layouts/RunnerLayout';
 import ShopLayout from './layouts/ShopLayout';
@@ -51,8 +52,9 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <LayoutProvider>
-          <Routes>
+        <FavoritesProvider>
+          <LayoutProvider>
+            <Routes>
           <Route path="/" element={<SelectionPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -194,7 +196,8 @@ export default function App() {
   }
 />
         </Routes>
-        </LayoutProvider>
+          </LayoutProvider>
+        </FavoritesProvider>
       </CartProvider>
     </AuthProvider>
   );
