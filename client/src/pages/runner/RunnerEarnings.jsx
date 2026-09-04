@@ -4,6 +4,7 @@ import {
   Filter, Download, ChevronDown
 } from 'lucide-react';
 import runnerEarningsData from '../../data/runnerEarningsData.json';
+import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerEarnings() {
   
@@ -20,6 +21,7 @@ export default function RunnerEarnings() {
 
   return (
     <>
+      <RunnerSidebarFix />
       <div className="max-w-[1200px] mx-auto pt-4 pb-12 space-y-6">
         
         {/* Header */}

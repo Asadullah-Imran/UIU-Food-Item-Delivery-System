@@ -6,12 +6,14 @@ import {
   FileText, Check, CircleDot
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
+import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerOrderAccepted() {
   const { orderId, shop, customer, deliveryDetails, orderItems, studentNote } = activeDeliveryData;
 
   return (
     <>
+      <RunnerSidebarFix activeDelivery />
       <div className="max-w-[1200px] mx-auto pt-4 pb-12">
         
         {/* Header */}

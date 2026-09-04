@@ -5,12 +5,14 @@ import {
   FileText, PhoneCall, Store, ChevronRight
 } from 'lucide-react';
 import chatData from '../../data/chat.json';
+import StudentSidebarFix from './StudentSidebarFix';
 
 export default function ChatPage() {
   const { conversations, activeChat, orderDetails } = chatData;
 
   return (
     <>
+      <StudentSidebarFix />
       <div className="flex h-[calc(100vh-64px)] w-full overflow-hidden">
         
         {/* Left Pane - Conversations List */}

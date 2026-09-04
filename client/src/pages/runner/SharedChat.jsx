@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import chatData from '../../data/chatData.json';
+import RunnerSidebarFix from './RunnerSidebarFix';
 import { 
   Phone, Video, MoreVertical, Plus, Smile, Send, CheckCheck
 } from 'lucide-react';
@@ -10,6 +11,7 @@ export default function SharedChat() {
 
   return (
     <>
+      <RunnerSidebarFix />
       <div className="h-[calc(100vh-120px)] bg-white rounded-3xl shadow-sm border border-slate-200 flex overflow-hidden">
         
         {/* Left Pane: Inbox List */}

@@ -18,6 +18,7 @@ import RunnerDeliveryCompleted from './pages/runner/RunnerDeliveryCompleted';
 import RunnerDeliveryHistory from './pages/runner/RunnerDeliveryHistory';
 import RunnerEarnings from './pages/runner/RunnerEarnings';
 import SharedChat from './pages/runner/SharedChat';
+import RunnerProfile from './pages/runner/RunnerProfile';
 import ShopDashboard from './pages/shop/ShopDashboard';
 import ShopIncomingOrders from './pages/shop/ShopIncomingOrders';
 import ShopOrderDetails from './pages/shop/ShopOrderDetails';
@@ -93,6 +94,7 @@ export default function App() {
             <Route path="history" element={<RunnerDeliveryHistory />} />
             <Route path="earnings" element={<RunnerEarnings />} />
             <Route path="chat" element={<SharedChat />} />
+            <Route path="profile" element={<RunnerProfile />} />
           </Route>
           
           {/* Shop Routes */}

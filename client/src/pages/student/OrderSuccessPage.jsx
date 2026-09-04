@@ -78,9 +78,12 @@ export default function OrderSuccessPage() {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
-            <button className="bg-[#9B5110] hover:bg-[#7A3F0C] text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm shadow-md">
+            <Link 
+              to="/dashboard/student/orders"
+              className="bg-[#9B5110] hover:bg-[#7A3F0C] text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm shadow-md"
+            >
               <RefreshCcw className="w-4 h-4 mr-2" /> Track Order
-            </button>
+            </Link>
             <Link to="/dashboard/student" className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm">
               <LayoutDashboard className="w-4 h-4 mr-2" /> Back to Dashboard
             </Link>

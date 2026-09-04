@@ -5,12 +5,14 @@ import {
   MapPin, Timer, Navigation, Hourglass
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
+import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerDeliveryCompleted() {
   const { orderId, shop, customer, deliveryDetails } = activeDeliveryData;
 
   return (
     <>
+      <RunnerSidebarFix activeDelivery />
       <div className="max-w-[1200px] mx-auto pt-4 pb-12">
         
         {/* Top Success Card */}

@@ -7,6 +7,7 @@ import {
   Utensils
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
+import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerOrderTracking() {
   const { orderId, customer } = activeDeliveryData;
@@ -21,6 +22,7 @@ export default function RunnerOrderTracking() {
 
   return (
     <>
+      <RunnerSidebarFix activeDelivery />
       <div className="max-w-[1200px] mx-auto pt-4 pb-12">
         
         {/* Header */}
