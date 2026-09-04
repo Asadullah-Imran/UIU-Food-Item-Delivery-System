@@ -25,7 +25,7 @@ const iconMap = {
 
 export default function StudentDashboard() {
   const navigate = useNavigate();
-  const { addToCart, cartItemCount, cartTotal } = useCart();
+  const { addToCart, cartItemCount, cartTotal, setIsCartVisible } = useCart();
   const [recentlyAdded, setRecentlyAdded] = React.useState(null);
 
   React.useLayoutEffect(() => {
@@ -284,7 +284,7 @@ export default function StudentDashboard() {
             </div>
           </div>
           <button 
-            onClick={() => navigate('/checkout')}
+            onClick={() => setIsCartVisible(true)}
             className="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95">
             View Cart
           </button>
