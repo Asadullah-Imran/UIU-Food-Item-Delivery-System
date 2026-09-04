@@ -3,11 +3,14 @@ import { Heart, Clock, Truck, ChevronDown, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import shopsData from '../../data/shops.json';
 
+import StudentSidebarFix from './StudentSidebarFix';
+
 export default function BrowseShops() {
   const filters = ["All", "Food", "Café", "Snacks", "Stationery", "Grocery"];
 
   return (
     <>
+      <StudentSidebarFix isShops />
       <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-6">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 mb-1">Browse Campus Shops</h2>

@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import ordersData from '../../data/myOrders.json';
+import StudentSidebarFix from './StudentSidebarFix';
 
 export default function MyOrdersPage() {
   const [activeTab, setActiveTab] = useState('All Orders');
@@ -13,6 +14,7 @@ export default function MyOrdersPage() {
 
   return (
     <>
+      <StudentSidebarFix />
       <div className="max-w-6xl mx-auto space-y-6">
         
         {/* Breadcrumbs & Header */}

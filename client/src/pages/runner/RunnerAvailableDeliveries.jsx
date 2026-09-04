@@ -5,12 +5,14 @@ import {
   CheckCircle2, Sparkles
 } from 'lucide-react';
 import availableDeliveriesData from '../../data/availableDeliveries.json';
+import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerAvailableDeliveries() {
   const { stats, recommendedDelivery, queue } = availableDeliveriesData;
 
   return (
     <>
+      <RunnerSidebarFix />
       <div className="max-w-[1200px] mx-auto space-y-8 pt-4">
         
         {/* Header Section */}

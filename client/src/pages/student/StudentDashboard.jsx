@@ -22,8 +22,23 @@ const iconMap = {
 };
 
 export default function StudentDashboard() {
+  React.useLayoutEffect(() => {
+    const dashboardLink = document.querySelector('nav a:first-child');
+    if (dashboardLink) {
+      dashboardLink.classList.add('bg-orange-500', 'text-white', 'shadow-md', 'shadow-orange-500/20');
+      dashboardLink.classList.remove('text-slate-600', 'hover:bg-slate-100', 'hover:text-orange-500');
+    }
+  }, []);
+
   return (
     <>
+      <style>{`
+        body:not(:has([data-student-subpage="true"])) nav a:first-child {
+          background-color: #f97316 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2), 0 2px 4px -2px rgba(249, 115, 22, 0.2) !important;
+        }
+      `}</style>
       <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-6">
         <div>
           <h2 className="text-3xl font-bold text-slate-800 mb-1">Good Afternoon, {userData.name} 👋</h2>

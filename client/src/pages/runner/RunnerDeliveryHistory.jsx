@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import deliveryHistoryData from '../../data/deliveryHistoryData.json';
 import { Link } from 'react-router-dom';
+import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerDeliveryHistory() {
   
@@ -22,6 +23,7 @@ export default function RunnerDeliveryHistory() {
 
   return (
     <>
+      <RunnerSidebarFix />
       <div className="max-w-[1200px] mx-auto pt-4 pb-12 space-y-6">
         
         {/* Header */}

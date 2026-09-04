@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useLayoutEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Sun, Clock, CheckCircle2, ChevronDown, ListOrdered, Truck,
@@ -12,8 +12,37 @@ export default function RunnerDashboard() {
   const { profile, metrics, activeDelivery, nearbyRequests, earnings, performance } = runnerData;
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
 
+  useLayoutEffect(() => {
+    const dashboardLink = document.querySelector('nav a:first-child');
+    if (dashboardLink) {
+      dashboardLink.classList.add('bg-orange-500', 'text-white', 'shadow-md', 'shadow-orange-500/20');
+      dashboardLink.classList.remove('text-slate-600', 'hover:bg-slate-100', 'hover:text-orange-500');
+    }
+    const profileLink = document.querySelector('nav a:last-child');
+    if (profileLink) {
+      profileLink.classList.remove('bg-orange-500', 'text-white', 'shadow-md', 'shadow-orange-500/20');
+      profileLink.classList.add('text-slate-600', 'hover:bg-slate-100', 'hover:text-orange-500');
+    }
+  }, []);
+
   return (
     <>
+      <style>{`
+        nav a:last-child {
+          background-color: transparent !important;
+          color: #475569 !important;
+          box-shadow: none !important;
+        }
+        nav a:last-child:hover {
+          background-color: #f1f5f9 !important;
+          color: #f97316 !important;
+        }
+        body:not(:has([data-runner-subpage="true"])) nav a:first-child {
+          background-color: #f97316 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2), 0 2px 4px -2px rgba(249, 115, 22, 0.2) !important;
+        }
+      `}</style>
       <div className="max-w-[1400px] mx-auto space-y-6 pt-4">
         
         {/* Top Header Row (Weather, Greeting, Status Toggle) */}

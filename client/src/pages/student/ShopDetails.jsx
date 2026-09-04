@@ -6,6 +6,7 @@ import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRigh
 import shopsData from '../../data/shops.json';
 import menuData from '../../data/menu.json';
 import reviewsData from '../../data/reviews.json';
+import StudentSidebarFix from './StudentSidebarFix';
 
 export default function ShopDetails() {
   const { shopId } = useParams();
@@ -32,6 +33,7 @@ export default function ShopDetails() {
 
   return (
     <>
+      <StudentSidebarFix isShops />
       
       {/* Breadcrumbs */}
       <div className="flex items-center text-sm font-medium text-slate-500 mb-6">
