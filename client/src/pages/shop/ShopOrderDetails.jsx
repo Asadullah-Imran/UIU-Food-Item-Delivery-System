@@ -1,6 +1,5 @@
 import React from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { 
+import { Link, useNavigate, useParams } from 'react-router-dom';import { 
   Check, Clock, MapPin, Phone, MessageSquare, PhoneCall,
   Info, FileText, ChevronRight, BellRing, ChefHat, Package, CheckCircle2, XCircle
 } from 'lucide-react';
@@ -8,7 +7,8 @@ import shopOrdersData from '../../data/shopOrdersData.json';
 
 const ShopOrderDetails = () => {
   const { orderId } = useParams();
-  // In a real app, we would fetch the order by ID. For now, use the mock data.
+  const navigate = useNavigate();
+
   const order = shopOrdersData.orderDetails;
 
   return (
@@ -203,9 +203,15 @@ const ShopOrderDetails = () => {
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
               <div className="font-bold text-slate-800 text-sm mb-4">Order Actions</div>
               
-              <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-xl transition-colors mb-4 flex justify-center items-center shadow-sm">
-                <CheckCircle2 className="w-5 h-5 mr-2" /> Accept Order
-              </button>
+              <button
+  onClick={() =>
+    navigate(`/dashboard/shop/orders/${orderId}/preparing`)
+  }
+  className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 px-6 rounded-xl transition-colors mb-4 flex justify-center items-center shadow-sm"
+>
+  <CheckCircle2 className="w-5 h-5 mr-2" />
+  Accept Order
+</button>
               
               <button className="w-full bg-white border border-red-200 text-red-500 hover:bg-red-50 font-bold py-4 px-6 rounded-xl transition-colors mb-4 flex justify-center items-center shadow-sm">
                 <XCircle className="w-5 h-5 mr-2" /> Reject Order
