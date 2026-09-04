@@ -1,6 +1,6 @@
 import React, { useLayoutEffect } from 'react';
 
-export default function RunnerSidebarFix({ activeDelivery = false }) {
+export default function RunnerSidebarFix({ activeDelivery = false, isProfile = false }) {
   useLayoutEffect(() => {
     // When navigating away back to Dashboard, restore Dashboard and clean up Profile
     return () => {
@@ -23,18 +23,10 @@ export default function RunnerSidebarFix({ activeDelivery = false }) {
       {activeDelivery && (
         <span data-active-delivery="true" className="hidden" aria-hidden="true" />
       )}
+      {isProfile && (
+        <span data-runner-profile="true" className="hidden" aria-hidden="true" />
+      )}
       <style>{`
-        /* Profile (last item) must never be highlighted active */
-        nav a:last-child {
-          background-color: transparent !important;
-          color: #475569 !important;
-          box-shadow: none !important;
-        }
-        nav a:last-child:hover {
-          background-color: #f1f5f9 !important;
-          color: #f97316 !important;
-        }
-
         /* When on any runner subpage, Dashboard (first item) is inactive */
         body:has([data-runner-subpage="true"]) nav a:first-child {
           background-color: transparent !important;
@@ -55,6 +47,24 @@ export default function RunnerSidebarFix({ activeDelivery = false }) {
 
         /* When on active delivery subpages, Active Deliveries (3rd item) is active orange */
         body:has([data-active-delivery="true"]) nav a:nth-child(3) {
+          background-color: #f97316 !important;
+          color: #ffffff !important;
+          box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2), 0 2px 4px -2px rgba(249, 115, 22, 0.2) !important;
+        }
+
+        /* Profile (last item) — inactive by default */
+        nav a:last-child {
+          background-color: transparent !important;
+          color: #475569 !important;
+          box-shadow: none !important;
+        }
+        nav a:last-child:hover {
+          background-color: #f1f5f9 !important;
+          color: #f97316 !important;
+        }
+
+        /* When on Profile page, Profile (last item) is active orange */
+        body:has([data-runner-profile="true"]) nav a:last-child {
           background-color: #f97316 !important;
           color: #ffffff !important;
           box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2), 0 2px 4px -2px rgba(249, 115, 22, 0.2) !important;

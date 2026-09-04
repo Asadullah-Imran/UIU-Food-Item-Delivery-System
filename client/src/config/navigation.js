@@ -21,7 +21,7 @@ export const runnerNavigation = [
   { name: 'Delivery History', path: '/dashboard/runner/history', icon: History },
   { name: 'Earnings', path: '/dashboard/runner/earnings', icon: Wallet },
   { name: 'Chat', path: '/dashboard/runner/chat', icon: MessageSquare },
-  { name: 'Profile', path: '#', icon: User },
+  { name: 'Profile', path: '/dashboard/runner/profile', icon: User },
 ];
 
 export const runnerUser = {
