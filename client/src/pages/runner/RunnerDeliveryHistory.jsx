@@ -282,9 +282,12 @@ export default function RunnerDeliveryHistory() {
           <button className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-6 py-3.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-sm">
             <Download className="w-4 h-4 mr-2" /> Export Delivery History (PDF)
           </button>
-          <button className="bg-[#FEF8F3] border border-[#F6E3CF] hover:bg-[#FDF0E3] text-[#9B5110] px-6 py-3.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-sm">
+          <Link 
+            to="/dashboard/runner/earnings"
+            className="bg-[#FEF8F3] border border-[#F6E3CF] hover:bg-[#FDF0E3] text-[#9B5110] px-6 py-3.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-sm"
+          >
             <Wallet className="w-4 h-4 mr-2" /> View Earnings
-          </button>
+          </Link>
           <Link 
             to="/dashboard/runner/deliveries"
             className="bg-[#F37623] hover:bg-[#d9671b] text-white px-8 py-3.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-sm"
