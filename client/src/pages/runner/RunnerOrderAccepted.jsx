@@ -218,17 +218,17 @@ export default function RunnerOrderAccepted() {
               </button>
               
               <div className="flex gap-3">
-                <button className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-sm">
-                  <MessageSquare className="w-4 h-4 mr-2" /> Chat
-                </button>
-                <button className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-sm">
-                  <Phone className="w-4 h-4 mr-2" /> Call
-                </button>
+                <Link to="/dashboard/runner/chat" className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-sm text-decoration-none">
+                  <MessageSquare className="w-4 h-4 mr-2 text-[#9B5110]" /> Chat
+                </Link>
+                <Link to="/dashboard/runner/chat" className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-sm text-decoration-none">
+                  <Phone className="w-4 h-4 mr-2 text-green-600" /> Call
+                </Link>
               </div>
 
-              <button className="w-full text-slate-500 hover:text-slate-700 py-3 font-bold text-sm flex items-center justify-center transition-colors">
+              <Link to="/dashboard/runner/chat" className="w-full text-slate-500 hover:text-[#9B5110] py-3 font-bold text-sm flex items-center justify-center transition-colors text-decoration-none">
                 <Store className="w-4 h-4 mr-2" /> Contact Shop
-              </button>
+              </Link>
             </div>
 
           </div>
