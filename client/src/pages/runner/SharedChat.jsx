@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import RunnerSidebarFix from './RunnerSidebarFix';
 import { 
-  Phone, Video, MoreVertical, Plus, Smile, Send, CheckCheck, X
+  Phone, Video, MoreVertical, Plus, Smile, Send, CheckCheck, User
 } from 'lucide-react';
 
 const initialRunnerConversations = [
@@ -11,7 +11,6 @@ const initialRunnerConversations = [
     role: "Student",
     type: "student",
     isOnline: true,
-    avatar: "https://i.pravatar.cc/150?u=tonmoy",
     phone: "+880 1711-223344",
     location: "Near UIU Library Stairs, 3rd Floor",
     lastMessage: "Wait, did you get the extra sauce?",
@@ -30,7 +29,6 @@ const initialRunnerConversations = [
     role: "Food Shop",
     type: "shop",
     isOnline: true,
-    avatar: "https://i.pravatar.cc/150?u=chillox",
     phone: "+880 1812-998877",
     location: "Campus Food Court Counter #3",
     lastMessage: "Order #3392 is ready for pickup.",
@@ -48,7 +46,6 @@ const initialRunnerConversations = [
     role: "Stationery",
     type: "shop",
     isOnline: false,
-    avatar: "https://i.pravatar.cc/150?u=bookshop",
     phone: "+880 1611-334455",
     location: "Academic Building Ground Floor",
     lastMessage: "We have the calculators in stock now.",
@@ -65,7 +62,6 @@ const initialRunnerConversations = [
     role: "Runner Dispatch",
     type: "support",
     isOnline: true,
-    avatar: "https://i.pravatar.cc/150?u=admin",
     phone: "+880 1900-DISPATCH",
     location: "Admin Building Room 102",
     lastMessage: "Your payout has been processed.",
@@ -146,6 +142,39 @@ const initialRunnerMessages = {
     }
   ]
 };
+
+function BlankAvatar({ size = "md", online = false, className = "" }) {
+  const sizeClasses = {
+    sm: "w-8 h-8",
+    md: "w-10 h-10",
+    lg: "w-12 h-12",
+    xl: "w-20 h-20"
+  };
+  const iconSizes = {
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6",
+    xl: "w-10 h-10"
+  };
+
+  const badgeSizes = {
+    sm: "w-2 h-2",
+    md: "w-2.5 h-2.5",
+    lg: "w-3.5 h-3.5",
+    xl: "w-4 h-4"
+  };
+
+  return (
+    <div className={`relative flex-shrink-0 ${className}`}>
+      <div className={`${sizeClasses[size]} rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400 shadow-xs`}>
+        <User className={iconSizes[size]} />
+      </div>
+      {online && (
+        <span className={`absolute bottom-0 right-0 ${badgeSizes[size]} bg-green-500 border-2 border-white rounded-full`}></span>
+      )}
+    </div>
+  );
+}
 
 export default function SharedChat() {
   const [activeTab, setActiveTab] = useState('All');
@@ -317,12 +346,7 @@ export default function SharedChat() {
                       : 'border-transparent hover:bg-slate-50'
                   }`}
                 >
-                  <div className="relative">
-                    <img src={chat.avatar} alt={chat.name} className="w-12 h-12 rounded-full object-cover bg-slate-200" />
-                    {chat.isOnline && (
-                      <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
-                    )}
-                  </div>
+                  <BlankAvatar size="lg" online={chat.isOnline} />
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <div className="flex justify-between items-baseline mb-1">
                       <h4 className="font-extrabold text-slate-800 text-sm truncate">{chat.name}</h4>
@@ -351,12 +375,7 @@ export default function SharedChat() {
           {/* Chat Header */}
           <div className="h-16 px-6 border-b border-slate-200 bg-white flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="relative">
-                <img src={activeConv.avatar} alt={activeConv.name} className="w-10 h-10 rounded-full object-cover bg-slate-200" />
-                {activeConv.isOnline && (
-                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full"></div>
-                )}
-              </div>
+              <BlankAvatar size="md" online={activeConv.isOnline} />
               <div>
                 <div className="flex items-center gap-2">
                   <h3 className="font-extrabold text-slate-800 text-sm">{activeConv.name}</h3>
@@ -408,7 +427,7 @@ export default function SharedChat() {
               <div key={msg.id} className={`flex ${msg.isMe ? 'justify-end' : 'justify-start'} animate-in fade-in duration-150`}>
                 
                 {!msg.isMe && (
-                  <img src={activeConv.avatar} alt={msg.sender} className="w-8 h-8 rounded-full mr-3 mt-auto object-cover bg-slate-200" />
+                  <BlankAvatar size="sm" className="mr-3 mt-auto" />
                 )}
 
                 <div className={`max-w-[70%] ${msg.isMe ? 'items-end text-right' : 'items-start text-left'}`}>
@@ -433,7 +452,7 @@ export default function SharedChat() {
 
             {isTyping && (
               <div className="flex justify-start items-center gap-3 animate-in fade-in">
-                <img src={activeConv.avatar} alt={activeConv.name} className="w-8 h-8 rounded-full object-cover bg-slate-200" />
+                <BlankAvatar size="sm" />
                 <div className="flex items-center gap-1.5 text-slate-400">
                   <div className="flex gap-1 bg-white border border-slate-200 px-3.5 py-2.5 rounded-2xl rounded-tl-xs shadow-xs">
                     <span className="w-1.5 h-1.5 bg-[#F37623] rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
@@ -530,9 +549,7 @@ export default function SharedChat() {
       {callModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-xs flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-200 text-center animate-in zoom-in-95 duration-200">
-            <div className="relative w-20 h-20 mx-auto rounded-full overflow-hidden mb-4 border-4 border-orange-100 shadow-md">
-              <img src={callModal.avatar} alt={callModal.name} className="w-full h-full object-cover" />
-            </div>
+            <BlankAvatar size="xl" className="mx-auto mb-4" />
             <h3 className="font-bold text-slate-800 text-lg">{callModal.name}</h3>
             <p className="text-xs text-slate-500 font-medium">{callModal.phone}</p>
             <div className="my-6 py-2 px-4 bg-green-50 text-green-700 rounded-full inline-flex items-center text-xs font-bold gap-2">
@@ -551,4 +568,3 @@ export default function SharedChat() {
     </>
   );
 }
-
