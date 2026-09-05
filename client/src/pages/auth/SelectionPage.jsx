@@ -8,16 +8,10 @@ export default function SelectionPage() {
 
   const roles = [
     {
-      id: 'admin',
-      title: 'University Admin',
-      description: 'Manage shops, runners, and platform operations.',
-      icon: <ShieldCheck className="w-6 h-6 text-orange-500" />,
-    },
-    {
-      id: 'shop',
-      title: 'Shop Owner',
-      description: 'Manage your menu, incoming orders, and sales analytics.',
-      icon: <Store className="w-6 h-6 text-orange-500" />,
+      id: 'student',
+      title: 'Ordering Student',
+      description: 'Browse campus shops and order food or stationery.',
+      icon: <ShoppingBag className="w-6 h-6 text-orange-500" />,
     },
     {
       id: 'runner',
@@ -26,10 +20,16 @@ export default function SelectionPage() {
       icon: <Bike className="w-6 h-6 text-orange-500" />,
     },
     {
-      id: 'student',
-      title: 'Ordering Student',
-      description: 'Browse campus shops and order food or stationery.',
-      icon: <ShoppingBag className="w-6 h-6 text-orange-500" />,
+      id: 'shop',
+      title: 'Shop Owner',
+      description: 'Manage your menu, incoming orders, and sales analytics.',
+      icon: <Store className="w-6 h-6 text-orange-500" />,
+    },
+    {
+      id: 'admin',
+      title: 'University Admin',
+      description: 'Manage shops, runners, and platform operations.',
+      icon: <ShieldCheck className="w-6 h-6 text-orange-500" />,
     },
   ];
 
