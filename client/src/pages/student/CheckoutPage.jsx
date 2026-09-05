@@ -2,28 +2,41 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   ChevronRight, MapPin, Phone, Clock, CreditCard, Wallet, 
-  Banknote, ShoppingCart, ArrowRight 
+  Banknote, ShoppingCart, ArrowRight, ShoppingBag 
 } from 'lucide-react';
+import { useCart } from '../../context/CartContext';
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('cod');
+  const { cart, cartTotal, clearCart } = useCart();
   
-  // Mock Cart Data
-  const cart = [
-    { id: 'cart-1', name: 'Chicken Burger', price: 180, quantity: 1 },
-    { id: 'cart-2', name: 'French Fries', price: 80, quantity: 1 }
-  ];
-  
-  const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const deliveryFee = 25;
-  const total = subtotal + deliveryFee;
+  const deliveryFee = cart.length > 0 ? 25 : 0;
+  const total = cartTotal + deliveryFee;
 
   const handleCheckout = (e) => {
     e.preventDefault();
-    // In a real app, process payment and send order here
+    clearCart();
     navigate('/order-success');
   };
+
+  if (cart.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto py-12 text-center">
+        <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center text-orange-500 mx-auto mb-4">
+          <ShoppingBag className="w-10 h-10" />
+        </div>
+        <h2 className="text-2xl font-bold text-slate-800 mb-2">Your Cart is Empty</h2>
+        <p className="text-slate-500 mb-6">Add delicious food items from campus shops before proceeding to checkout.</p>
+        <Link 
+          to="/dashboard/student/shops"
+          className="inline-flex items-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all shadow-md shadow-orange-500/20"
+        >
+          Browse Campus Shops
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -200,7 +213,7 @@ export default function CheckoutPage() {
               <div className="space-y-2 text-sm text-slate-500 font-medium border-b border-slate-200 border-dashed pb-4 mb-4">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="text-slate-800">৳{subtotal}</span>
+                  <span className="text-slate-800">৳{cartTotal}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Delivery Fee</span>
