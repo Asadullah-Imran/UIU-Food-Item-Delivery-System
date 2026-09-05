@@ -189,10 +189,18 @@ export default function RunnerDashboard() {
                       </div>
                     </div>
                     <div className="flex space-x-2">
-                      <button className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors">
+                      <button 
+                        onClick={() => navigate('/dashboard/runner/chat')}
+                        className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors"
+                        title="Call Customer"
+                      >
                         <Phone className="w-4 h-4" />
                       </button>
-                      <button className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors">
+                      <button 
+                        onClick={() => navigate('/dashboard/runner/chat')}
+                        className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors"
+                        title="Chat with Customer"
+                      >
                         <MessageSquare className="w-4 h-4" />
                       </button>
                     </div>
