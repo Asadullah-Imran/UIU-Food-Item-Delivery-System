@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Truck, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export default function RegistrationPage() {
+  const navigate = useNavigate();
+  const [role, setRole] = useState('student');
+
+  const handleRegister = (e) => {
+    e.preventDefault();
+    navigate(`/login?role=${role}`);
+  };
+
   return (
     <div className="min-h-screen bg-[#F5F4F1] flex flex-col items-center justify-center p-4 lg:p-8 font-sans">
       
@@ -51,7 +59,7 @@ export default function RegistrationPage() {
         {/* Right Side - Form */}
         <div className="lg:w-[55%] p-8 lg:p-14 flex flex-col justify-center">
           
-          <div className="flex items-center mb-10">
+          <div className="flex items-center mb-8">
             <div className="bg-orange-500 p-2 rounded-xl mr-3">
               <Truck className="w-6 h-6 text-white" />
             </div>
@@ -60,35 +68,58 @@ export default function RegistrationPage() {
 
           <div className="mb-8">
             <h3 className="text-3xl font-bold text-slate-900 mb-2">Create Your Account</h3>
-            <p className="text-slate-500">Register using your university information.</p>
+            <p className="text-slate-500">Register to start using the campus delivery portal.</p>
           </div>
 
-          <form className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-slate-700">Select Role</label>
+              <select 
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 bg-white"
+              >
+                <option value="student">Ordering Student</option>
+                <option value="runner">Student Runner</option>
+                <option value="shop">Shop Owner</option>
+              </select>
+            </div>
+
+            <div className={`grid grid-cols-1 ${role !== 'shop' ? 'md:grid-cols-2' : ''} gap-6`}>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">Full Name</label>
+                <label className="text-sm font-semibold text-slate-700">
+                  {role === 'shop' ? 'Owner / Manager Name' : 'Full Name'}
+                </label>
                 <input 
                   type="text" 
-                  placeholder="Tonmoy"
+                  placeholder={role === 'shop' ? 'e.g., Mohammad Ali' : 'Tonmoy'}
+                  required
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">University ID</label>
-                <input 
-                  type="text" 
-                  placeholder="011 213 086"
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400"
-                />
-              </div>
+              
+              {role !== 'shop' && (
+                <div className="space-y-2">
+                  <label className="text-sm font-semibold text-slate-700">
+                    {role === 'runner' ? 'Runner / Student ID' : 'University ID'}
+                  </label>
+                  <input 
+                    type="text" 
+                    placeholder="011 213 086"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-slate-700">UIU Email Address</label>
+                <label className="text-sm font-semibold text-slate-700">Email Address</label>
                 <input 
                   type="email" 
-                  placeholder="name@bscse.uiu.ac.bd"
+                  placeholder="name@email.com"
+                  required
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400"
                 />
               </div>
@@ -97,20 +128,10 @@ export default function RegistrationPage() {
                 <input 
                   type="tel" 
                   placeholder="+880 1XXX-XXXXXX"
+                  required
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400"
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-slate-700">Role</label>
-              <select className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 appearance-none bg-white">
-                <option value="" disabled selected>Select your campus role</option>
-                <option value="student">Ordering Student</option>
-                <option value="runner">Student Runner</option>
-                <option value="shop">Shop Owner</option>
-                <option value="admin">University Admin</option>
-              </select>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -119,6 +140,7 @@ export default function RegistrationPage() {
                 <input 
                   type="password" 
                   placeholder="••••••••"
+                  required
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 tracking-widest"
                 />
               </div>
@@ -127,6 +149,7 @@ export default function RegistrationPage() {
                 <input 
                   type="password" 
                   placeholder="••••••••"
+                  required
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 tracking-widest"
                 />
               </div>
@@ -136,6 +159,7 @@ export default function RegistrationPage() {
               <input 
                 type="checkbox" 
                 id="terms" 
+                required
                 className="w-5 h-5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
               />
               <label htmlFor="terms" className="text-sm text-slate-700 font-medium">
@@ -144,8 +168,8 @@ export default function RegistrationPage() {
             </div>
 
             <button 
-              type="button" 
-              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-colors flex items-center justify-center mt-6 shadow-lg shadow-orange-500/30 group"
+              type="submit" 
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-4 rounded-xl transition-all flex items-center justify-center mt-6 shadow-lg shadow-orange-500/30 group cursor-pointer active:scale-[0.99]"
             >
               Create Account 
               <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -153,7 +177,7 @@ export default function RegistrationPage() {
           </form>
 
           <p className="text-center text-slate-600 mt-8 font-medium">
-            Already have an account? <Link to="/login" className="text-orange-500 hover:underline">Sign In</Link>
+            Already have an account? <Link to="/login" className="text-orange-500 hover:underline font-semibold">Sign In</Link>
           </p>
         </div>
       </div>
