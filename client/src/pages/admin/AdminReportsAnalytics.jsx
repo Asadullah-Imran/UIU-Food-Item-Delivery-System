@@ -28,6 +28,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import adminData from "../../data/adminData.json";
 
 export default function AdminReportsAnalytics() {
   const navigate = useNavigate();

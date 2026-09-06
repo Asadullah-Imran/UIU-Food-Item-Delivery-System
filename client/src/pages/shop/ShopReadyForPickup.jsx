@@ -15,6 +15,7 @@ import {
   QrCode,
   ArrowRight
 } from "lucide-react";
+import shopOrdersData from "../../data/shopOrdersData.json";
 
 export default function ShopReadyForPickup() {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ export default function ShopReadyForPickup() {
 
   const displayOrderId = orderId
     ? `#${orderId.replace(/^#/, "")}`
-    : "#ORD-9025";
+    : (shopOrdersData?.priorityOrder?.orderId || "#ORD-9025");
 
   const refreshStatus = () => {
     setRefreshing(true);

@@ -26,58 +26,12 @@ import {
   Calendar,
   CheckCircle2
 } from "lucide-react";
-
-const initialRunners = [
-  {
-    name: "Zubair Ahmed",
-    id: "011211045",
-    department: "CSE",
-    trimester: "4th Trimester",
-    availability: "2PM - 6PM",
-    phone: "01712345678",
-    status: "Pending",
-    vehicle: "Bicycle",
-    gpa: "3.72",
-  },
-  {
-    name: "Sumaiya Islam",
-    id: "021201092",
-    department: "BBA",
-    trimester: "6th Trimester",
-    availability: "8AM - 11AM",
-    phone: "01887654321",
-    status: "Pending",
-    vehicle: "Walking / On Foot",
-    gpa: "3.85",
-  },
-  {
-    name: "Tanvir Ahmed",
-    id: "011211045",
-    department: "EEE",
-    trimester: "9th Trimester",
-    availability: "10AM - 2PM",
-    phone: "01912345678",
-    status: "Approved",
-    vehicle: "Motorcycle / Scooter",
-    gpa: "3.54",
-  },
-  {
-    name: "Nusrat Jahan",
-    id: "021212088",
-    department: "CSE",
-    trimester: "11th Trimester",
-    availability: "4PM - 8PM",
-    phone: "01512345678",
-    status: "Pending",
-    vehicle: "Bicycle",
-    gpa: "3.68",
-  },
-];
+import adminData from "../../data/adminData.json";
 
 export default function AdminRunnerApproval() {
   const navigate = useNavigate();
 
-  const [runners, setRunners] = useState(initialRunners);
+  const [runners, setRunners] = useState(adminData.runnerApplications || []);
   const [search, setSearch] = useState("");
   const [department, setDepartment] = useState("All Departments");
   const [status, setStatus] = useState("All Statuses");

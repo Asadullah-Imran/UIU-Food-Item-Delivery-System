@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import adminData from "../../data/adminData.json";
 import {
   LayoutDashboard,
   UserCheck,
@@ -31,12 +32,14 @@ export default function AdminProfile() {
   const [appearance, setAppearance] = useState("light");
   const [saved, setSaved] = useState(false);
 
-  const [profile, setProfile] = useState({
-    name: "Dr. Admin User",
-    email: "admin@uiu.ac.bd",
-    phone: "+880 17XXXXXXXX",
-    role: "Director, IT Services",
-  });
+  const [profile, setProfile] = useState(
+    adminData.adminProfile || {
+      name: "Dr. Admin User",
+      email: "admin@uiu.ac.bd",
+      phone: "+880 17XXXXXXXX",
+      role: "Director, IT Services",
+    }
+  );
 
   const menuItems = [
   {

@@ -26,70 +26,12 @@ import {
   MapPin,
   CheckCircle2
 } from "lucide-react";
-
-const initialApplications = [
-  {
-    id: "#SO-9921",
-    shop: "The Brew Station",
-    owner: "Rakib Ahmed",
-    email: "rakib@gmail.com",
-    phone: "+880 1712-345678",
-    category: "FOOD & CAFE",
-    categoryStyle: "bg-blue-50 text-blue-500",
-    location: "Campus Food Court Counter #4",
-    tradeLicense: "TRAD-UIU-2026-9041",
-    status: "Pending",
-    date: "2026-09-03",
-    emoji: "☕",
-  },
-  {
-    id: "#SO-9922",
-    shop: "Stationery Hub",
-    owner: "Fatima Zaman",
-    email: "fzaman@gmail.com",
-    phone: "+880 1819-876543",
-    category: "STATIONERY",
-    categoryStyle: "bg-purple-50 text-purple-500",
-    location: "Academic Building Ground Floor",
-    tradeLicense: "TRAD-UIU-2026-5512",
-    status: "Pending",
-    date: "2026-09-02",
-    emoji: "🗃️",
-  },
-  {
-    id: "#SO-9918",
-    shop: "Quick Bites Express",
-    owner: "Sohail Kabir",
-    email: "skabir@gmail.com",
-    phone: "+880 1611-223344",
-    category: "FAST FOOD",
-    categoryStyle: "bg-blue-50 text-blue-500",
-    location: "100 Feet Gate Counter #2",
-    tradeLicense: "TRAD-UIU-2026-1189",
-    status: "Approved",
-    date: "2026-08-31",
-    emoji: "🍜",
-  },
-  {
-    id: "#SO-9915",
-    shop: "Campus Juice Bar",
-    owner: "Nabil Chowdhury",
-    email: "nabil@gmail.com",
-    phone: "+880 1912-998877",
-    category: "FOOD & CAFE",
-    categoryStyle: "bg-blue-50 text-blue-500",
-    location: "Cafeteria Wing B",
-    tradeLicense: "TRAD-UIU-2026-3382",
-    status: "Pending",
-    date: "2026-08-29",
-    emoji: "🥤",
-  }
-];
+import adminData from "../../data/adminData.json";
 
 export default function AdminShopOwnerApproval() {
   const navigate = useNavigate();
 
-  const [applications, setApplications] = useState(initialApplications);
+  const [applications, setApplications] = useState(adminData.shopOwnerApplications || []);
   const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
   const [sortOrder, setSortOrder] = useState("newest");

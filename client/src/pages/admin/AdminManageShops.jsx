@@ -29,33 +29,40 @@ import {
   Save,
   Eye,
 } from "lucide-react";
+import adminData from "../../data/adminData.json";
 
 export default function AdminManageShops() {
   const navigate = useNavigate();
   const logoInputRef = useRef(null);
   const bannerInputRef = useRef(null);
 
-  const [shop, setShop] = useState({
-    name: "",
-    category: "",
-    description: "",
-    email: "chefsTable@gmail.com",
-    phone: "+880",
-    building: "100 feet",
-    floor: "",
-    counter: "C-04",
-    prepTime: "15",
-    maxOrders: "20",
-  });
+  const defaultData = adminData.manageShopsDefault || {};
 
-  const [owner, setOwner] = useState({
-    name: "Rahat Khan",
-    email: "rahat@gmail.com",
-    phone: "+880 1712-XXXXXX",
-  });
+  const [shop, setShop] = useState(
+    defaultData.shop || {
+      name: "Chef's Table",
+      category: "Food & Restaurant",
+      description: "Providing nutritious and hygienic meals for students and faculty.",
+      email: "chefsTable@gmail.com",
+      phone: "+880 1712-345678",
+      building: "100 feet",
+      floor: "Ground Floor",
+      counter: "C-04",
+      prepTime: "15",
+      maxOrders: "20",
+    }
+  );
 
-  const [deliveryEnabled, setDeliveryEnabled] = useState(true);
-  const [shopStatus, setShopStatus] = useState("Active");
+  const [owner, setOwner] = useState(
+    defaultData.owner || {
+      name: "Rahat Khan",
+      email: "rahat@gmail.com",
+      phone: "+880 1712-998877",
+    }
+  );
+
+  const [deliveryEnabled, setDeliveryEnabled] = useState(defaultData.deliveryEnabled ?? true);
+  const [shopStatus, setShopStatus] = useState(defaultData.shopStatus || "Active");
   const [saved, setSaved] = useState(false);
 
   const [logoPreview, setLogoPreview] = useState(null);

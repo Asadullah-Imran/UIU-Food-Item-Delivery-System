@@ -1,0 +1,361 @@
+{
+  "dashboardStats": [
+    {
+      "id": "students",
+      "label": "Students",
+      "value": "12,450",
+      "change": "+14% this month",
+      "bg": "bg-blue-100",
+      "color": "text-blue-700"
+    },
+    {
+      "id": "shops",
+      "label": "Active Shops",
+      "value": "42",
+      "change": "4 new pending",
+      "bg": "bg-cyan-100",
+      "color": "text-cyan-700"
+    },
+    {
+      "id": "runners",
+      "label": "Runners",
+      "value": "156",
+      "change": "8 waiting review",
+      "bg": "bg-orange-100",
+      "color": "text-orange-700"
+    },
+    {
+      "id": "ordersToday",
+      "label": "Orders Today",
+      "value": "842",
+      "change": "+22% peak hour",
+      "bg": "bg-blue-100",
+      "color": "text-blue-700"
+    },
+    {
+      "id": "dailyRevenue",
+      "label": "Daily Revenue",
+      "value": "৳ 142,500",
+      "change": "Avg ৳ 169/order",
+      "bg": "bg-green-100",
+      "color": "text-green-700"
+    },
+    {
+      "id": "rating",
+      "label": "Avg. Rating",
+      "value": "4.8",
+      "change": "98.4% positive",
+      "bg": "bg-yellow-100",
+      "color": "text-yellow-700"
+    }
+  ],
+  "recentActivities": [
+    {
+      "id": "act-1",
+      "title": "New Shop Registered",
+      "description": "\"The Pizza Hub\" has completed registration.",
+      "time": "2 mins ago",
+      "style": "bg-green-100 text-green-700"
+    },
+    {
+      "id": "act-2",
+      "title": "Runner Approved",
+      "description": "Rahim Ahmed has been verified and activated.",
+      "time": "15 mins ago",
+      "style": "bg-blue-100 text-blue-700"
+    },
+    {
+      "id": "act-3",
+      "title": "Complaint Resolved",
+      "description": "Ticket #TK-8815 marked resolved by Admin.",
+      "time": "1 hour ago",
+      "style": "bg-orange-100 text-orange-700"
+    },
+    {
+      "id": "act-4",
+      "title": "Daily Settlement Completed",
+      "description": "৳ 84,200 payout dispatched to campus shops.",
+      "time": "3 hours ago",
+      "style": "bg-green-100 text-green-700"
+    }
+  ],
+  "shopOwnerApplications": [
+    {
+      "id": "#SO-9921",
+      "shop": "The Brew Station",
+      "owner": "Rakib Ahmed",
+      "email": "rakib@gmail.com",
+      "phone": "+880 1712-345678",
+      "category": "FOOD & CAFE",
+      "categoryStyle": "bg-blue-50 text-blue-500",
+      "location": "Campus Food Court Counter #4",
+      "tradeLicense": "TRAD-UIU-2026-9041",
+      "status": "Pending",
+      "date": "2026-09-03",
+      "emoji": "☕"
+    },
+    {
+      "id": "#SO-9922",
+      "shop": "Stationery Hub",
+      "owner": "Fatima Zaman",
+      "email": "fzaman@gmail.com",
+      "phone": "+880 1819-876543",
+      "category": "STATIONERY",
+      "categoryStyle": "bg-purple-50 text-purple-500",
+      "location": "Academic Building Ground Floor",
+      "tradeLicense": "TRAD-UIU-2026-5512",
+      "status": "Pending",
+      "date": "2026-09-02",
+      "emoji": "🗃️"
+    },
+    {
+      "id": "#SO-9918",
+      "shop": "Quick Bites Express",
+      "owner": "Sohail Kabir",
+      "email": "skabir@gmail.com",
+      "phone": "+880 1611-223344",
+      "category": "FAST FOOD",
+      "categoryStyle": "bg-blue-50 text-blue-500",
+      "location": "100 Feet Gate Counter #2",
+      "tradeLicense": "TRAD-UIU-2026-1189",
+      "status": "Approved",
+      "date": "2026-08-31",
+      "emoji": "🍜"
+    },
+    {
+      "id": "#SO-9915",
+      "shop": "Campus Juice Bar",
+      "owner": "Nabil Chowdhury",
+      "email": "nabil@gmail.com",
+      "phone": "+880 1912-998877",
+      "category": "FOOD & CAFE",
+      "categoryStyle": "bg-blue-50 text-blue-500",
+      "location": "Cafeteria Wing B",
+      "tradeLicense": "TRAD-UIU-2026-3382",
+      "status": "Pending",
+      "date": "2026-08-29",
+      "emoji": "🥤"
+    }
+  ],
+  "runnerApplications": [
+    {
+      "name": "Zubair Ahmed",
+      "id": "011211045",
+      "department": "CSE",
+      "trimester": "4th Trimester",
+      "availability": "2PM - 6PM",
+      "phone": "01712345678",
+      "status": "Pending",
+      "vehicle": "Bicycle",
+      "gpa": "3.72"
+    },
+    {
+      "name": "Sumaiya Islam",
+      "id": "021201092",
+      "department": "BBA",
+      "trimester": "6th Trimester",
+      "availability": "8AM - 11AM",
+      "phone": "01887654321",
+      "status": "Pending",
+      "vehicle": "Walking / On Foot",
+      "gpa": "3.85"
+    },
+    {
+      "name": "Tanvir Ahmed",
+      "id": "011211045",
+      "department": "EEE",
+      "trimester": "9th Trimester",
+      "availability": "10AM - 2PM",
+      "phone": "01912345678",
+      "status": "Approved",
+      "vehicle": "Motorcycle / Scooter",
+      "gpa": "3.54"
+    },
+    {
+      "name": "Nusrat Jahan",
+      "id": "021212088",
+      "department": "CSE",
+      "trimester": "11th Trimester",
+      "availability": "4PM - 8PM",
+      "phone": "01512345678",
+      "status": "Pending",
+      "vehicle": "Bicycle",
+      "gpa": "3.68"
+    }
+  ],
+  "complaintStats": [
+    {
+      "label": "Open Tickets",
+      "value": "12",
+      "style": "bg-blue-100 text-blue-600"
+    },
+    {
+      "label": "Resolved Today",
+      "value": "28",
+      "style": "bg-green-100 text-green-600"
+    },
+    {
+      "label": "High Priority",
+      "value": "3",
+      "style": "bg-red-100 text-red-500"
+    },
+    {
+      "label": "Avg Res. Time",
+      "value": "4.2h",
+      "style": "bg-blue-100 text-blue-600"
+    }
+  ],
+  "complaints": [
+    {
+      "id": "#TK-8821",
+      "submittedBy": "Anika Rahman",
+      "role": "Student",
+      "roleStyle": "bg-blue-100 text-blue-600",
+      "category": "Food Quality",
+      "date": "Oct 12, 10:45 AM",
+      "priority": "HIGH",
+      "email": "anika@uiu.ac.bd",
+      "order": "#ORD-4510",
+      "message": "The food quality did not meet expectations and the item arrived in poor condition.",
+      "status": "Open"
+    },
+    {
+      "id": "#TK-8819",
+      "submittedBy": "Mr. Zaman",
+      "role": "Faculty",
+      "roleStyle": "bg-purple-100 text-purple-600",
+      "category": "App Technical",
+      "date": "Oct 12, 09:30 AM",
+      "priority": "MEDIUM",
+      "email": "zaman@uiu.ac.bd",
+      "order": "#ORD-4502",
+      "message": "I experienced an application issue while trying to track the status of my order.",
+      "status": "Open"
+    },
+    {
+      "id": "#TK-8815",
+      "submittedBy": "Cafe 24",
+      "role": "Vendor",
+      "roleStyle": "bg-orange-100 text-orange-600",
+      "category": "Payment Sync",
+      "date": "Oct 11, 04:15 PM",
+      "priority": "LOW",
+      "email": "contact@cafe24.uiu.edu",
+      "order": "#ORD-4492",
+      "message": "The payment for Order #ORD-4492 has not been reflected in our shop wallet after successful delivery. Please investigate the sync issue.",
+      "status": "Resolved"
+    }
+  ],
+  "analyticsStats": [
+    {
+      "label": "Total Orders",
+      "value": "3,482",
+      "change": "+12.4%",
+      "positive": true
+    },
+    {
+      "label": "Total Revenue",
+      "value": "৳ 482,950",
+      "change": "+8.1%",
+      "positive": true
+    },
+    {
+      "label": "Avg. Order Value",
+      "value": "৳ 138.70",
+      "change": "-1.2%",
+      "positive": false
+    },
+    {
+      "label": "Avg. Delivery Time",
+      "value": "18.4 min",
+      "change": "-3.5%",
+      "positive": true
+    }
+  ],
+  "orderedItems": [
+    {
+      "rank": "1",
+      "name": "Chicken Burger",
+      "shop": "Chef's Table",
+      "category": "Food",
+      "orders": "842",
+      "revenue": "৳ 126,300",
+      "rating": "4.9"
+    },
+    {
+      "rank": "2",
+      "name": "Iced Latte",
+      "shop": "North End",
+      "category": "Drinks",
+      "orders": "610",
+      "revenue": "৳ 91,500",
+      "rating": "4.8"
+    },
+    {
+      "rank": "3",
+      "name": "Set Menu 2",
+      "shop": "Pizzaburg",
+      "category": "Food",
+      "orders": "495",
+      "revenue": "৳ 89,100",
+      "rating": "4.7"
+    },
+    {
+      "rank": "4",
+      "name": "Fresh Orange Juice",
+      "shop": "Juice Corner",
+      "category": "Drinks",
+      "orders": "380",
+      "revenue": "৳ 38,000",
+      "rating": "4.6"
+    }
+  ],
+  "adminProfile": {
+    "name": "Dr. Admin User",
+    "role": "Director, IT & Logistics Services",
+    "email": "admin@uiu.ac.bd",
+    "phone": "+880 1711-001122",
+    "department": "UIU Logistics & Campus Services",
+    "office": "Administration Building, Room 204",
+    "lastLogin": "Today at 08:30 AM",
+    "permissions": ["FULL_ACCESS", "SHOP_MANAGEMENT", "FINANCIAL_SETTLEMENTS", "USER_VERIFICATION"]
+  },
+  "profileActivities": [
+    {
+      "description": "Resolved Complaint #TK-8815",
+      "detail": "Student: Rahat Kabir",
+      "timestamp": "Jul 24, 2026 • 10:30 AM"
+    },
+    {
+      "description": "Approved Vendor: Cafe 24",
+      "detail": "Category: Food & Beverage",
+      "timestamp": "Jul 23, 2026 • 04:15 PM"
+    },
+    {
+      "description": "Exported Analytics Report",
+      "detail": "Monthly Logistics Summary [Sep]",
+      "timestamp": "Jun 22, 2026 • 09:00 AM"
+    }
+  ],
+  "manageShopsDefault": {
+    "shop": {
+      "name": "Chef's Table",
+      "category": "Food & Restaurant",
+      "description": "Providing nutritious and hygienic meals for students and faculty.",
+      "email": "chefsTable@gmail.com",
+      "phone": "+880 1712-345678",
+      "building": "100 feet",
+      "floor": "Ground Floor",
+      "counter": "C-04",
+      "prepTime": "15",
+      "maxOrders": "20"
+    },
+    "owner": {
+      "name": "Rahat Khan",
+      "email": "rahat@gmail.com",
+      "phone": "+880 1712-998877"
+    },
+    "deliveryEnabled": true,
+    "shopStatus": "Active"
+  }
+}

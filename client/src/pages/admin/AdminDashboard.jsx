@@ -20,6 +20,8 @@ import {
   CircleCheck,
 } from "lucide-react";
 
+import adminData from "../../data/adminData.json";
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -62,81 +64,24 @@ export default function AdminDashboard() {
   },
 ];
 
-  const stats = [
-    {
-      label: "Students",
-      value: "12,450",
-      icon: Users,
-      bg: "bg-blue-100",
-      color: "text-blue-700",
-    },
-    {
-      label: "Active Shops",
-      value: "42",
-      icon: Store,
-      bg: "bg-cyan-100",
-      color: "text-cyan-700",
-    },
-    {
-      label: "Runners",
-      value: "156",
-      icon: Bike,
-      bg: "bg-orange-100",
-      color: "text-orange-700",
-    },
-    {
-      label: "Orders Today",
-      value: "842",
-      icon: ShoppingCart,
-      bg: "bg-blue-100",
-      color: "text-blue-700",
-    },
-    {
-      label: "Daily Revenue",
-      value: "৳142k",
-      icon: Banknote,
-      bg: "bg-green-100",
-      color: "text-green-700",
-    },
-    {
-      label: "Avg. Rating",
-      value: "4.8",
-      icon: Star,
-      bg: "bg-yellow-100",
-      color: "text-yellow-700",
-    },
-  ];
+  const iconMap = {
+    students: Users,
+    shops: Store,
+    runners: Bike,
+    ordersToday: ShoppingCart,
+    dailyRevenue: Banknote,
+    rating: Star,
+  };
 
-  const activities = [
-    {
-      title: "New Shop Registered",
-      description: '"The Pizza Hub" has completed registration.',
-      time: "2 mins ago",
-      icon: Store,
-      style: "bg-green-100 text-green-700",
-    },
-    {
-      title: "Runner Approved",
-      description: "Rahim Ahmed has been verified and active.",
-      time: "15 mins ago",
-      icon: UserCheck,
-      style: "bg-blue-100 text-blue-700",
-    },
-    {
-      title: "Order Completed",
-      description: "Order #8291 delivered successfully to Hall B.",
-      time: "42 mins ago",
-      icon: CircleCheck,
-      style: "bg-orange-100 text-orange-700",
-    },
-    {
-      title: "Complaint Submitted",
-      description: "Delayed Delivery reported for Order #8277.",
-      time: "1 hour ago",
-      icon: TriangleAlert,
-      style: "bg-red-100 text-red-600",
-    },
-  ];
+  const stats = (adminData.dashboardStats || []).map((s) => ({
+    ...s,
+    icon: iconMap[s.id] || Store,
+  }));
+
+  const activities = (adminData.recentActivities || []).map((a) => ({
+    ...a,
+    icon: a.id === "act-1" ? Store : a.id === "act-2" ? UserCheck : a.id === "act-3" ? TriangleAlert : CircleCheck,
+  }));
 
   const handleMenuClick = (path) => {
     if (path) {

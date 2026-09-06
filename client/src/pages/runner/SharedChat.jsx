@@ -1,147 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import chatData from '../../data/chatData.json';
 import { 
   Phone, Video, MoreVertical, Plus, Smile, Send, CheckCheck, User
 } from 'lucide-react';
-
-const initialRunnerConversations = [
-  {
-    id: "1",
-    name: "Tonmoy",
-    role: "Student",
-    type: "student",
-    isOnline: true,
-    phone: "+880 1711-223344",
-    location: "Near UIU Library Stairs, 3rd Floor",
-    lastMessage: "Wait, did you get the extra sauce?",
-    time: "12:42 PM",
-    unreadCount: 2,
-    autoReplies: [
-      "Awesome! I'm waiting near the library stairs.",
-      "Thank you so much! I have the cash ready.",
-      "Got it, see you at the front gate!",
-      "Thanks for checking!"
-    ]
-  },
-  {
-    id: "2",
-    name: "Chillox",
-    role: "Food Shop",
-    type: "shop",
-    isOnline: true,
-    phone: "+880 1812-998877",
-    location: "Campus Food Court Counter #3",
-    lastMessage: "Order #3392 is ready for pickup.",
-    time: "11:15 AM",
-    unreadCount: 0,
-    autoReplies: [
-      "Order is freshly packed in bag #4!",
-      "Counter #3 is open for runner collection.",
-      "Thanks runner, have a safe trip!"
-    ]
-  },
-  {
-    id: "3",
-    name: "Book Shop",
-    role: "Stationery",
-    type: "shop",
-    isOnline: false,
-    phone: "+880 1611-334455",
-    location: "Academic Building Ground Floor",
-    lastMessage: "We have the calculators in stock now.",
-    time: "Yesterday",
-    unreadCount: 0,
-    autoReplies: [
-      "Items are placed near counter A.",
-      "Pickup code is #5519."
-    ]
-  },
-  {
-    id: "4",
-    name: "UIU Support",
-    role: "Runner Dispatch",
-    type: "support",
-    isOnline: true,
-    phone: "+880 1900-DISPATCH",
-    location: "Admin Building Room 102",
-    lastMessage: "Your payout has been processed.",
-    time: "Tuesday",
-    unreadCount: 0,
-    autoReplies: [
-      "Dispatch confirmed. Next payout will process tonight.",
-      "Let us know if there is any traffic or access delay on campus."
-    ]
-  }
-];
-
-const initialRunnerMessages = {
-  "1": [
-    {
-      id: "m1",
-      sender: "Tonmoy",
-      isMe: false,
-      text: "Hi! Just making sure you found the North Gate entrance? I'm waiting near the library stairs.",
-      time: "12:35 PM"
-    },
-    {
-      id: "m2",
-      sender: "Me",
-      isMe: true,
-      text: "Yes, I just passed the main gate. I'll be at the library in about 5 minutes.",
-      time: "12:38 PM",
-      status: "read"
-    },
-    {
-      id: "m3",
-      sender: "Tonmoy",
-      isMe: false,
-      text: "Great! Wait, did you get the extra sauce? I mentioned it in the order note but forgot to double check with the shop.",
-      time: "12:42 PM"
-    }
-  ],
-  "2": [
-    {
-      id: "c2_1",
-      sender: "Chillox",
-      isMe: false,
-      text: "Hello Runner! Order #3392 for Tonmoy is being prepared now.",
-      time: "11:05 AM"
-    },
-    {
-      id: "c2_2",
-      sender: "Me",
-      isMe: true,
-      text: "Got it, I will be at Counter #3 in 4 minutes.",
-      time: "11:10 AM",
-      status: "read"
-    },
-    {
-      id: "c2_3",
-      sender: "Chillox",
-      isMe: false,
-      text: "Order #3392 is ready for pickup.",
-      time: "11:15 AM"
-    }
-  ],
-  "3": [
-    {
-      id: "c3_1",
-      sender: "Book Shop",
-      isMe: false,
-      text: "We have the scientific calculators and notebooks in stock now.",
-      time: "Yesterday"
-    }
-  ],
-  "4": [
-    {
-      id: "c4_1",
-      sender: "Support",
-      isMe: false,
-      text: "Your payout of ৳ 2,450 for yesterday's deliveries has been processed.",
-      time: "Tuesday"
-    }
-  ]
-};
 
 function BlankAvatar({ size = "md", online = false, className = "" }) {
   const sizeClasses = {
@@ -178,9 +40,9 @@ function BlankAvatar({ size = "md", online = false, className = "" }) {
 
 export default function SharedChat() {
   const [activeTab, setActiveTab] = useState('All');
-  const [conversations, setConversations] = useState(initialRunnerConversations);
+  const [conversations, setConversations] = useState(chatData.conversations || []);
   const [activeChatId, setActiveChatId] = useState("1");
-  const [messagesMap, setMessagesMap] = useState(initialRunnerMessages);
+  const [messagesMap, setMessagesMap] = useState(chatData.messages || {});
   const [inputMessage, setInputMessage] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [callModal, setCallModal] = useState(null);

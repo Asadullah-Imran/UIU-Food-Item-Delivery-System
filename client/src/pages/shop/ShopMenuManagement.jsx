@@ -18,75 +18,9 @@ import {
   Sparkles
 } from 'lucide-react';
 import shopOrdersData from '../../data/shopOrdersData.json';
+import menuData from '../../data/menu.json';
 
-const defaultMenuItems = [
-  {
-    id: "item1",
-    name: "Chicken Curry Meal Bowl",
-    price: 250,
-    prepTime: "15-20 min",
-    category: "Meals",
-    image: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-    description: "Tender chicken cooked in aromatic spices served with fragrant steamed rice and fresh cucumber salad.",
-    available: true,
-    badge: "BEST SELLER"
-  },
-  {
-    id: "item2",
-    name: "Crispy Fried Chicken Combo",
-    price: 245,
-    prepTime: "10-15 min",
-    category: "Meals",
-    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-    description: "Two pieces of golden crispy fried chicken with seasoned french fries and garlic dip.",
-    available: true,
-    badge: "LOW STOCK"
-  },
-  {
-    id: "item3",
-    name: "Classic Cheese Beef Burger",
-    price: 350,
-    prepTime: "20-25 min",
-    category: "Meals",
-    image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-    description: "100% seasoned beef patty layered with melted cheddar cheese, fresh lettuce, and house sauce.",
-    available: true,
-    badge: null
-  },
-  {
-    id: "item4",
-    name: "Cold Coffee with Ice Cream",
-    price: 120,
-    prepTime: "5-8 min",
-    category: "Drinks",
-    image: "https://images.unsplash.com/photo-1572490122747-3968b75cc699?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-    description: "Rich and creamy iced espresso blended with vanilla ice cream and chocolate drizzle.",
-    available: false,
-    badge: "OUT OF STOCK"
-  },
-  {
-    id: "item5",
-    name: "Spicy French Fries (Large)",
-    price: 110,
-    prepTime: "8-10 min",
-    category: "Snacks",
-    image: "https://images.unsplash.com/photo-1576107232684-1279f3908594?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-    description: "Crispy hand-cut potatoes tossed in spicy peri-peri seasoning.",
-    available: true,
-    badge: null
-  },
-  {
-    id: "item6",
-    name: "Chocolate Lava Cake",
-    price: 180,
-    prepTime: "12-15 min",
-    category: "Desserts",
-    image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
-    description: "Warm chocolate sponge cake with a molten fudge core, served with dark cocoa dust.",
-    available: true,
-    badge: null
-  }
-];
+const defaultMenuItems = menuData;
 
 export default function ShopMenuManagement() {
   const navigate = useNavigate();
