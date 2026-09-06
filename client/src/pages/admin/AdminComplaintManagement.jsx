@@ -27,6 +27,7 @@ import {
   ChevronRight,
   Pencil,
 } from "lucide-react";
+import adminData from "../../data/adminData.json";
 
 export default function AdminComplaintManagement() {
   const navigate = useNavigate();
@@ -118,47 +119,7 @@ export default function AdminComplaintManagement() {
     },
   ];
 
-  const tickets = [
-    {
-      id: "#TK-8821",
-      submittedBy: "Anika Rahman",
-      role: "Student",
-      roleStyle: "bg-blue-100 text-blue-600",
-      category: "Food Quality",
-      date: "Oct 12, 10:45 AM",
-      priority: "HIGH",
-      email: "anika@uiu.ac.bd",
-      order: "#ORD-4510",
-      message:
-        "The food quality did not meet expectations and the item arrived in poor condition.",
-    },
-    {
-      id: "#TK-8819",
-      submittedBy: "Mr. Zaman",
-      role: "Faculty",
-      roleStyle: "bg-purple-100 text-purple-600",
-      category: "App Technical",
-      date: "Oct 12, 09:30 AM",
-      priority: "MEDIUM",
-      email: "zaman@uiu.ac.bd",
-      order: "#ORD-4502",
-      message:
-        "I experienced an application issue while trying to track the status of my order.",
-    },
-    {
-      id: "#TK-8815",
-      submittedBy: "Cafe 24",
-      role: "Vendor",
-      roleStyle: "bg-orange-100 text-orange-600",
-      category: "Payment Sync",
-      date: "Oct 11, 04:15 PM",
-      priority: "LOW",
-      email: "contact@cafe24.uiu.edu",
-      order: "#ORD-4492",
-      message:
-        'The payment for Order #ORD-4492 has not been reflected in our shop wallet after successful delivery. Please investigate the sync issue.',
-    },
-  ];
+  const tickets = adminData.complaints || [];
 
   const filteredTickets = useMemo(() => {
     const keyword = search.trim().toLowerCase();

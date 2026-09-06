@@ -26,15 +26,16 @@ export default function ShopDetails() {
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
   // Filtered menu items
-  const allShopItems = menuData.filter(item => item.shopId === shop.id);
+  const matchedShopItems = menuData.filter(item => item.shopId === shop.id);
+  const allShopItems = matchedShopItems.length > 0 ? matchedShopItems : menuData;
   const itemsToDisplay = allShopItems.filter(item => {
     if (activeCategory === "All") return true;
-    return item.category === activeCategory;
+    return item.category === activeCategory || (activeCategory === "Popular" && (item.isBestSeller || item.badge === "BEST SELLER"));
   });
 
-  const popularItems = allShopItems.filter(item => item.category === "Popular");
-  const snacksItems = allShopItems.filter(item => item.category === "Snacks & Sides");
-  const reviews = reviewsData.filter(r => r.shopId === shop.id);
+  const popularItems = allShopItems.filter(item => item.category === "Popular" || item.isBestSeller || item.badge === "BEST SELLER");
+  const snacksItems = allShopItems.filter(item => item.category === "Snacks & Sides" || item.category === "Snacks");
+  const reviews = reviewsData.filter(r => r.shopId === shop.id || !r.shopId);
 
   const deliveryFee = shop.deliveryFee || 25;
   const totalWithDelivery = cart.length > 0 ? cartTotal + deliveryFee : 0;

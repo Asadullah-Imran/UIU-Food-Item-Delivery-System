@@ -13,6 +13,7 @@ import {
   RefreshCw,
   MessageSquare,
 } from "lucide-react";
+import shopOrdersData from "../../data/shopOrdersData.json";
 
 export default function ShopPreparingOrder() {
   const { orderId } = useParams();
@@ -22,7 +23,7 @@ export default function ShopPreparingOrder() {
     ? `#${orderId.replace(/^#/, "")}`
     : "#UIU-88291";
 
-  const orderItems = [
+  const orderItems = shopOrdersData?.preparingOrderDefault?.items || [
     {
       name: "Beef Kacchi Biryani (Full)",
       quantity: 1,

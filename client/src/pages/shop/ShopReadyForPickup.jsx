@@ -12,24 +12,31 @@ import {
   Package,
   Home,
   RefreshCw,
+  QrCode,
+  ArrowRight
 } from "lucide-react";
+import shopOrdersData from "../../data/shopOrdersData.json";
 
 export default function ShopReadyForPickup() {
   const navigate = useNavigate();
   const { orderId } = useParams();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [isHandedOver, setIsHandedOver] = useState(false);
 
   const displayOrderId = orderId
     ? `#${orderId.replace(/^#/, "")}`
-    : "#ORD-9025";
+    : (shopOrdersData?.priorityOrder?.orderId || "#ORD-9025");
 
   const refreshStatus = () => {
     setRefreshing(true);
-
     setTimeout(() => {
       setRefreshing(false);
-    }, 800);
+    }, 600);
+  };
+
+  const handleConfirmHandover = () => {
+    setIsHandedOver(true);
   };
 
   return (
@@ -68,156 +75,137 @@ export default function ShopReadyForPickup() {
         </div>
 
         <div>
-          <h1 className="text-xl font-medium text-slate-800">
-            🎉 Order Ready for Pickup
+          <h1 className="text-xl font-bold text-slate-800">
+            {isHandedOver ? "🎉 Handover Complete!" : "🎉 Order Ready for Pickup"}
           </h1>
 
-          <p className="mt-3 max-w-4xl text-sm font-medium leading-6 text-slate-600">
-            The order has been prepared successfully. Delivery runners have
-            been notified and the system is now waiting for a runner to accept
-            the pickup request.
+          <p className="mt-2 max-w-4xl text-sm font-medium leading-6 text-slate-600">
+            {isHandedOver
+              ? "The package has been handed over to delivery runner Tanvir Ahmed. The student will receive live transit updates."
+              : "The order has been prepared and packed. Delivery runners have been notified to collect the package from counter C-04."}
           </p>
         </div>
       </section>
 
       {/* MAIN CONTENT */}
       <div className="max-w-[900px] space-y-7">
-        {/* RUNNER STATUS */}
+        {/* RUNNER STATUS & HANDOVER ACTION */}
         <section className="rounded-3xl border border-slate-200 border-l-4 border-l-orange-500 bg-white p-7 shadow-sm">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm font-medium text-slate-700">
-                Runner Status
+                Assigned Delivery Runner
               </p>
 
               <div className="mt-2 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-orange-500" />
-
-                <span className="text-lg font-bold text-orange-500">
-                  ⏳ Waiting for Runner
+                <span className={`h-2.5 w-2.5 rounded-full ${isHandedOver ? "bg-green-500" : "bg-orange-500"}`} />
+                <span className="text-lg font-bold text-slate-800">
+                  {isHandedOver ? "Tanvir Ahmed (In Transit)" : "Tanvir Ahmed (Arrived at Counter)"}
                 </span>
               </div>
             </div>
 
             <div className="text-right">
-              <p className="text-sm text-slate-500">
-                Est. Acceptance
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                Pickup Code
               </p>
-
-              <p className="mt-2 font-bold text-slate-800">
-                3m 59s
+              <p className="mt-1 font-mono text-xl font-black text-orange-600">
+                #9821
               </p>
             </div>
           </div>
 
-          <div className="mt-7 grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="flex items-center gap-4 rounded-2xl bg-[#f7f4f1] p-5">
-              <Bell className="h-6 w-6 shrink-0 text-green-600" />
-
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="flex items-center gap-4 rounded-2xl bg-[#f7f4f1] p-4 border border-slate-100">
+              <div className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center font-bold">
+                <UserRound className="w-5 h-5" />
+              </div>
               <div>
-                <p className="text-sm text-slate-500">
-                  Push Status
-                </p>
-
-                <p className="mt-1 text-sm font-bold text-slate-800">
-                  Notification Sent Successfully
-                </p>
+                <p className="text-xs text-slate-400 font-semibold">Runner Contact</p>
+                <p className="text-sm font-bold text-slate-800">+880 1712-345678</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4 rounded-2xl bg-[#f7f4f1] p-5">
-              <Send className="h-6 w-6 shrink-0 text-orange-700" />
-
+            <div className="flex items-center gap-4 rounded-2xl bg-[#f7f4f1] p-4 border border-slate-100">
+              <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                <QrCode className="w-5 h-5" />
+              </div>
               <div>
-                <p className="text-sm text-slate-500">
-                  Coverage
-                </p>
-
-                <p className="mt-1 text-sm font-bold text-slate-800">
-                  5 Nearby Runners Available
-                </p>
+                <p className="text-xs text-slate-400 font-semibold">Verification</p>
+                <p className="text-sm font-bold text-slate-800">Show Pickup Code to Runner</p>
               </div>
             </div>
           </div>
 
-          {/* Optional refresh, replacing separate Quick Actions */}
-          <button
-            type="button"
-            onClick={refreshStatus}
-            className="mt-5 flex items-center gap-2 text-xs font-bold text-orange-600 transition hover:text-orange-700"
-          >
-            <RefreshCw
-              className={`h-4 w-4 ${
-                refreshing ? "animate-spin" : ""
-              }`}
-            />
+          {/* ACTION BUTTON */}
+          <div className="mt-6 pt-6 border-t border-slate-100 flex flex-col sm:flex-row gap-4 items-center justify-between">
+            {!isHandedOver ? (
+              <button
+                type="button"
+                onClick={handleConfirmHandover}
+                className="w-full sm:w-auto flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-8 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                Confirm Handover to Runner
+              </button>
+            ) : (
+              <div className="w-full flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-4 py-2.5 rounded-xl flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  Order handed over successfully!
+                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate("/dashboard/shop/orders")}
+                  className="w-full sm:w-auto bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-6 rounded-2xl transition-colors flex items-center justify-center gap-2 text-xs"
+                >
+                  Back to Orders Queue <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            )}
 
-            {refreshing ? "Refreshing..." : "Refresh runner status"}
-          </button>
+            {!isHandedOver && (
+              <button
+                type="button"
+                onClick={refreshStatus}
+                className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-slate-800 transition-colors"
+              >
+                <RefreshCw className={`h-4 w-4 ${refreshing ? "animate-spin text-orange-500" : ""}`} />
+                {refreshing ? "Refreshing..." : "Refresh runner live status"}
+              </button>
+            )}
+          </div>
         </section>
 
         {/* ORDER DETAILS */}
         <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between bg-[#f8f5f2] px-7 py-5">
-            <h2 className="flex items-center gap-2 font-bold text-slate-800">
+            <h2 className="flex items-center gap-2 font-bold text-slate-800 text-sm">
               <ReceiptText className="h-5 w-5" />
-              Order Details
+              Order Summary
             </h2>
 
             <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-1.5 text-xs font-bold text-green-700">
               <BadgeCheck className="h-4 w-4" />
-              Ready for Pickup
+              {isHandedOver ? "In Delivery Transit" : "Packed & Ready"}
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-8 gap-y-8 p-7 sm:grid-cols-4">
-            <Detail
-              label="ORDER ID"
-              value={displayOrderId}
-            />
-
-            <Detail
-              label="STUDENT NAME"
-              value="Sifat Ullah"
-            />
-
-            <Detail
-              label="SHOP NAME"
-              value="Chef’s Table"
-            />
-
-            <Detail
-              label="PICKUP COUNTER"
-              value="Main Counter"
-            />
-
-            <Detail
-              label="TOTAL ITEMS"
-              value="2 Items"
-            />
-
-            <Detail
-              label="TOTAL AMOUNT"
-              value="320 BDT"
-              valueClass="text-orange-700"
-            />
-
-            <Detail
-              label="READY TIME"
-              value="12:45 PM"
-            />
-
-            <Detail
-              label="PAYMENT"
-              value="Paid (bKash)"
-              valueClass="text-green-600"
-            />
+          <div className="grid grid-cols-2 gap-x-8 gap-y-6 p-7 sm:grid-cols-4">
+            <Detail label="ORDER ID" value={displayOrderId} />
+            <Detail label="STUDENT NAME" value="Sifat Ullah" />
+            <Detail label="SHOP NAME" value="Chef’s Table" />
+            <Detail label="PICKUP COUNTER" value="Counter C-04" />
+            <Detail label="TOTAL ITEMS" value="2 Items (Kacchi Biriyani x2)" />
+            <Detail label="TOTAL AMOUNT" value="320 BDT" valueClass="text-orange-600 font-extrabold" />
+            <Detail label="READY TIME" value="12:45 PM" />
+            <Detail label="PAYMENT" value="Paid (bKash)" valueClass="text-green-600" />
           </div>
         </section>
 
         {/* PROCESS TIMELINE */}
         <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-          <h2 className="mb-8 font-bold text-slate-800">
+          <h2 className="mb-6 font-bold text-slate-800 text-sm">
             Process Timeline
           </h2>
 
@@ -227,47 +215,31 @@ export default function ShopReadyForPickup() {
               label="PLACED"
               state="complete"
             />
-
             <TimelineLine active />
-
             <TimelineStep
               icon={<Check className="h-4 w-4" />}
               label="ACCEPTED"
               state="complete"
             />
-
             <TimelineLine active />
-
             <TimelineStep
               icon={<Check className="h-4 w-4" />}
               label="PREPARING"
               state="complete"
             />
-
             <TimelineLine active />
-
             <TimelineStep
-              icon={<span className="h-2 w-2 rounded-full bg-green-500" />}
+              icon={<Check className="h-4 w-4" />}
               label="READY"
-              state="current"
+              state="complete"
             />
-
-            <TimelineLine />
-
+            <TimelineLine active={isHandedOver} />
             <TimelineStep
-              icon={<UserRound className="h-4 w-4" />}
-              label="RUNNER"
-            />
-
-            <TimelineLine />
-
-            <TimelineStep
-              icon={<Package className="h-4 w-4" />}
+              icon={isHandedOver ? <Check className="h-4 w-4" /> : <Package className="h-4 w-4" />}
               label="PICKED UP"
+              state={isHandedOver ? "complete" : "current"}
             />
-
-            <TimelineLine />
-
+            <TimelineLine active={false} />
             <TimelineStep
               icon={<Home className="h-4 w-4" />}
               label="DELIVERED"
@@ -279,52 +251,38 @@ export default function ShopReadyForPickup() {
   );
 }
 
-function Detail({
-  label,
-  value,
-  valueClass = "text-slate-900",
-}) {
+function Detail({ label, value, valueClass = "text-slate-900" }) {
   return (
     <div>
-      <p className="text-xs font-medium text-[#8a7468]">
+      <p className="text-[10px] font-bold text-slate-400 tracking-wider uppercase">
         {label}
       </p>
-
-      <p className={`mt-1 text-sm font-bold ${valueClass}`}>
-        {value}
-      </p>
+      <p className={`mt-1 text-sm font-bold ${valueClass}`}>{value}</p>
     </div>
   );
 }
 
-function TimelineStep({
-  icon,
-  label,
-  state = "inactive",
-}) {
+function TimelineStep({ icon, label, state = "inactive" }) {
   const circleStyle =
     state === "complete"
-      ? "bg-green-500 text-white"
+      ? "bg-green-500 text-white shadow-sm"
       : state === "current"
-      ? "border-[3px] border-green-500 bg-white text-green-500"
-      : "bg-slate-100 text-slate-300";
+      ? "border-[3px] border-orange-500 bg-white text-orange-500"
+      : "bg-slate-100 text-slate-400";
 
   const labelStyle =
-    state === "complete" || state === "current"
-      ? "text-green-600"
-      : "text-slate-300";
+    state === "complete"
+      ? "text-green-600 font-bold"
+      : state === "current"
+      ? "text-orange-600 font-bold"
+      : "text-slate-400";
 
   return (
-    <div className="flex min-w-[65px] flex-col items-center">
-      <div
-        className={`flex h-8 w-8 items-center justify-center rounded-full ${circleStyle}`}
-      >
+    <div className="flex min-w-[60px] flex-col items-center">
+      <div className={`flex h-8 w-8 items-center justify-center rounded-full ${circleStyle}`}>
         {icon}
       </div>
-
-      <span
-        className={`mt-3 whitespace-nowrap text-[9px] font-extrabold ${labelStyle}`}
-      >
+      <span className={`mt-2 whitespace-nowrap text-[9px] font-extrabold ${labelStyle}`}>
         {label}
       </span>
     </div>
@@ -335,7 +293,7 @@ function TimelineLine({ active = false }) {
   return (
     <div
       className={`mt-4 h-0.5 flex-1 ${
-        active ? "bg-green-500" : "bg-slate-100"
+        active ? "bg-green-500" : "bg-slate-200"
       }`}
     />
   );
