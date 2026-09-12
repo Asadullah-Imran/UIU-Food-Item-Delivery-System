@@ -1,13 +1,16 @@
 import React from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';import { 
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { 
   Check, Clock, MapPin, Phone, MessageSquare, PhoneCall,
   Info, FileText, ChevronRight, BellRing, ChefHat, Package, CheckCircle2, XCircle
 } from 'lucide-react';
 import shopOrdersData from '../../data/shopOrdersData.json';
+import { useOrderChat } from '../../context/OrderChatContext';
 
 const ShopOrderDetails = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
+  const { openOrderChat } = useOrderChat();
 
   const order = shopOrdersData.orderDetails;
 
@@ -190,10 +193,16 @@ const ShopOrderDetails = () => {
               </div>
 
               <div className="w-full flex gap-3">
-                <button className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors flex justify-center items-center">
-                  <MessageSquare className="w-4 h-4 mr-2" /> Chat
+                <button 
+                  onClick={() => openOrderChat(order.orderId || orderId || '#3392', 'student')}
+                  className="flex-1 bg-orange-50 hover:bg-orange-100 text-[#9B5110] font-bold py-3 px-4 rounded-xl transition-colors flex justify-center items-center cursor-pointer border border-orange-200"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2" /> Chat Order
                 </button>
-                <button className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors flex justify-center items-center">
+                <button 
+                  onClick={() => alert(`Calling student ${order.student.name} at ${order.student.phone}`)}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-4 rounded-xl transition-colors flex justify-center items-center cursor-pointer"
+                >
                   <PhoneCall className="w-4 h-4 mr-2" /> Call
                 </button>
               </div>

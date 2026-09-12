@@ -7,9 +7,11 @@ import {
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import { useOrderChat } from '../../context/OrderChatContext';
 
 export default function RunnerOrderAccepted() {
   const { orderId, shop, customer, deliveryDetails, orderItems, studentNote } = activeDeliveryData;
+  const { openOrderChat } = useOrderChat();
 
   return (
     <>
@@ -218,17 +220,26 @@ export default function RunnerOrderAccepted() {
               </button>
               
               <div className="flex gap-3">
-                <Link to="/dashboard/runner/chat" className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-sm text-decoration-none">
-                  <MessageSquare className="w-4 h-4 mr-2 text-[#9B5110]" /> Chat
-                </Link>
-                <Link to="/dashboard/runner/chat" className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-sm text-decoration-none">
+                <button 
+                  onClick={() => openOrderChat(orderId || '#3392', 'student')}
+                  className="flex-1 bg-white border border-slate-200 hover:bg-orange-50/50 hover:border-orange-200 rounded-xl py-3 font-bold text-sm text-[#9B5110] flex items-center justify-center transition-colors shadow-xs cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4 mr-2 text-[#9B5110]" /> Chat Student
+                </button>
+                <button 
+                  onClick={() => alert(`Calling customer ${customer.name} at ${customer.phone}`)}
+                  className="flex-1 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl py-3 font-bold text-sm text-slate-700 flex items-center justify-center transition-colors shadow-xs cursor-pointer"
+                >
                   <Phone className="w-4 h-4 mr-2 text-green-600" /> Call
-                </Link>
+                </button>
               </div>
 
-              <Link to="/dashboard/runner/chat" className="w-full text-slate-500 hover:text-[#9B5110] py-3 font-bold text-sm flex items-center justify-center transition-colors text-decoration-none">
-                <Store className="w-4 h-4 mr-2" /> Contact Shop
-              </Link>
+              <button 
+                onClick={() => openOrderChat(orderId || '#3392', 'shop')}
+                className="w-full bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-[#9B5110] py-3 rounded-xl font-bold text-sm flex items-center justify-center transition-colors cursor-pointer border border-slate-200/60"
+              >
+                <Store className="w-4 h-4 mr-2 text-orange-500" /> Contact Shop
+              </button>
             </div>
 
           </div>

@@ -20,7 +20,7 @@ export const runnerNavigation = [
   { name: 'Active Deliveries', path: '/dashboard/runner/active/accepted', icon: PackageCheck },
   { name: 'Delivery History', path: '/dashboard/runner/history', icon: History },
   { name: 'Earnings', path: '/dashboard/runner/earnings', icon: Wallet },
-  { name: 'Chat', path: '/dashboard/runner/chat', icon: MessageSquare },
+  { name: 'Order Chats', path: '/dashboard/runner/chat', icon: MessageSquare },
   { name: 'Profile', path: '/dashboard/runner/profile', icon: User },
 ];
 
@@ -35,7 +35,7 @@ export const studentNavigation = [
   { name: 'Dashboard', path: '/dashboard/student', icon: LayoutDashboard },
   { name: 'Browse Shops', path: '/dashboard/student/shops', icon: Store },
   { name: 'My Orders', path: '/dashboard/student/orders', icon: ClipboardList },
-  { name: 'Chat', path: '/dashboard/student/chat', icon: MessageSquare },
+  { name: 'Order Chats', path: '/dashboard/student/chat', icon: MessageSquare },
 ];
 
 export const studentUser = {
@@ -48,6 +48,7 @@ export const studentUser = {
 export const shopNavigation = [
   { name: 'Dashboard', path: '/dashboard/shop', icon: LayoutDashboard },
   { name: 'Incoming Orders', path: '/dashboard/shop/orders', icon: Inbox },
+  { name: 'Order Chats', path: '/dashboard/shop/chat', icon: MessageSquare },
   { name: 'Menu Management', path: '/dashboard/shop/menu', icon: UtensilsCrossed },
   { name: 'Sales Reports', path: '/dashboard/shop/reports', icon: BarChart3 },
   { name: 'Customer Reviews', path: '/dashboard/shop/reviews', icon: MessageSquareHeart },
