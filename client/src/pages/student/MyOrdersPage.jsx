@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { 
   Package, Calendar, CircleDollarSign, Heart, 
   Calendar as CalendarIcon, Download, RotateCcw, 
-  ChefHat, Navigation, ChevronLeft, ChevronRight, MoreHorizontal, Clock
+  ChefHat, Navigation, ChevronLeft, ChevronRight, MoreHorizontal, Clock,
+  MessageSquare
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import ordersData from '../../data/myOrders.json';
@@ -10,12 +11,14 @@ import shopsData from '../../data/shops.json';
 import StudentSidebarFix from './StudentSidebarFix';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useCart } from '../../context/CartContext';
+import { useOrderChat } from '../../context/OrderChatContext';
 
 export default function MyOrdersPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('All Orders');
   const { favorites } = useFavorites();
   const { addToCart, setIsCartVisible } = useCart();
+  const { openOrderChat } = useOrderChat();
   const tabs = ['All Orders', 'Completed', 'Active', 'Cancelled'];
 
   const favoriteShop = shopsData.find(s => favorites.includes(String(s.id)))?.name || "None yet";
@@ -202,7 +205,14 @@ export default function MyOrdersPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-slate-100 mt-auto">
-                    <Link to="/dashboard/student/shops/1" className="text-sm font-semibold text-slate-500 hover:text-slate-800 px-4 py-2 transition-colors">
+                    <button
+                      onClick={() => openOrderChat(order.id)}
+                      className="flex items-center text-sm font-bold text-[#9B5110] bg-orange-50 hover:bg-orange-100 px-4 py-2.5 rounded-xl transition-colors cursor-pointer border border-orange-200"
+                    >
+                      <MessageSquare className="w-4 h-4 mr-1.5" /> Order Chat
+                    </button>
+
+                    <Link to="/dashboard/student/shops/1" className="text-sm font-semibold text-slate-500 hover:text-slate-800 px-3 py-2 transition-colors">
                       View Shop
                     </Link>
                     
@@ -210,7 +220,7 @@ export default function MyOrdersPage() {
                       <>
                         <button 
                           onClick={() => alert(`Receipt downloaded for order ${order.id}`)}
-                          className="flex items-center text-sm font-bold text-[#9B5110] border border-[#9B5110]/30 hover:bg-[#9B5110]/5 px-4 py-2.5 rounded-xl transition-colors cursor-pointer"
+                          className="flex items-center text-sm font-bold text-slate-600 border border-slate-200 hover:bg-slate-50 px-4 py-2.5 rounded-xl transition-colors cursor-pointer"
                         >
                           <Download className="w-4 h-4 mr-2" /> Receipt
                         </button>
@@ -225,10 +235,10 @@ export default function MyOrdersPage() {
                     
                     {order.status === 'preparing' && (
                       <button 
-                        onClick={() => navigate('/dashboard/student/chat')}
+                        onClick={() => openOrderChat(order.id)}
                         className="flex items-center text-sm font-bold text-white bg-orange-500 hover:bg-orange-600 px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
                       >
-                        <Navigation className="w-4 h-4 mr-2" /> Track in Chat
+                        <Navigation className="w-4 h-4 mr-2" /> Track & Chat
                       </button>
                     )}
                     

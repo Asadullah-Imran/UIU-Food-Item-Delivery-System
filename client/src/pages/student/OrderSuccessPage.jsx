@@ -4,11 +4,13 @@ import {
   Check, Utensils, User, Bike, MapPin, 
   RefreshCcw, LayoutDashboard, Download,
   FileText, MapPin as MapPinIcon, Banknote,
-  Plus, ArrowRight
+  Plus, ArrowRight, MessageSquare
 } from 'lucide-react';
 import popularItemsData from '../../data/popularItems.json';
+import { useOrderChat } from '../../context/OrderChatContext';
 
 export default function OrderSuccessPage() {
+  const { openOrderChat } = useOrderChat();
   return (
     <>
       <div className="max-w-5xl mx-auto space-y-6">
@@ -78,6 +80,12 @@ export default function OrderSuccessPage() {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
+            <button 
+              onClick={() => openOrderChat('#UIU-2026-1030')}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md flex items-center text-sm cursor-pointer active:scale-95"
+            >
+              <MessageSquare className="w-4 h-4 mr-2" /> Chat with Shop & Runner
+            </button>
             <Link 
               to="/dashboard/student/orders"
               className="bg-[#9B5110] hover:bg-[#7A3F0C] text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm shadow-md"
@@ -87,7 +95,10 @@ export default function OrderSuccessPage() {
             <Link to="/dashboard/student" className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm">
               <LayoutDashboard className="w-4 h-4 mr-2" /> Back to Dashboard
             </Link>
-            <button className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm">
+            <button 
+              onClick={() => alert("Receipt downloaded.")}
+              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm cursor-pointer"
+            >
               <Download className="w-4 h-4 mr-2" /> Download Receipt
             </button>
           </div>

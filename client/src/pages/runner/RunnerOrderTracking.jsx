@@ -8,9 +8,11 @@ import {
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import { useOrderChat } from '../../context/OrderChatContext';
 
 export default function RunnerOrderTracking() {
   const { orderId, customer } = activeDeliveryData;
+  const { openOrderChat } = useOrderChat();
 
   const timelineSteps = [
     { label: "Accepted", time: "11:15 AM", status: "completed", icon: Check },
@@ -150,27 +152,36 @@ export default function RunnerOrderTracking() {
 
             {/* Bottom Action Grid */}
             <div className="grid grid-cols-4 gap-4 h-28">
-              <Link to="/dashboard/runner/chat" className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors text-decoration-none">
+              <button 
+                onClick={() => alert(`Calling student ${customer.name} at ${customer.phone}`)}
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                   <Phone className="w-5 h-5 fill-current" />
                 </div>
                 <span className="text-xs font-bold text-slate-700">Call Student</span>
-              </Link>
+              </button>
               
-              <Link to="/dashboard/runner/chat" className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors text-decoration-none">
-                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 relative">
+              <button 
+                onClick={() => openOrderChat(orderId || '#3392', 'student')}
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-orange-50/50 hover:border-orange-200 transition-colors cursor-pointer"
+              >
+                <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-[#9B5110] relative">
                   <MessageSquare className="w-5 h-5 fill-current" />
                   <div className="absolute top-0 right-0 w-3 h-3 bg-[#F37623] rounded-full border-2 border-white"></div>
                 </div>
-                <span className="text-xs font-bold text-slate-700">Chat Student</span>
-              </Link>
+                <span className="text-xs font-bold text-[#9B5110]">Chat Student</span>
+              </button>
 
-              <Link to="/dashboard/runner/chat" className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors text-decoration-none">
+              <button 
+                onClick={() => openOrderChat(orderId || '#3392', 'shop')}
+                className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer"
+              >
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
                   <Store className="w-5 h-5 fill-current" />
                 </div>
                 <span className="text-xs font-bold text-slate-700">Contact Shop</span>
-              </Link>
+              </button>
 
               <Link to="/dashboard/runner/active/completed" className="bg-green-600 hover:bg-green-700 rounded-2xl shadow-md flex flex-col items-center justify-center gap-2 transition-colors border border-green-500 text-decoration-none">
                 <div className="w-10 h-10 rounded-full bg-green-500/50 flex items-center justify-center text-white border border-green-400">

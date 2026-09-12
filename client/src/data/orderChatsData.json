@@ -1,0 +1,293 @@
+[
+  {
+    "orderId": "#UIU-2026-1030",
+    "shop": {
+      "id": "1",
+      "name": "Chef's Table",
+      "avatar": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80",
+      "phone": "+880 1819-876543",
+      "location": "UIU Food Court, Counter #2",
+      "online": true
+    },
+    "student": {
+      "id": "011201124",
+      "name": "Rafiqul Haque",
+      "avatar": "https://i.pravatar.cc/150?u=student",
+      "phone": "+880 1712-987654",
+      "room": "Room 412, Academic Building",
+      "online": true
+    },
+    "runner": {
+      "id": "4092",
+      "name": "Tanvir Ahmed",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+      "phone": "+880 1712-345678",
+      "vehicle": "Bicycle",
+      "online": true
+    },
+    "status": "PREPARING",
+    "statusLabel": "Preparing in Kitchen",
+    "eta": "10-15 mins",
+    "totalPrice": 320,
+    "items": [
+      { "name": "Beef Platter", "quantity": 1, "price": 320, "note": "Medium spicy" }
+    ],
+    "messages": [
+      {
+        "id": "msg_1",
+        "senderRole": "student",
+        "senderName": "Rafiqul Haque",
+        "avatar": "https://i.pravatar.cc/150?u=student",
+        "target": "all",
+        "text": "Hi! Could you make the beef platter medium spicy please? Not too hot.",
+        "time": "1:16 PM",
+        "status": "read"
+      },
+      {
+        "id": "msg_2",
+        "senderRole": "shop",
+        "senderName": "Chef's Table",
+        "avatar": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80",
+        "target": "all",
+        "text": "Sure thing! Chef has noted medium spice for your platter. Preparing it fresh now.",
+        "time": "1:18 PM",
+        "status": "read"
+      },
+      {
+        "id": "msg_3",
+        "senderRole": "runner",
+        "senderName": "Tanvir Ahmed",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "target": "all",
+        "text": "Hello! I have accepted this delivery task. I'm nearby and will pick it up as soon as Chef's Table marks it ready.",
+        "time": "1:20 PM",
+        "status": "read"
+      }
+    ],
+    "autoReplies": {
+      "student": [
+        "Thanks for the update!",
+        "I will be waiting on the 4th floor near Room 412.",
+        "Please call me when you reach the building lobby."
+      ],
+      "shop": [
+        "Your platter is sizzling on the grill right now!",
+        "Order is packed with extra napkins and sauce packets.",
+        "Ready for pickup at counter #2!"
+      ],
+      "runner": [
+        "I'm at the shop waiting for the food bag.",
+        "Order secured in thermal delivery bag, heading over to Academic Building now!",
+        "Arrived at the lobby stairs! Coming up to 4th floor."
+      ]
+    }
+  },
+  {
+    "orderId": "#3392",
+    "shop": {
+      "id": "2",
+      "name": "Chillox UIU",
+      "avatar": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=200&q=80",
+      "phone": "+880 1812-998877",
+      "location": "UIU Cafeteria Annex (North)",
+      "online": true
+    },
+    "student": {
+      "id": "111201002",
+      "name": "Tahmid Ahmed",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+      "phone": "+880 1712-345678",
+      "room": "Near UIU Library Stairs, 3rd Floor",
+      "online": true
+    },
+    "runner": {
+      "id": "4092",
+      "name": "Tanvir Ahmed",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+      "phone": "+880 1712-345678",
+      "vehicle": "Bicycle",
+      "online": true
+    },
+    "status": "ON THE WAY",
+    "statusLabel": "On the Way (Runner En Route)",
+    "eta": "4 mins",
+    "totalPrice": 420,
+    "items": [
+      { "name": "Chicken Burger", "quantity": 2, "price": 280, "note": "Extra Cheese" },
+      { "name": "French Fries (Large)", "quantity": 1, "price": 90, "note": "Crispy" },
+      { "name": "Coke (Chilled)", "quantity": 2, "price": 50, "note": "Cold" }
+    ],
+    "messages": [
+      {
+        "id": "c2_1",
+        "senderRole": "shop",
+        "senderName": "Chillox UIU",
+        "avatar": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=200&q=80",
+        "target": "all",
+        "text": "Order #3392 is prepared and freshly packed in bag #4.",
+        "time": "11:15 AM",
+        "status": "read"
+      },
+      {
+        "id": "c2_2",
+        "senderRole": "runner",
+        "senderName": "Tanvir Ahmed",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "target": "all",
+        "text": "Picked up from Counter #3. Heading to UIU Main Gate & Library area.",
+        "time": "11:30 AM",
+        "status": "read"
+      },
+      {
+        "id": "c2_3",
+        "senderRole": "student",
+        "senderName": "Tahmid Ahmed",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "target": "all",
+        "text": "Great! Did you get the extra garlic mayo sauce?",
+        "time": "11:32 AM",
+        "status": "read"
+      },
+      {
+        "id": "c2_4",
+        "senderRole": "runner",
+        "senderName": "Tanvir Ahmed",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "target": "all",
+        "text": "Yes, 2 sauce cups are inside the bag. I am crossing the main gate now.",
+        "time": "11:34 AM",
+        "status": "read"
+      }
+    ],
+    "autoReplies": {
+      "student": [
+        "Awesome! I have the exact cash ready.",
+        "I'm wearing a navy blue hoodie near the library stairs.",
+        "Take your time, ride safely!"
+      ],
+      "shop": [
+        "Enjoy your meal from Chillox!",
+        "Let us know if you need anything else on your next visit."
+      ],
+      "runner": [
+        "I'm parking the bike at the gate, coming upstairs in 2 mins.",
+        "I've arrived at the 3rd floor library entrance!",
+        "Handover complete, thank you!"
+      ]
+    }
+  },
+  {
+    "orderId": "#UIU-2026-1035",
+    "shop": {
+      "id": "1",
+      "name": "Chef's Table",
+      "avatar": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80",
+      "phone": "+880 1819-876543",
+      "location": "UIU Food Court, Counter #2",
+      "online": true
+    },
+    "student": {
+      "id": "011201124",
+      "name": "Rafiqul Haque",
+      "avatar": "https://i.pravatar.cc/150?u=student",
+      "phone": "+880 1712-987654",
+      "room": "Room 502, Academic Building",
+      "online": true
+    },
+    "runner": {
+      "id": "4092",
+      "name": "Tanvir Ahmed",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+      "phone": "+880 1712-345678",
+      "vehicle": "Bicycle",
+      "online": false
+    },
+    "status": "DELIVERED",
+    "statusLabel": "Completed & Delivered",
+    "eta": "Delivered at 1:10 PM",
+    "totalPrice": 285,
+    "items": [
+      { "name": "Chicken Burger", "quantity": 2, "price": 220, "note": "Cheese" },
+      { "name": "Cold Coffee", "quantity": 1, "price": 65, "note": "Chilled" }
+    ],
+    "messages": [
+      {
+        "id": "m1035_1",
+        "senderRole": "runner",
+        "senderName": "Tanvir Ahmed",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "target": "all",
+        "text": "Handover completed at Room 502. Enjoy your lunch!",
+        "time": "1:10 PM",
+        "status": "read"
+      },
+      {
+        "id": "m1035_2",
+        "senderRole": "student",
+        "senderName": "Rafiqul Haque",
+        "avatar": "https://i.pravatar.cc/150?u=student",
+        "target": "all",
+        "text": "Thank you Tanvir for the speedy delivery! 5 stars ⭐",
+        "time": "1:12 PM",
+        "status": "read"
+      }
+    ],
+    "autoReplies": {
+      "student": ["Thanks for ordering!"],
+      "shop": ["Thank you for visiting Chef's Table!"],
+      "runner": ["Thank you for the tip and review!"]
+    }
+  },
+  {
+    "orderId": "#ORD-9031",
+    "shop": {
+      "id": "1",
+      "name": "Chef's Table",
+      "avatar": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80",
+      "phone": "+880 1819-876543",
+      "location": "UIU Food Court, Counter #2",
+      "online": true
+    },
+    "student": {
+      "id": "011201045",
+      "name": "Tanvir Ahmed",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+      "phone": "+880 1711-554433",
+      "room": "Annex Cafeteria Table #4",
+      "online": true
+    },
+    "runner": {
+      "id": "pending",
+      "name": "Pending Assignment",
+      "avatar": "https://i.pravatar.cc/150?u=runner",
+      "phone": "+880 1900-DISPATCH",
+      "vehicle": "Dispatch Queue",
+      "online": false
+    },
+    "status": "NEW",
+    "statusLabel": "New Order Placed",
+    "eta": "Awaiting Shop Confirmation",
+    "totalPrice": 245,
+    "items": [
+      { "name": "Chicken Burger", "quantity": 1, "price": 180, "note": "Extra cheese" },
+      { "name": "Pepsi Can", "quantity": 1, "price": 65, "note": "Chilled" }
+    ],
+    "messages": [
+      {
+        "id": "m9031_1",
+        "senderRole": "student",
+        "senderName": "Tanvir Ahmed",
+        "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+        "target": "all",
+        "text": "Hello Chef's Table! Just placed order #ORD-9031. Is the burger bun fresh today?",
+        "time": "2 mins ago",
+        "status": "read"
+      }
+    ],
+    "autoReplies": {
+      "student": ["Thank you!"],
+      "shop": ["Yes, our buns are baked fresh this morning! Order accepted."],
+      "runner": ["Dispatch is searching for nearby available student runner."]
+    }
+  }
+]

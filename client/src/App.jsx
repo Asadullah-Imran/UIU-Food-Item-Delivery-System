@@ -40,6 +40,9 @@ import AdminProfile from './pages/admin/AdminProfile';
 import AdminManageShops from './pages/admin/AdminManageShops';
 
 
+import { OrderChatProvider } from './context/OrderChatContext';
+import OrderChatHub from './components/chat/OrderChatHub';
+
 // Layouts
 import { LayoutProvider } from './context/LayoutContext';
 import { CartProvider } from './context/CartContext';
@@ -53,8 +56,9 @@ export default function App() {
     <AuthProvider>
       <CartProvider>
         <FavoritesProvider>
-          <LayoutProvider>
-            <Routes>
+          <OrderChatProvider>
+            <LayoutProvider>
+              <Routes>
           <Route path="/" element={<SelectionPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -127,6 +131,7 @@ export default function App() {
             <Route path="reports" element={<ShopSalesReports />} />
             <Route path="reviews" element={<ShopCustomerReviews />} />
             <Route path="profile" element={<ShopProfile />} />
+            <Route path="chat" element={<OrderChatHub />} />
             <Route path="preview/:shopId" element={<ShopDetails />} />
 
           </Route>
@@ -196,7 +201,8 @@ export default function App() {
   }
 />
         </Routes>
-          </LayoutProvider>
+            </LayoutProvider>
+          </OrderChatProvider>
         </FavoritesProvider>
       </CartProvider>
     </AuthProvider>
