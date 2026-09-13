@@ -9,7 +9,7 @@ This document tracks the phased development and integration of the backend servi
 | Phase | Description | Scope / Domain | Status | Last Updated |
 | :---: | :--- | :--- | :---: | :---: |
 | **Phase 1** | **Authentication, Session & User Profiles** | Student, Runner, Shop, Admin Auth + JWT + Session Sync | ✅ **COMPLETED** | 2026-09-13 |
-| **Phase 2** | **Campus Shops & Menu Management** | Shop Listing, Menu CRUD, Create Food Item, Inventory Toggles | 🔄 **IN_PROGRESS** | 2026-09-13 |
+| **Phase 2** | **Campus Shops & Menu Management** | Shop Listing, Menu CRUD, Create Food Item, Inventory Toggles | ✅ **COMPLETED** | 2026-09-13 |
 | **Phase 3** | **Student Ordering, Cart & Checkout Flow** | Cart Drawer, Order Creation, Billing Calculations, Order Tracking | ⏳ **PENDING** | — |
 | **Phase 4** | **Shop Kitchen & Order Lifecycle** | Incoming Queue, Accept/Reject, Cooking Timer, Ready for Pickup | ⏳ **PENDING** | — |
 | **Phase 5** | **Student Runner Delivery & Earnings** | Available Delivery Queue, Accept Task, Live Tracking, Wallet Payout | ⏳ **PENDING** | — |
@@ -41,7 +41,7 @@ This document tracks the phased development and integration of the backend servi
 ---
 
 ### Phase 2: Campus Shops & Menu Management
-- **Status:** ⏳ **PENDING**
+- **Status:** ✅ **COMPLETED**
 - **Target Frontend Pages:**
   - [`BrowseShops.jsx`](client/src/pages/student/BrowseShops.jsx) (`/dashboard/student/shops`)
   - [`ShopDetails.jsx`](client/src/pages/student/ShopDetails.jsx) (`/dashboard/student/shops/:shopId`)
@@ -50,17 +50,20 @@ This document tracks the phased development and integration of the backend servi
   - [`ShopAddMenuItem.jsx`](client/src/pages/shop/ShopAddMenuItem.jsx) (`/dashboard/shop/menu/add`)
   - [`ShopProfile.jsx`](client/src/pages/shop/ShopProfile.jsx) (`/dashboard/shop/profile`)
 - **Backend Deliverables to Build:**
-  - [ ] `GET /api/shops` — List approved campus shops with category & search query filters.
-  - [ ] `GET /api/shops/:shopId` — Shop profile details with full categorized menu items.
-  - [ ] `POST /api/shops/menu` — Create food item with image, pricing, prep time, dietary tags.
-  - [ ] `PUT /api/shops/menu/:itemId` — Update menu item fields and price.
-  - [ ] `PATCH /api/shops/menu/:itemId/availability` — Toggle In-Stock / Out-of-Stock status.
-  - [ ] `DELETE /api/shops/menu/:itemId` — Delete menu item from shop.
-  - [ ] `PUT /api/shops/profile` — Shop owner updates operating hours, banner, phone, location.
+  - [x] `GET /api/shops` — List approved campus shops with category & search query filters.
+  - [x] `GET /api/shops/:shopId` — Shop profile details with full categorized menu items.
+  - [x] `GET /api/shops/my-shop` — Shop owner profile and menu management.
+  - [x] `POST /api/shops/menu` — Create food item with image, pricing, prep time, dietary tags.
+  - [x] `PUT /api/shops/menu/:itemId` — Update menu item fields and price.
+  - [x] `PATCH /api/shops/menu/:itemId/availability` — Toggle In-Stock / Out-of-Stock status.
+  - [x] `DELETE /api/shops/menu/:itemId` — Delete menu item from shop.
+  - [x] `PUT /api/shops/profile` — Shop owner updates operating hours, banner, phone, location.
 - **Frontend Integration Goals:**
-  - [ ] Connect `ShopAddMenuItem.jsx` to `POST /api/shops/menu` with live MongoDB saving.
-  - [ ] Connect `ShopMenuManagement.jsx` to live menu APIs with edit and delete capabilities.
-  - [ ] Connect student browsing and shop menu pages to live database records.
+  - [x] Connect `ShopAddMenuItem.jsx` to `POST /api/shops/menu` with live MongoDB saving.
+  - [x] Connect `ShopMenuManagement.jsx` to live menu APIs with edit, delete, and in-stock switches.
+  - [x] Connect student browsing (`BrowseShops.jsx`, `StudentDashboard.jsx`) and shop menu pages (`ShopDetails.jsx`) to live database records.
+  - [x] Connect `ShopProfile.jsx` to live shop profile and updates.
+
 
 ---
 

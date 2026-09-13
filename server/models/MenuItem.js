@@ -48,11 +48,40 @@ const menuItemSchema = new mongoose.Schema(
     rating: {
       type: Number,
       default: 4.8
+    },
+    discount: {
+      type: Number,
+      default: 0
+    },
+    taxRate: {
+      type: Number,
+      default: 5
+    },
+    stockQuantity: {
+      type: Number,
+      default: 50
+    },
+    lowStockWarning: {
+      type: Number,
+      default: 10
+    },
+    todaySpecial: {
+      type: Boolean,
+      default: false
+    },
+    featured: {
+      type: Boolean,
+      default: false
+    },
+    recommended: {
+      type: Boolean,
+      default: true
     }
   },
   {
     timestamps: true
   }
+
 );
 
 const MenuItem = mongoose.model('MenuItem', menuItemSchema);

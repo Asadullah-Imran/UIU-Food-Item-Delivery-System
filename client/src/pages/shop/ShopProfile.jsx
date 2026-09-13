@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, Bell, Settings, User, Edit2, Camera, Star, ShoppingBag, 
-  Wallet, Flame, CheckCircle2, Eye, Save, Lock, Shield, LogOut, ChevronRight
+  Wallet, Flame, CheckCircle2, Eye, Save, Lock, Shield, LogOut, ChevronRight, Loader2, AlertCircle
 } from 'lucide-react';
 import { useLayout } from '../../context/LayoutContext';
-import { useEffect } from 'react';
+import { useAuth } from '../../context/AuthContext';
 
 const ShopProfile = () => {
+  const { token } = useAuth();
+
+  const [shop, setShop] = useState({
+    name: "Chef's Table",
+    category: "Food Court",
+    description: "Official university food counter serving fresh quality and student-friendly prices.",
+    location: "Main Academic Building, Ground Floor",
+    phone: "+880 1819-000000",
+    image: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80",
+    banner: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80",
+    isOpen: true
+  });
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [toast, setToast] = useState(null);
+
   // State for toggles
   const [liveStatus, setLiveStatus] = useState(true);
   const [acceptingOrders, setAcceptingOrders] = useState(true);
@@ -18,6 +35,66 @@ const ShopProfile = () => {
     saturday: { start: '09:00 AM', end: '04:00 PM', closed: false },
     sunday: { start: '12:00 AM', end: '12:00 AM', closed: true },
   });
+
+  const fetchShopProfile = async () => {
+    try {
+      setIsLoading(true);
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch('/api/shops/my-shop', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.shop) {
+        setShop(data.shop);
+        setLiveStatus(data.shop.isOpen ?? true);
+      }
+    } catch (e) {
+      console.warn('Failed to load shop profile:', e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchShopProfile();
+  }, [token]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      setIsSaving(true);
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch('/api/shops/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          name: shop.name,
+          category: shop.category,
+          location: shop.location,
+          phone: shop.phone,
+          isOpen: liveStatus,
+          image: shop.image,
+          banner: shop.banner
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      showToast('Shop profile saved successfully!', 'success');
+      if (data.shop) setShop(data.shop);
+    } catch (err) {
+      showToast(err.message || 'Failed to save profile changes', 'error');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
 
   const headerActions = (
     <div className="flex items-center gap-4 mr-4 w-full justify-between sm:justify-end">
@@ -150,26 +227,47 @@ const ShopProfile = () => {
           </div>
         </div>
 
+        {/* Toast Alert */}
+        {toast && (
+          <div className="fixed top-20 right-8 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className={`px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-3 text-sm font-bold text-white ${
+              toast.type === 'success' ? 'bg-emerald-600 border-emerald-500' : 'bg-rose-600 border-rose-500'
+            }`}>
+              {toast.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+              <span>{toast.message}</span>
+            </div>
+          </div>
+        )}
+
         {/* Actions Bar */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-6 bg-white/50 py-2 rounded-xl">
           <div className="flex items-center text-sm font-semibold text-slate-500 mb-4 md:mb-0">
-            <CheckCircle2 className="w-4 h-4 text-green-500 mr-2" /> All changes are currently auto-drafted
+            <CheckCircle2 className="w-4 h-4 text-green-500 mr-2" /> Live synced with MongoDB
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-bold hover:bg-slate-50 transition-colors">
+            <button 
+              onClick={fetchShopProfile}
+              className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 text-sm font-bold hover:bg-slate-50 transition-colors cursor-pointer"
+            >
               Reset Changes
             </button>
             <button 
-              onClick={() => window.location.href = '/dashboard/shop/preview/1'}
-              className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold flex items-center hover:bg-slate-200 transition-colors"
+              onClick={() => window.location.href = `/dashboard/student/shops/${shop._id || shop.id || '1'}`}
+              className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-bold flex items-center hover:bg-slate-200 transition-colors cursor-pointer"
             >
               <Eye className="w-4 h-4 mr-2" /> Preview Shop
             </button>
-            <button className="px-5 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold flex items-center shadow-md shadow-orange-500/20 hover:bg-orange-600 transition-colors">
-              <Save className="w-4 h-4 mr-2" /> Save Changes
+            <button 
+              onClick={handleSaveChanges}
+              disabled={isSaving}
+              className="px-5 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold flex items-center shadow-md shadow-orange-500/20 hover:bg-orange-600 transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              {isSaving ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
         </div>
+
 
         {/* Form Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -185,14 +283,26 @@ const ShopProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-2">Shop Name</label>
-                  <input type="text" defaultValue="Chef's Table" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" />
+                  <input 
+                    type="text" 
+                    value={shop.name || ''} 
+                    onChange={(e) => setShop({ ...shop, name: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" 
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-500 mb-2">Category</label>
-                  <select className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500 appearance-none bg-white">
-                    <option>Food & Beverages</option>
-                    <option>Stationery</option>
-                    <option>Groceries</option>
+                  <select 
+                    value={shop.category || 'Food Court'} 
+                    onChange={(e) => setShop({ ...shop, category: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500 appearance-none bg-white"
+                  >
+                    <option value="Food Court">Food Court</option>
+                    <option value="Cafeteria">Cafeteria</option>
+                    <option value="Fast Food">Fast Food</option>
+                    <option value="Beverages">Beverages</option>
+                    <option value="Stationery">Stationery</option>
+                    <option value="Grocery">Grocery</option>
                   </select>
                 </div>
               </div>
@@ -201,19 +311,30 @@ const ShopProfile = () => {
                 <label className="block text-xs font-semibold text-slate-500 mb-2">Description</label>
                 <textarea 
                   rows="3"
-                  defaultValue="Official university cafeteria serving a variety of hot meals, snacks, and beverages to students and faculty. Known for fresh quality and student-friendly prices."
+                  value={shop.description || ''} 
+                  onChange={(e) => setShop({ ...shop, description: e.target.value })}
                   className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500 resize-none"
                 ></textarea>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-2">Campus Building</label>
-                  <input type="text" defaultValue="Main Academic Building" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-2">Campus Location</label>
+                  <input 
+                    type="text" 
+                    value={shop.location || ''} 
+                    onChange={(e) => setShop({ ...shop, location: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" 
+                  />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-2">Location Detail</label>
-                  <input type="text" defaultValue="100 feet road Madani Ave" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-2">Phone Number</label>
+                  <input 
+                    type="text" 
+                    value={shop.phone || ''} 
+                    onChange={(e) => setShop({ ...shop, phone: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" 
+                  />
                 </div>
               </div>
             </div>
@@ -225,14 +346,16 @@ const ShopProfile = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-2">Public Email</label>
-                  <input type="email" defaultValue="chefstable@gmail.com" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-500 mb-2">Phone Number</label>
-                  <input type="text" defaultValue="+880 1712-345678" className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" />
+                  <label className="block text-xs font-semibold text-slate-500 mb-2">Public Contact</label>
+                  <input 
+                    type="text" 
+                    value={shop.phone || ''} 
+                    onChange={(e) => setShop({ ...shop, phone: e.target.value })}
+                    className="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm font-medium text-slate-800 focus:outline-none focus:border-orange-500" 
+                  />
                 </div>
               </div>
+
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>

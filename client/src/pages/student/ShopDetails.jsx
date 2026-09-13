@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRight, Check, Star } from 'lucide-react';
+import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRight, Check, Star, Loader2 } from 'lucide-react';
 
-// Mock Data
+// Mock Data fallbacks
 import shopsData from '../../data/shops.json';
 import menuData from '../../data/menu.json';
 import reviewsData from '../../data/reviews.json';
@@ -15,29 +15,64 @@ export default function ShopDetails() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const { cart, addToCart, cartTotal, setIsCartVisible } = useCart();
   
-  // Find shop, default to Chef's Table if not found
-  const shop = shopsData.find(s => s.id === shopId) || shopsData[0];
-  
-  // Category Filtering
-  const categories = ["All", "Popular", "Snacks & Sides", "Meals", "Drinks", "Desserts"];
+  const [shop, setShop] = useState(() => shopsData.find(s => s.id === shopId) || shopsData[0]);
+  const [menuItems, setMenuItems] = useState([]);
+  const [categories, setCategories] = useState(["All", "Fast Food", "Meals", "Drinks", "Desserts"]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [activeCategory, setActiveCategory] = useState("All");
   const [itemQuantities, setItemQuantities] = useState({});
   const [addedAnimation, setAddedAnimation] = useState(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
 
+  useEffect(() => {
+    const fetchShopDetails = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch(`/api/shops/${shopId}`);
+        const data = await res.json();
+        if (res.ok && data.shop) {
+          setShop({
+            ...data.shop,
+            id: data.shop._id,
+            deliveryFee: data.shop.deliveryFee || 30
+          });
+          if (data.menuItems && data.menuItems.length > 0) {
+            const normalized = data.menuItems.map(item => ({
+              ...item,
+              id: item._id,
+              shopId: data.shop._id,
+              shopName: data.shop.name
+            }));
+            setMenuItems(normalized);
+            if (data.categories && data.categories.length > 0) {
+              setCategories(data.categories);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('API error, using fallback:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShopDetails();
+  }, [shopId]);
+
   // Filtered menu items
-  const matchedShopItems = menuData.filter(item => item.shopId === shop.id);
-  const allShopItems = matchedShopItems.length > 0 ? matchedShopItems : menuData;
+  const allShopItems = menuItems.length > 0 ? menuItems : menuData;
   const itemsToDisplay = allShopItems.filter(item => {
     if (activeCategory === "All") return true;
-    return item.category === activeCategory || (activeCategory === "Popular" && (item.isBestSeller || item.badge === "BEST SELLER"));
+    return item.category?.toLowerCase() === activeCategory.toLowerCase() || 
+           (activeCategory === "Popular" && (item.isPopular || item.isBestSeller));
   });
 
-  const popularItems = allShopItems.filter(item => item.category === "Popular" || item.isBestSeller || item.badge === "BEST SELLER");
-  const snacksItems = allShopItems.filter(item => item.category === "Snacks & Sides" || item.category === "Snacks");
-  const reviews = reviewsData.filter(r => r.shopId === shop.id || !r.shopId);
+  const popularItems = allShopItems.filter(item => item.isPopular || item.isBestSeller || item.badge === "BEST SELLER");
+  const snacksItems = allShopItems.filter(item => item.category?.toLowerCase().includes('snack') || item.category?.toLowerCase().includes('fast'));
+  const reviews = reviewsData.filter(r => r.shopId === shop._id || r.shopId === shop.id || !r.shopId);
 
-  const deliveryFee = shop.deliveryFee || 25;
+  const deliveryFee = shop.deliveryFee || 30;
   const totalWithDelivery = cart.length > 0 ? cartTotal + deliveryFee : 0;
 
   const handleQuantityChange = (itemId, change) => {
@@ -49,13 +84,21 @@ export default function ShopDetails() {
   };
 
   const handleAddItem = (item) => {
-    const qty = itemQuantities[item.id] || 1;
+    const targetId = item._id || item.id;
+    const qty = itemQuantities[targetId] || 1;
     for (let i = 0; i < qty; i++) {
-      addToCart(item);
+      addToCart({
+        ...item,
+        id: targetId,
+        _id: targetId,
+        shopId: shop._id || shop.id,
+        shopName: shop.name
+      });
     }
-    setAddedAnimation(item.id);
+    setAddedAnimation(targetId);
     setTimeout(() => setAddedAnimation(null), 1500);
   };
+
 
   return (
     <>

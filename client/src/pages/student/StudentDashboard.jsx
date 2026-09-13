@@ -24,11 +24,31 @@ const iconMap = {
   'cake': <Cake className="w-5 h-5 text-orange-500" />,
 };
 
+import { useAuth } from '../../context/AuthContext';
+
 export default function StudentDashboard() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToCart, cartItemCount, cartTotal, setIsCartVisible } = useCart();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [recentlyAdded, setRecentlyAdded] = React.useState(null);
+  const [shops, setShops] = React.useState(shopsData);
+
+  React.useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        const res = await fetch('/api/shops');
+        const data = await res.json();
+        if (res.ok && data.shops && data.shops.length > 0) {
+          setShops(data.shops);
+        }
+      } catch (e) {
+        // Fallback to shopsData
+      }
+    };
+    fetchShops();
+  }, []);
+
 
   React.useLayoutEffect(() => {
     const dashboardLink = document.querySelector('nav a:first-child');
@@ -57,9 +77,10 @@ export default function StudentDashboard() {
       `}</style>
       <div className="flex flex-col lg:flex-row justify-between items-start mb-8 gap-6">
         <div>
-          <h2 className="text-3xl font-bold text-slate-800 mb-1">Good Afternoon, {userData.name} 👋</h2>
+          <h2 className="text-3xl font-bold text-slate-800 mb-1">Good Afternoon, {user?.name || userData.name} 👋</h2>
           <p className="text-slate-500">What would you like to order today?</p>
         </div>
+
         
         <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-6 min-w-[280px]">
           <div className="flex items-center">
@@ -132,45 +153,49 @@ export default function StudentDashboard() {
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {shopsData.slice(0, 4).map(shop => (
-            <div key={shop.id} className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg transition-shadow group flex flex-col">
-              <div className="relative h-40 overflow-hidden flex-shrink-0">
-                <img src={shop.image} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                {shop.isOpen && (
-                  <span className="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-sm">
-                    Open
-                  </span>
-                )}
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(shop.id);
-                  }}
-                  className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all z-10"
-                  aria-label="Toggle favorite"
-                >
-                  <Heart className={`w-4 h-4 transition-colors duration-200 ${isFavorite(shop.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                </button>
-              </div>
-              <div className="p-4 flex flex-col flex-1">
-                <div className="flex justify-between items-start mb-1">
-                  <h4 className="font-bold text-lg text-slate-800">{shop.name}</h4>
-                  <div className="flex items-center text-sm font-bold text-slate-700 bg-orange-50 px-2 py-0.5 rounded-md text-orange-700">
-                    <span className="text-orange-400 mr-1">★</span> {shop.rating}
+          {shops.slice(0, 4).map((shop) => {
+            const shopId = shop._id || shop.id;
+            return (
+              <div key={shopId} className="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg transition-shadow group flex flex-col">
+                <div className="relative h-40 overflow-hidden flex-shrink-0">
+                  <img src={shop.image} alt={shop.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  {shop.isOpen && (
+                    <span className="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider shadow-sm">
+                      Open
+                    </span>
+                  )}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite(shopId);
+                    }}
+                    className="absolute top-3 right-3 w-8 h-8 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-sm text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all z-10 cursor-pointer"
+                    aria-label="Toggle favorite"
+                  >
+                    <Heart className={`w-4 h-4 transition-colors duration-200 ${isFavorite(shopId) ? 'fill-red-500 text-red-500' : ''}`} />
+                  </button>
+                </div>
+                <div className="p-4 flex flex-col flex-1">
+                  <div className="flex justify-between items-start mb-1">
+                    <h4 className="font-bold text-lg text-slate-800">{shop.name}</h4>
+                    <div className="flex items-center text-sm font-bold text-slate-700 bg-orange-50 px-2 py-0.5 rounded-md text-orange-700">
+                      <span className="text-orange-400 mr-1">★</span> {shop.rating || 4.8}
+                    </div>
                   </div>
+                  <div className="flex items-center text-xs text-slate-500 font-medium mb-4 mt-auto">
+                    <Clock className="w-3.5 h-3.5 mr-1" /> {shop.deliveryTime || '15-20 min'}
+                  </div>
+                  <button 
+                    onClick={() => navigate(`/dashboard/student/shops/${shopId}`)}
+                    className="w-full py-2 bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 font-bold rounded-xl text-sm transition-colors mt-auto cursor-pointer">
+                    Browse Menu
+                  </button>
                 </div>
-                <div className="flex items-center text-xs text-slate-500 font-medium mb-4 mt-auto">
-                  <Clock className="w-3.5 h-3.5 mr-1" /> {shop.deliveryTime}
-                </div>
-                <button 
-                  onClick={() => navigate(`/dashboard/student/shops/${shop.id}`)}
-                  className="w-full py-2 bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-600 font-bold rounded-xl text-sm transition-colors mt-auto">
-                  Browse Menu
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-10 mb-10">

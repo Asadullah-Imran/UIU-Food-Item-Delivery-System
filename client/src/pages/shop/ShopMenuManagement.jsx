@@ -20,23 +20,15 @@ import {
 import shopOrdersData from '../../data/shopOrdersData.json';
 import menuData from '../../data/menu.json';
 
-const defaultMenuItems = menuData;
+import { useAuth } from '../../context/AuthContext';
 
 export default function ShopMenuManagement() {
   const navigate = useNavigate();
+  const { token } = useAuth();
 
-  // Load items from localStorage if available, or fallback to default
-  const [items, setItems] = useState(() => {
-    const saved = localStorage.getItem('uiu_shop_menu_items');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Failed to parse saved menu items", e);
-      }
-    }
-    return defaultMenuItems;
-  });
+  const [items, setItems] = useState([]);
+  const [shopInfo, setShopInfo] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All'); // 'All' | 'Available' | 'Unavailable'
@@ -49,10 +41,36 @@ export default function ShopMenuManagement() {
   const [editItem, setEditItem] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
-  // Sync to localStorage
+  const fetchMenuItems = async () => {
+    try {
+      setIsLoading(true);
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch('/api/shops/my-shop', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.menuItems) {
+        setShopInfo(data.shop);
+        // Normalize fields for UI compatibility
+        const normalized = data.menuItems.map((item) => ({
+          ...item,
+          id: item._id,
+          available: item.isAvailable,
+          badge: !item.isAvailable ? 'OUT OF STOCK' : item.isPopular ? 'BEST SELLER' : null,
+          prepTime: item.preparationTime || '10-15 mins'
+        }));
+        setItems(normalized);
+      }
+    } catch (err) {
+      console.error('Error fetching shop menu:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    localStorage.setItem('uiu_shop_menu_items', JSON.stringify(items));
-  }, [items]);
+    fetchMenuItems();
+  }, [token]);
 
   // Toast auto dismiss
   useEffect(() => {
@@ -66,50 +84,105 @@ export default function ShopMenuManagement() {
     setToast({ message, type });
   };
 
-  // Toggle item availability
-  const toggleAvailability = (id) => {
+  // Toggle item availability in MongoDB
+  const toggleAvailability = async (id) => {
+    const targetItem = items.find((i) => i.id === id || i._id === id);
+    if (!targetItem) return;
+
+    const newStatus = !targetItem.available;
+
+    // Optimistic UI update
     setItems((prevItems) =>
       prevItems.map((item) => {
-        if (item.id === id) {
-          const newStatus = !item.available;
-          showToast(
-            `"${item.name}" is now marked as ${newStatus ? 'Available' : 'Unavailable'}`,
-            newStatus ? 'success' : 'warning'
-          );
+        if (item.id === id || item._id === id) {
           return {
             ...item,
             available: newStatus,
-            badge: !newStatus
-              ? 'OUT OF STOCK'
-              : item.badge === 'OUT OF STOCK'
-              ? null
-              : item.badge
+            isAvailable: newStatus,
+            badge: !newStatus ? 'OUT OF STOCK' : item.isPopular ? 'BEST SELLER' : null
           };
         }
         return item;
       })
     );
+
+    try {
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch(`/api/shops/menu/${id}/availability`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({ isAvailable: newStatus })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+      showToast(
+        `"${targetItem.name}" is now marked as ${newStatus ? 'Available' : 'Unavailable'}`,
+        newStatus ? 'success' : 'warning'
+      );
+    } catch (err) {
+      showToast(err.message || 'Failed to update status', 'warning');
+      fetchMenuItems(); // Rollback on error
+    }
   };
 
-  // Delete item handler
-  const handleDeleteItem = (id) => {
-    const itemToDelete = items.find((i) => i.id === id);
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  // Delete item handler in MongoDB
+  const handleDeleteItem = async (id) => {
+    const itemToDelete = items.find((i) => i.id === id || i._id === id);
     setDeleteConfirmId(null);
-    showToast(`"${itemToDelete?.name || 'Item'}" was removed from menu`, 'info');
+
+    try {
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch(`/api/shops/menu/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      setItems((prev) => prev.filter((i) => i.id !== id && i._id !== id));
+      showToast(`"${itemToDelete?.name || 'Item'}" was deleted from menu`, 'info');
+    } catch (err) {
+      showToast(err.message || 'Failed to delete item', 'warning');
+    }
   };
 
-  // Save edited item
-  const handleSaveEdit = (e) => {
+  // Save edited item in MongoDB
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!editItem) return;
 
-    setItems((prev) =>
-      prev.map((item) => (item.id === editItem.id ? editItem : item))
-    );
-    showToast(`Updated "${editItem.name}" successfully!`, 'success');
-    setEditItem(null);
+    try {
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch(`/api/shops/menu/${editItem.id || editItem._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        },
+        body: JSON.stringify({
+          name: editItem.name,
+          price: Number(editItem.price),
+          category: editItem.category,
+          description: editItem.description,
+          preparationTime: editItem.prepTime || editItem.preparationTime
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message);
+
+      setItems((prev) =>
+        prev.map((item) => (item.id === editItem.id ? { ...item, ...editItem } : item))
+      );
+      showToast(`Updated "${editItem.name}" successfully!`, 'success');
+      setEditItem(null);
+    } catch (err) {
+      showToast(err.message || 'Failed to update item', 'warning');
+    }
   };
+
 
   // Dynamic calculated metrics
   const totalItemsCount = items.length;
