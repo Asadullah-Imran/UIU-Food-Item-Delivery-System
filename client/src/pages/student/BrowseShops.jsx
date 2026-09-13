@@ -8,9 +8,32 @@ import StudentSidebarFix from './StudentSidebarFix';
 
 export default function BrowseShops() {
   const location = useLocation();
+  const [shops, setShops] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState(() => {
     return location.state?.category || "All";
   });
+
+  useEffect(() => {
+    const fetchShops = async () => {
+      try {
+        setIsLoading(true);
+        const res = await fetch('/api/shops');
+        const data = await res.json();
+        if (res.ok && data.shops && data.shops.length > 0) {
+          setShops(data.shops);
+        } else {
+          setShops(shopsData);
+        }
+      } catch (e) {
+        setShops(shopsData);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchShops();
+  }, []);
 
   useEffect(() => {
     if (location.state?.category) {
@@ -19,13 +42,16 @@ export default function BrowseShops() {
   }, [location.state]);
 
   const { isFavorite, toggleFavorite, favoriteCount } = useFavorites();
-  const filters = ["All", "Favorites", "Food", "Café", "Snacks", "Stationery", "Grocery"];
+  const filters = ["All", "Favorites", "Food Court", "Café", "Snacks", "Stationery", "Grocery"];
 
-  const filteredShops = shopsData.filter(shop => {
+  const filteredShops = shops.filter(shop => {
+    const shopId = shop._id || shop.id;
     if (activeFilter === "All") return true;
-    if (activeFilter === "Favorites") return isFavorite(shop.id);
-    return shop.category?.toLowerCase() === activeFilter.toLowerCase();
+    if (activeFilter === "Favorites") return isFavorite(shopId);
+    return shop.category?.toLowerCase().includes(activeFilter.toLowerCase()) || 
+           activeFilter.toLowerCase().includes(shop.category?.toLowerCase() || '');
   });
+
 
   return (
     <>
@@ -132,85 +158,82 @@ export default function BrowseShops() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 pb-10 relative">
-          {filteredShops.map(shop => (
-            <div key={shop.id} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col relative">
-              
-              {/* Image Header */}
-              <div className="relative h-48 overflow-hidden flex-shrink-0 bg-slate-100">
-                <img 
-                  src={shop.image} 
-                  alt={shop.name} 
-                  className={`w-full h-full object-cover transition-transform duration-700 ${shop.isOpen ? 'group-hover:scale-110' : 'grayscale'}`} 
-                />
+          {filteredShops.map((shop) => {
+            const shopId = shop._id || shop.id;
+            return (
+              <div key={shopId} className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group flex flex-col relative">
                 
-                {/* Status Badge */}
-                <div className={`absolute top-4 left-4 flex items-center px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-md backdrop-blur-sm ${
-                  shop.isOpen ? 'bg-white/90 text-slate-800' : 'bg-red-500/90 text-white'
-                }`}>
-                  <span className={`w-2 h-2 rounded-full mr-2 ${shop.isOpen ? 'bg-green-500' : 'bg-white'}`}></span>
-                  {shop.isOpen ? 'Open' : 'Closed'}
-                </div>
-                
-                {/* Favorite Button */}
-                <button 
-                  onClick={(e) => {
-                    e.preventDefault();
-                    toggleFavorite(shop.id);
-                  }}
-                  className="absolute top-4 right-4 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all z-10"
-                  aria-label="Toggle favorite"
-                >
-                  <Heart className={`w-4 h-4 transition-colors duration-200 ${isFavorite(shop.id) ? 'fill-red-500 text-red-500' : ''}`} />
-                </button>
-              </div>
-              
-              {/* Card Body */}
-              <div className="p-6 flex flex-col flex-1">
-                <div className="flex justify-between items-start mb-3">
-                  <h4 className="font-extrabold text-2xl text-slate-800 tracking-tight">{shop.name}</h4>
-                  <div className="flex items-center text-sm font-bold text-slate-700 bg-orange-50 px-2 py-1 rounded-lg text-orange-700 border border-orange-100 shadow-sm">
-                    <span className="text-orange-400 mr-1">★</span> {shop.rating}
+                {/* Image Header */}
+                <div className="relative h-48 overflow-hidden flex-shrink-0 bg-slate-100">
+                  <img 
+                    src={shop.image} 
+                    alt={shop.name} 
+                    className={`w-full h-full object-cover transition-transform duration-700 ${shop.isOpen ? 'group-hover:scale-110' : 'grayscale'}`} 
+                  />
+                  
+                  {/* Status Badge */}
+                  <div className={`absolute top-4 left-4 flex items-center px-3 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-md backdrop-blur-sm ${
+                    shop.isOpen ? 'bg-white/90 text-slate-800' : 'bg-red-500/90 text-white'
+                  }`}>
+                    <span className={`w-2 h-2 rounded-full mr-2 ${shop.isOpen ? 'bg-green-500' : 'bg-white'}`}></span>
+                    {shop.isOpen ? 'Open' : 'Closed'}
                   </div>
-                </div>
-                
-                <p className="text-sm text-slate-500 leading-relaxed mb-6 line-clamp-2">
-                  {shop.description}
-                </p>
-                
-                <div className="flex items-center space-x-4 text-xs font-semibold text-slate-600 mb-6 mt-auto">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1.5 text-slate-400" /> 
-                    {shop.deliveryTime}
-                  </div>
-                  <div className="w-1 h-1 rounded-full bg-slate-300"></div>
-                  <div className="flex items-center">
-                    <Truck className="w-4 h-4 mr-1.5 text-slate-400" /> 
-                    ৳ {shop.deliveryFee}
-                  </div>
-                </div>
-                
-                {shop.isOpen ? (
-                  <Link to={`/dashboard/student/shops/${shop.id}`} className="w-full">
-                    <button className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl text-sm transition-colors shadow-md shadow-orange-500/20">
-                      {shop.id === "5" ? "Browse Items" : "Browse Menu"}
-                    </button>
-                  </Link>
-                ) : (
-                  <button disabled className="w-full py-3.5 bg-slate-100 text-slate-400 font-bold rounded-2xl text-sm cursor-not-allowed">
-                    Opens Tomorrow
+                  
+                  {/* Favorite Button */}
+                  <button 
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleFavorite(shopId);
+                    }}
+                    className="absolute top-4 right-4 w-9 h-9 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md text-slate-400 hover:text-red-500 hover:scale-110 active:scale-95 transition-all z-10 cursor-pointer"
+                    aria-label="Toggle favorite"
+                  >
+                    <Heart className={`w-4 h-4 transition-colors duration-200 ${isFavorite(shopId) ? 'fill-red-500 text-red-500' : ''}`} />
                   </button>
-                )}
+                </div>
+                
+                {/* Card Body */}
+                <div className="p-6 flex flex-col flex-1">
+                  <div className="flex justify-between items-start mb-3">
+                    <h4 className="font-extrabold text-2xl text-slate-800 tracking-tight">{shop.name}</h4>
+                    <div className="flex items-center text-sm font-bold text-slate-700 bg-orange-50 px-2 py-1 rounded-lg text-orange-700 border border-orange-100 shadow-sm">
+                      <span className="text-orange-400 mr-1">★</span> {shop.rating || 4.8}
+                    </div>
+                  </div>
+                  
+                  <p className="text-sm text-slate-500 leading-relaxed mb-6 line-clamp-2">
+                    {shop.description || shop.location || 'Delicious food & quick delivery inside UIU campus.'}
+                  </p>
+                  
+                  <div className="flex items-center space-x-4 text-xs font-semibold text-slate-600 mb-6 mt-auto">
+                    <div className="flex items-center">
+                      <Clock className="w-4 h-4 mr-1.5 text-slate-400" /> 
+                      {shop.deliveryTime || '15-20 min'}
+                    </div>
+                    <div className="w-1 h-1 rounded-full bg-slate-300"></div>
+                    <div className="flex items-center">
+                      <Truck className="w-4 h-4 mr-1.5 text-slate-400" /> 
+                      ৳ {shop.deliveryFee || 30}
+                    </div>
+                  </div>
+                  
+                  {shop.isOpen ? (
+                    <Link to={`/dashboard/student/shops/${shopId}`} className="w-full">
+                      <button className="w-full py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl text-sm transition-colors shadow-md shadow-orange-500/20 cursor-pointer">
+                        Browse Menu
+                      </button>
+                    </Link>
+                  ) : (
+                    <button disabled className="w-full py-3.5 bg-slate-100 text-slate-400 font-bold rounded-2xl text-sm cursor-not-allowed">
+                      Opens Tomorrow
+                    </button>
+                  )}
+                </div>
               </div>
-              
-              {/* Floating Action Button for closed shop (as seen in design) */}
-              {!shop.isOpen && (
-                <button className="absolute -bottom-6 -right-6 w-16 h-16 bg-orange-500 hover:bg-orange-600 text-white rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 z-20" style={{ right: '1.5rem', bottom: '-1.5rem' }}>
-                  <ShoppingBag className="w-6 h-6" />
-                </button>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
+
       )}
     </>
   );

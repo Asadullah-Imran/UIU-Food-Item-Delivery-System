@@ -3,30 +3,52 @@ import React, { createContext, useContext, useState } from 'react';
 const CartContext = createContext();
 
 export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
-  const [isCartVisible, setIsCartVisible] = useState(false); // Can be used for a slide-out cart if needed later
+  const [cart, setCart] = useState(() => {
+    try {
+      const saved = localStorage.getItem('uiu_cart_items');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
+  const [isCartVisible, setIsCartVisible] = useState(false);
+
+  const getItemId = (item) => (item ? item._id || item.id : null);
 
   const addToCart = (item) => {
+    const targetId = getItemId(item);
+    if (!targetId) return;
+
     setCart((prevCart) => {
-      const existingItemIndex = prevCart.findIndex((cartItem) => cartItem.id === item.id);
-      
+      const existingItemIndex = prevCart.findIndex(
+        (cartItem) => getItemId(cartItem) === targetId
+      );
+
+      let updatedCart;
       if (existingItemIndex >= 0) {
-        // Item exists, increase quantity
-        const updatedCart = [...prevCart];
+        updatedCart = [...prevCart];
         updatedCart[existingItemIndex] = {
           ...updatedCart[existingItemIndex],
           quantity: updatedCart[existingItemIndex].quantity + 1
         };
-        return updatedCart;
       } else {
-        // New item
-        return [...prevCart, { ...item, quantity: 1 }];
+        updatedCart = [...prevCart, { ...item, id: targetId, _id: targetId, quantity: 1 }];
       }
+      try {
+        localStorage.setItem('uiu_cart_items', JSON.stringify(updatedCart));
+      } catch (e) {}
+      return updatedCart;
     });
   };
 
   const removeFromCart = (itemId) => {
-    setCart((prevCart) => prevCart.filter(item => item.id !== itemId));
+    setCart((prevCart) => {
+      const updated = prevCart.filter((item) => getItemId(item) !== itemId);
+      try {
+        localStorage.setItem('uiu_cart_items', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
   };
 
   const updateQuantity = (itemId, newQuantity) => {
@@ -34,16 +56,24 @@ export function CartProvider({ children }) {
       removeFromCart(itemId);
       return;
     }
-    setCart((prevCart) => 
-      prevCart.map(item => 
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      )
-    );
+    setCart((prevCart) => {
+      const updated = prevCart.map((item) =>
+        getItemId(item) === itemId ? { ...item, quantity: newQuantity } : item
+      );
+      try {
+        localStorage.setItem('uiu_cart_items', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
   };
 
   const clearCart = () => {
     setCart([]);
+    try {
+      localStorage.removeItem('uiu_cart_items');
+    } catch (e) {}
   };
+
 
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   const cartItemCount = cart.reduce((count, item) => count + item.quantity, 0);

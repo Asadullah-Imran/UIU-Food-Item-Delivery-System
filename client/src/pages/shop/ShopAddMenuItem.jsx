@@ -4,13 +4,21 @@ import {
   ChevronRight,
   CloudUpload,
   Image as ImageIcon,
+  AlertCircle,
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 export default function ShopAddMenuItem() {
   const navigate = useNavigate();
+  const { token } = useAuth();
   const fileInputRef = useRef(null);
 
   const [imagePreview, setImagePreview] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [form, setForm] = useState({
     itemName: "",
@@ -38,19 +46,76 @@ export default function ShopAddMenuItem() {
 
   const handleImageUpload = (event) => {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
-    setImagePreview(URL.createObjectURL(file));
+    // Convert to Data URL / base64 or object URL for instant preview
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSave = () => {
-    console.log("Menu item:", form);
+  const handleSave = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setErrorMessage("");
+    setSuccessMessage("");
 
-    // Frontend-only for now.
-    // Backend/API integration can be added later.
-    navigate("/dashboard/shop/menu");
+    if (!form.itemName.trim()) {
+      setErrorMessage("Please enter an item name");
+      return;
+    }
+
+    if (!form.price || Number(form.price) <= 0) {
+      setErrorMessage("Please enter a valid price in BDT");
+      return;
+    }
+
+    setIsSaving(true);
+
+    try {
+      const payload = {
+        name: form.itemName.trim(),
+        category: form.category,
+        description: form.fullDescription.trim() || form.shortDescription.trim(),
+        price: Number(form.price),
+        preparationTime: `${form.prepTime} mins`,
+        discount: Number(form.discount) || 0,
+        taxRate: Number(form.taxRate) || 5,
+        isAvailable: form.available,
+        todaySpecial: form.todaySpecial,
+        featured: form.featured,
+        recommended: form.recommended,
+        stockQuantity: Number(form.stockQuantity) || 50,
+        lowStockWarning: Number(form.lowStockWarning) || 10,
+        image: imagePreview || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80'
+      };
+
+      const res = await fetch('/api/shops/menu', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token || localStorage.getItem('uiu_auth_token')}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to add menu item');
+      }
+
+      setSuccessMessage('Menu item created successfully! Redirecting to menu...');
+      setTimeout(() => {
+        navigate('/dashboard/shop/menu');
+      }, 1200);
+    } catch (err) {
+      setErrorMessage(err.message || 'Failed to connect to backend server');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
 
   return (
     <div className="mx-auto max-w-[1100px] pb-16 pt-4">
@@ -93,6 +158,20 @@ export default function ShopAddMenuItem() {
 
       {/* FORM */}
       <div className="max-w-[760px] space-y-7">
+        {errorMessage && (
+          <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm font-medium rounded-2xl flex items-center gap-2.5 shadow-xs">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="p-4 bg-green-50 border border-green-200 text-green-700 text-sm font-medium rounded-2xl flex items-center gap-2.5 shadow-xs">
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+        )}
+
         {/* FOOD IMAGE */}
         <Card>
           <h2 className="mb-6 text-lg font-medium text-slate-800">
@@ -386,11 +465,14 @@ export default function ShopAddMenuItem() {
 
             <button
               type="button"
+              disabled={isSaving}
               onClick={handleSave}
-              className="rounded-xl bg-orange-500 px-8 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600"
+              className="flex items-center gap-2 rounded-xl bg-orange-500 px-8 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-600 disabled:opacity-60 cursor-pointer"
             >
-              Save Item
+              {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isSaving ? 'Saving Item...' : 'Save Item'}
             </button>
+
           </div>
         </div>
       </div>
