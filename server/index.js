@@ -1,9 +1,14 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { connectDB } from './config/db.js';
+import authRoutes from './routes/authRoutes.js';
 
 // Load environment variables
 dotenv.config();
+
+// Connect to MongoDB
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,23 +20,30 @@ app.use(express.urlencoded({ extended: true }));
 
 // Basic health check route
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'ok', message: 'Backend is running successfully.' });
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'UIU Food & Items Delivery System API is running successfully.' 
+  });
 });
 
-// TODO: Import and mount routes here
-// app.use('/api/users', userRoutes);
+// API Routes
+app.use('/api/auth', authRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
-  res.status(404).json({ message: 'API route not found' });
+  res.status(404).json({ success: false, message: 'API route not found' });
 });
 
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  res.status(500).json({ 
+    success: false, 
+    message: 'Internal Server Error', 
+    error: process.env.NODE_ENV === 'production' ? null : err.message 
+  });
 });
 
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
