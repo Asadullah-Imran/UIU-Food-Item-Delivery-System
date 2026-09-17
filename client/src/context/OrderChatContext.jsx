@@ -81,26 +81,6 @@ export function OrderChatProvider({ children }) {
       return order;
     }));
 
-    // Asynchronously persist to backend MongoDB
-    try {
-      const token = localStorage.getItem('uiu_auth_token');
-      if (token) {
-        fetch(`/api/student/chat/${encodeURIComponent(orderId)}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            text: cleanText,
-            target: activeTabFilter
-          })
-        }).catch(err => console.warn('Background chat sync error:', err));
-      }
-    } catch (e) {
-      console.warn('Error syncing chat to backend:', e);
-    }
-
     // Trigger realistic simulated multi-role reply based on who sent it
     const currentOrder = getOrderById(orderId);
     if (!currentOrder) return;

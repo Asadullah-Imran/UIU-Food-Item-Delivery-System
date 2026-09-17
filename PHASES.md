@@ -13,9 +13,9 @@
 | **Phase 1** | **Student Authentication, Profiles & Session Sync** | Registration, Login, JWT session hydration, Student ID & Room | ✅ **COMPLETED** | 2026-09-17 |
 | **Phase 2** | **Campus Shop Discovery & Dynamic Menus** | Shop Browsing, Categories, Dynamic Menu, Favorite Shops | ✅ **COMPLETED** | 2026-09-17 |
 | **Phase 3** | **Campus Wallet, In-App Purchase & Checkout Flow** | In-App Cash Top-Up Simulator, Insufficient Funds Blocker, Order Placement | ✅ **COMPLETED** | 2026-09-17 |
-| **Phase 4** | **Live Order Tracking, History & 100% Refund Cancellation** | Active Orders Queue, Real-Time Timeline, Drop-off Room, 1-Click Cancel | ✅ **COMPLETED** | 2026-09-17 |
-| **Phase 5** | **Post-Delivery Reviews, 5-Star Ratings & Complaints** | Rate Shop & Runner, Food Feedback, Dispute Ticket Submission | ✅ **COMPLETED** | 2026-09-17 |
-| **Phase 6** | **Student Tri-Party Order Chat & UIU Support** | In-App Messaging with Runner & Shop, Quick Replies, Notification Badges | ✅ **COMPLETED** | 2026-09-17 |
+| **Phase 4** | **Live Order Tracking, History & 100% Refund Cancellation** | Active Orders Queue, Real-Time Timeline, Drop-off Room, 1-Click Cancel | ⏳ **IN_PROGRESS** | 2026-09-17 |
+| **Phase 5** | **Post-Delivery Reviews, 5-Star Ratings & Complaints** | Rate Shop & Runner, Food Feedback, Dispute Ticket Submission | ⏳ **PENDING** | — |
+| **Phase 6** | **Student Tri-Party Order Chat & UIU Support** | In-App Messaging with Runner & Shop, Quick Replies, Notification Badges | ⏳ **PENDING** | — |
 
 ---
 
@@ -78,7 +78,7 @@
 ---
 
 ### Phase 4: Real-Time Order Lifecycle Tracking & 100% Refund Cancellation
-- **Status:** ✅ **COMPLETED**
+- **Status:** ⏳ **IN_PROGRESS**
 - **Target Frontend Pages:**
   - [`MyOrdersPage.jsx`](client/src/pages/student/MyOrdersPage.jsx) (`/dashboard/student/orders`)
   - [`OrderSuccessPage.jsx`](client/src/pages/student/OrderSuccessPage.jsx) (`/order-success`)
@@ -86,42 +86,39 @@
   - `GET /api/student/orders` — Fetch student active & completed order history with populated shop and runner info.
   - `GET /api/student/orders/:orderId` — Single order tracking details with live 5-step status timeline (`PLACED` $\rightarrow$ `CONFIRMED` $\rightarrow$ `PREPARING` $\rightarrow$ `READY_FOR_PICKUP` $\rightarrow$ `ON_THE_WAY` $\rightarrow$ `DELIVERED`).
   - `POST /api/student/orders/:orderId/cancel` — Cancel pending order and receive instant 100% wallet refund.
-- **Deliverables Completed:**
-  - [x] Connect `MyOrdersPage.jsx` to live `GET /api/student/orders` from MongoDB with active, completed, and cancelled tab filters.
-  - [x] Implement active order progress tracker with dynamic 5-step status timeline, ETA, and runner contact details.
-  - [x] Connect "Cancel Order" button to `POST /api/student/orders/:orderId/cancel` with real-time 100% wallet balance refund and notification banner.
-  - [x] Add 1-click re-order button to quickly populate cart from previous orders.
-  - [x] Itemized receipt modal with billing breakdown, special instructions, and timeline log.
+- **Deliverables to Build:**
+  - [ ] Connect `MyOrdersPage.jsx` to live `GET /api/student/orders` from MongoDB.
+  - [ ] Implement active order progress tracker with dynamic ETA and runner contact details.
+  - [ ] Connect "Cancel Order" button to `POST /api/student/orders/:orderId/cancel` with real-time wallet balance refund.
+  - [ ] Add 1-click re-order button to quickly populate cart from previous orders.
 
 ---
 
 ### Phase 5: Post-Delivery Reviews, 5-Star Ratings & Complaint Tickets
-- **Status:** ✅ **COMPLETED**
+- **Status:** ⏳ **PENDING**
 - **Target Frontend Pages:**
   - [`MyOrdersPage.jsx`](client/src/pages/student/MyOrdersPage.jsx) (`/dashboard/student/orders`)
-  - Rate Order Modal & Dispute Support Ticket Modal
+  - Rate Order Modal / Complaint Drawer
 - **Backend Endpoints to Connect:**
   - `POST /api/student/orders/:orderId/rate` — Submit 5-star rating for shop food and runner speed (`server/controllers/student/studentReviewController.js`).
   - `POST /api/student/complaints` — Submit dispute ticket for late delivery, missing item, or wrong location (`server/controllers/student/studentComplaintController.js`).
   - `GET /api/student/complaints` — View student ticket resolution status.
-- **Deliverables Completed:**
-  - [x] Connect 5-star rating modal on completed orders to update shop and runner reputation.
-  - [x] Build student dispute / complaint submission form with category presets (Late Delivery, Missing Item, Food Quality, Spill/Damaged, Payment Issue).
-  - [x] Display admin ticket resolutions, priority badges, and compensation status in dedicated "Disputes & Tickets" tab.
-  - [x] Add 1-click "Report Issue" buttons directly on order cards and in receipt modals.
+- **Deliverables to Build:**
+  - [ ] Connect 5-star rating modal on completed orders to update shop and runner reputation.
+  - [ ] Build student dispute / complaint submission form with category presets (Late Delivery, Missing Item, Food Quality).
+  - [ ] Display admin ticket resolutions and compensation credits.
 
 ---
 
 ### Phase 6: Student Tri-Party Order Chat & UIU Support
-- **Status:** ✅ **COMPLETED**
+- **Status:** ⏳ **PENDING**
 - **Target Frontend Pages:**
   - [`ChatPage.jsx`](client/src/pages/student/ChatPage.jsx) (`/dashboard/student/chat`)
   - [`OrderChatDrawer.jsx`](client/src/components/chat/OrderChatDrawer.jsx)
 - **Backend Endpoints to Connect:**
   - `GET /api/student/chat/:orderNumber` — Retrieve live order conversation thread (`server/controllers/student/studentChatController.js`).
   - `POST /api/student/chat/:orderNumber` — Send instant message to assigned runner, shop kitchen, or UIU support.
-- **Deliverables Completed:**
-  - [x] Connect order chat hub and drawer to MongoDB message persistence (`POST /api/student/chat/:orderNumber`).
-  - [x] Support quick reply chips ("I am at 4th floor elevator", "Please add extra cutlery").
-  - [x] Simulated multi-role auto-replies for kitchen preparation status and runner delivery ETA.
-  - [x] Unread message badges and active order switching in chat drawer.
+- **Deliverables to Build:**
+  - [ ] Connect order chat hub to MongoDB message persistence.
+  - [ ] Support quick reply chips ("I am at 4th floor elevator", "Please add extra cutlery").
+  - [ ] Simulated auto-replies for kitchen preparation status and runner delivery ETA.
