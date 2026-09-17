@@ -1,8 +1,9 @@
 import React from 'react';
 import { 
   Clock, Heart, Plus, Store, MapPin, HeadphonesIcon, ChevronLeft, ChevronRight,
-  Utensils, Coffee, Cookie, BookOpen, ShoppingCart, Cake, Check
+  Utensils, Coffee, Cookie, BookOpen, ShoppingCart, Cake, Check, Wallet
 } from 'lucide-react';
+import TopUpModal from '../../components/wallet/TopUpModal';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useFavorites } from '../../context/FavoritesContext';
@@ -33,6 +34,7 @@ export default function StudentDashboard() {
   const { isFavorite, toggleFavorite } = useFavorites();
   const [recentlyAdded, setRecentlyAdded] = React.useState(null);
   const [shops, setShops] = React.useState(shopsData);
+  const [isTopUpOpen, setIsTopUpOpen] = React.useState(false);
 
   React.useEffect(() => {
     const fetchShops = async () => {
@@ -81,21 +83,37 @@ export default function StudentDashboard() {
           <p className="text-slate-500">What would you like to order today?</p>
         </div>
 
-        
-        <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-6 min-w-[280px]">
-          <div className="flex items-center">
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 text-orange-500">
-              <Clock className="w-5 h-5" />
+        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+          {/* Campus Digital Wallet Card */}
+          <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-4 rounded-2xl shadow-md text-white flex items-center justify-between min-w-[260px] flex-1 lg:flex-none">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-orange-100 uppercase tracking-wider">In-App Wallet</p>
+                <p className="text-lg font-black text-white">৳ {user?.walletBalance || 0}.00</p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs text-slate-400 font-semibold uppercase">Peak Time Now</p>
-              <p className="text-sm font-bold text-slate-800">~15-20 min delivery</p>
-            </div>
+            <button
+              onClick={() => setIsTopUpOpen(true)}
+              className="px-3 py-1.5 bg-white text-orange-600 hover:bg-orange-50 text-xs font-bold rounded-xl transition-all shadow-sm active:scale-95 flex items-center"
+            >
+              <Plus className="w-3.5 h-3.5 mr-1" /> Top Up
+            </button>
           </div>
-          <div className="w-px h-10 bg-slate-200"></div>
-          <div>
-            <p className="text-xs text-slate-400 font-semibold uppercase">Active Couriers</p>
-            <p className="text-sm font-bold text-slate-800">24 Available</p>
+          
+          {/* Peak Time Indicator */}
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex items-center space-x-6 min-w-[240px] flex-1 lg:flex-none">
+            <div className="flex items-center">
+              <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 text-orange-500">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-semibold uppercase">Peak Time Now</p>
+                <p className="text-sm font-bold text-slate-800">~15-20 min delivery</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -353,6 +371,12 @@ export default function StudentDashboard() {
           </button>
         </div>
       )}
+
+      {/* Top Up Modal */}
+      <TopUpModal
+        isOpen={isTopUpOpen}
+        onClose={() => setIsTopUpOpen(false)}
+      />
     </>
   );
 }

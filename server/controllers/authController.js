@@ -99,6 +99,7 @@ export const register = async (req, res) => {
         avatar: user.avatar,
         status: user.status,
         isApproved: user.isApproved,
+        walletBalance: user.walletBalance || 0,
         runnerDetails: user.runnerDetails,
         shopDetails: user.shopDetails
       }
@@ -168,6 +169,7 @@ export const login = async (req, res) => {
         avatar: user.avatar,
         status: user.status,
         isApproved: user.isApproved,
+        walletBalance: user.walletBalance || 0,
         runnerDetails: user.runnerDetails,
         shopDetails: user.shopDetails
       }

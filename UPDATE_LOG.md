@@ -78,3 +78,54 @@ This document records the chronological history of updates, changes, test verifi
   - `npm run build` in `client/` passed with 0 errors.
 
 ---
+
+### [2026-09-17] — In-App Purchase & Campus Digital Wallet System
+- **Domain:** In-App Purchase, Digital Wallet, Automated Settlements & Checkout Flow
+- **Status:** In-App Purchase Feature ✅ COMPLETED
+- **Changes Summary:**
+  - **Backend**:
+    - Created [`server/models/Transaction.js`](server/models/Transaction.js) financial ledger schema recording `TOPUP`, `ORDER_PAYMENT`, `RUNNER_EARNING`, `SHOP_EARNING`, and `REFUND`.
+    - Extended [`server/models/User.js`](server/models/User.js) with `walletBalance` for students/admins and [`server/models/Shop.js`](server/models/Shop.js) with `walletBalance` & `totalEarnings`.
+    - Created [`server/controllers/walletController.js`](server/controllers/walletController.js) and [`server/routes/walletRoutes.js`](server/routes/walletRoutes.js) with `GET /api/wallet/balance`, `POST /api/wallet/topup`, and `GET /api/wallet/transactions`.
+    - Created [`server/controllers/orderController.js`](server/controllers/orderController.js) and [`server/routes/orderRoutes.js`](server/routes/orderRoutes.js) with:
+      - `POST /api/orders`: In-App Purchase validation checking `student.walletBalance >= grandTotal`, atomic balance deduction, and ledger logging.
+      - `PATCH /api/orders/:orderId/status`: Multi-party payout settlement on `DELIVERED` (Runner: +৳20 reward, Shop: +Subtotal sales, Platform: +৳5 fee) and automated refund on `CANCELLED`/`REJECTED`.
+    - Mounted `/api/wallet` and `/api/orders` in [`server/index.js`](server/index.js).
+    - Updated [`server/utils/seeder.js`](server/utils/seeder.js) with initial wallet balances and transactions.
+  - **Frontend**:
+    - Created [`TopUpModal.jsx`](client/src/components/wallet/TopUpModal.jsx): Interactive simulation modal with bKash/Nagad/Smart ID channels, quick amount presets (৳100, ৳200, ৳500, ৳1000), simulated PIN verification, and instant balance refresh.
+    - Updated [`AuthContext.jsx`](client/src/context/AuthContext.jsx): Added `refreshUser()` and `updateUserWallet()` for global reactive wallet balance.
+    - Updated [`SharedLayout.jsx`](client/src/components/SharedLayout.jsx): Added header Wallet Pill badge (e.g. `💳 ৳ 650.00`) and quick `+ Top Up` trigger.
+    - Refactored [`CheckoutPage.jsx`](client/src/pages/student/CheckoutPage.jsx): Replaced COD/Card/external methods with exclusive **In-App Campus Wallet**, showing live balance, insufficient balance alerts, blocked checkout on shortage, and direct connection to `POST /api/orders`.
+    - Updated [`StudentDashboard.jsx`](client/src/pages/student/StudentDashboard.jsx): Added Campus Digital Wallet card with balance and Top-Up button.
+    - Updated [`OrderSuccessPage.jsx`](client/src/pages/student/OrderSuccessPage.jsx): Shows payment confirmed via In-App Wallet and displays remaining wallet balance.
+    - Updated [`RunnerEarnings.jsx`](client/src/pages/runner/RunnerEarnings.jsx): Connected to live runner wallet balance.
+- **Files Modified/Created:**
+  - `server/models/Transaction.js`
+  - `server/models/User.js`
+  - `server/models/Shop.js`
+  - `server/models/Order.js`
+  - `server/controllers/walletController.js`
+  - `server/routes/walletRoutes.js`
+  - `server/controllers/orderController.js`
+  - `server/routes/orderRoutes.js`
+  - `server/controllers/authController.js`
+  - `server/index.js`
+  - `server/utils/seeder.js`
+  - `client/src/components/wallet/TopUpModal.jsx`
+  - `client/src/components/SharedLayout.jsx`
+  - `client/src/context/AuthContext.jsx`
+  - `client/src/pages/student/CheckoutPage.jsx`
+  - `client/src/pages/student/StudentDashboard.jsx`
+  - `client/src/pages/student/OrderSuccessPage.jsx`
+  - `client/src/pages/runner/RunnerEarnings.jsx`
+  - `UPDATE_LOG.md`
+- **Verification:**
+  - `GET /api/wallet/balance` -> 200 OK (returned current balance and transactions)
+  - `POST /api/wallet/topup` -> 200 OK (credited ৳250 and created ledger entry)
+  - `POST /api/orders` (with insufficient balance) -> 400 Bad Request with shortage details
+  - `POST /api/orders` (with sufficient balance) -> 201 Created and deducted from student wallet
+  - `PATCH /api/orders/:id/status` (status: DELIVERED) -> 200 OK with runner credit and shop credit
+  - `npm run build` in `client/` passed with 0 errors.
+
+---

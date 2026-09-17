@@ -1,5 +1,10 @@
 # UIU Food Item Delivery System
 
+A comprehensive food delivery platform tailored for UIU, featuring dedicated dashboards and workflows for **Students** (Customers), **Shops** (Vendors), and **Runners** (Delivery Personnel).
+
+## 🚀 Tech Stack
+- **Frontend:** React, Vite, Tailwind CSS, React Router DOM, Lucide React (Icons)
+- **Backend (WIP):** Node.js, Express.js
 
 ## 📁 Project Structure
 
