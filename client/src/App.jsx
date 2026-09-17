@@ -94,7 +94,7 @@ export default function App() {
           
           {/* Runner Routes */}
           <Route path="/dashboard/runner" element={
-            <ProtectedRoute allowedRoles={['runner']}>
+            <ProtectedRoute allowedRoles={['runner', 'student']}>
               <RunnerLayout />
             </ProtectedRoute>
           }>

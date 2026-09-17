@@ -228,10 +228,13 @@ export default function StudentProfile() {
             {isRunner && (
               <button
                 type="button"
-                onClick={() => navigate('/dashboard/runner')}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 px-5 rounded-xl shadow-md text-sm transition-all"
+                onClick={() => {
+                  updateUserData({ isRunner: true, role: 'runner' });
+                  navigate('/dashboard/runner');
+                }}
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-5 rounded-xl shadow-md shadow-emerald-600/20 text-sm transition-all"
               >
-                <ArrowLeftRight className="w-4 h-4 text-orange-400" />
+                <ArrowLeftRight className="w-4 h-4 text-emerald-100" />
                 Switch to Runner Mode
               </button>
             )}
@@ -289,47 +292,56 @@ export default function StudentProfile() {
           </div>
         </div>
       ) : (
-        /* Runner Summary & Performance Bar if already a runner */
-        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white shadow-md border border-slate-700">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-700/60 pb-5 mb-5">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center border border-orange-500/30">
-                <Award className="w-5 h-5" />
+        /* Runner Summary & Performance Bar (Light Theme) */
+        <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-emerald-200/80">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-5 mb-5">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200/60 shadow-2xs">
+                <Award className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-base font-black text-white">Campus Runner Identity Active</h3>
-                <p className="text-xs text-slate-400 font-medium">You have dual permissions to both order food as a student and fulfill deliveries as a runner.</p>
+                <h3 className="text-base font-black text-slate-900">Campus Runner Identity Active</h3>
+                <p className="text-xs text-slate-500 font-medium">You have dual permissions to both order food as a student and fulfill deliveries as a runner.</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400 font-bold">Runner Status:</span>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 Active & Ready
               </span>
+              <button
+                type="button"
+                onClick={() => {
+                  updateUserData({ isRunner: true, role: 'runner' });
+                  navigate('/dashboard/runner');
+                }}
+                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-3.5 rounded-xl shadow-xs transition-colors"
+              >
+                Launch Runner Dashboard <ArrowRight className="w-3.5 h-3.5" />
+              </button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Trips</span>
-              <div className="text-2xl font-black text-white mt-1">{user?.runnerDetails?.totalTrips || 12}</div>
+              <div className="text-2xl font-black text-slate-900 mt-1">{user?.runnerDetails?.totalTrips || 12}</div>
             </div>
-            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Runner Rating</span>
-              <div className="text-2xl font-black text-amber-400 mt-1 flex items-center gap-1">
+              <div className="text-2xl font-black text-amber-500 mt-1 flex items-center gap-1">
                 {user?.runnerDetails?.rating || 4.9} <Star className="w-4 h-4 fill-amber-400" />
               </div>
             </div>
-            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">On-Time Delivery</span>
-              <div className="text-2xl font-black text-emerald-400 mt-1">98%</div>
+              <div className="text-2xl font-black text-emerald-600 mt-1">98%</div>
             </div>
-            <div className="bg-slate-800/80 p-4 rounded-2xl border border-slate-700">
+            <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-100">
               <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Vehicle Mode</span>
-              <div className="text-base font-black text-slate-200 mt-1 flex items-center gap-1.5">
-                <Bike className="w-4 h-4 text-orange-400" />
+              <div className="text-sm font-black text-slate-800 mt-1.5 flex items-center gap-1.5">
+                <Bike className="w-4 h-4 text-orange-500" />
                 {user?.runnerDetails?.vehicleType || 'Bicycle'}
               </div>
             </div>
@@ -395,25 +407,27 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* Right 1 Col: Campus Digital Wallet Card */}
-        <div className="bg-gradient-to-br from-slate-900 to-[#1E293B] text-white rounded-3xl p-6 sm:p-7 shadow-md flex flex-col justify-between">
+        {/* Right 1 Col: Campus Digital Wallet Card (Light Theme) */}
+        <div className="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-slate-100 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-slate-300 text-xs font-bold mb-4">
-              <span className="flex items-center gap-1.5">
-                <Wallet className="w-4 h-4 text-orange-400" />
+            <div className="flex items-center justify-between text-slate-700 text-xs font-bold mb-4">
+              <span className="flex items-center gap-1.5 text-slate-800 font-extrabold">
+                <div className="w-7 h-7 rounded-lg bg-orange-50 text-orange-500 flex items-center justify-center">
+                  <Wallet className="w-4 h-4" />
+                </div>
                 Campus Digital Wallet
               </span>
-              <span className="bg-orange-500/20 text-orange-300 border border-orange-500/30 text-[10px] px-2.5 py-0.5 rounded-full font-black">
+              <span className="bg-orange-50 text-orange-600 border border-orange-200 text-[10px] px-2.5 py-0.5 rounded-full font-black">
                 Closed-Loop
               </span>
             </div>
 
-            <p className="text-xs text-slate-400 font-medium">Available Balance</p>
-            <div className="text-4xl font-black text-white tracking-tight mt-1">
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Available Balance</p>
+            <div className="text-4xl font-black text-slate-900 tracking-tight mt-1">
               ৳{(user?.walletBalance || 0).toLocaleString()}
             </div>
             
-            <p className="text-xs text-slate-400 mt-3 font-medium leading-relaxed">
+            <p className="text-xs text-slate-500 mt-3 font-medium leading-relaxed">
               Use your campus wallet for instant food ordering across all UIU cafeteria shops with zero transaction fees.
             </p>
           </div>
@@ -422,7 +436,7 @@ export default function StudentProfile() {
             <button
               type="button"
               onClick={() => setIsTopUpOpen(true)}
-              className="w-full bg-[#F37623] hover:bg-[#d9671b] text-white font-black py-3 px-4 rounded-xl shadow-lg shadow-orange-500/30 text-sm flex items-center justify-center gap-2 transition-all"
+              className="w-full bg-[#F37623] hover:bg-[#d9671b] text-white font-black py-3 px-4 rounded-xl shadow-md shadow-orange-500/20 text-sm flex items-center justify-center gap-2 transition-all"
             >
               <Zap className="w-4 h-4" />
               Quick Top-Up Balance
@@ -431,7 +445,7 @@ export default function StudentProfile() {
             <button
               type="button"
               onClick={() => navigate('/dashboard/student/orders')}
-              className="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white font-bold py-2.5 px-4 rounded-xl text-xs transition-colors"
+              className="w-full bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200/80 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors"
             >
               View Order History & Receipts
             </button>
