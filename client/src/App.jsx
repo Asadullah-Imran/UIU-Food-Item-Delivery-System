@@ -10,6 +10,7 @@ import CheckoutPage from './pages/student/CheckoutPage';
 import OrderSuccessPage from './pages/student/OrderSuccessPage';
 import MyOrdersPage from './pages/student/MyOrdersPage';
 import ChatPage from './pages/student/ChatPage';
+import StudentProfile from './pages/student/StudentProfile';
 import RunnerDashboard from './pages/runner/RunnerDashboard';
 import RunnerAvailableDeliveries from './pages/runner/RunnerAvailableDeliveries';
 import RunnerOrderAccepted from './pages/runner/RunnerOrderAccepted';
@@ -74,6 +75,7 @@ export default function App() {
             <Route path="shops/:shopId" element={<ShopDetails />} />
             <Route path="orders" element={<MyOrdersPage />} />
             <Route path="chat" element={<ChatPage />} />
+            <Route path="profile" element={<StudentProfile />} />
           </Route>
           
           {/* Checkout & Order Success use the sidebar layout */}

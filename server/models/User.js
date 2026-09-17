@@ -60,6 +60,12 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0
     },
+    isRunner: {
+      type: Boolean,
+      default: function () {
+        return this.role === 'runner';
+      }
+    },
     // Student specific details
     department: {
       type: String,

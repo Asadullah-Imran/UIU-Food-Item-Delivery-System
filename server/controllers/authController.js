@@ -221,6 +221,7 @@ export const updateProfile = async (req, res) => {
     if (phone) user.phone = phone;
     if (avatar) user.avatar = avatar;
     if (deliveryRoom) user.deliveryRoom = deliveryRoom;
+    if (req.body.department) user.department = req.body.department;
     if (runnerDetails) {
       user.runnerDetails = { ...user.runnerDetails, ...runnerDetails };
     }
@@ -236,6 +237,45 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({
       success: false,
       message: error.message
+    });
+  }
+};
+
+// @desc    Opt-in / Activate Runner role for an existing Student
+// @route   POST /api/auth/become-runner
+// @access  Private
+export const becomeRunner = async (req, res) => {
+  try {
+    const { vehicleType } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    user.isRunner = true;
+    user.runnerDetails = {
+      vehicleType: vehicleType || 'Walking/Bicycle',
+      rating: user.runnerDetails?.rating || 5.0,
+      totalTrips: user.runnerDetails?.totalTrips || 0,
+      walletBalance: user.runnerDetails?.walletBalance || 0,
+      isAvailable: true
+    };
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Congratulations! You are now a registered UIU Delivery Runner.',
+      user
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to activate runner mode'
     });
   }
 };

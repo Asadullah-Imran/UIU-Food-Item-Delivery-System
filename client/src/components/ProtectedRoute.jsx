@@ -22,7 +22,17 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
+  const hasPermission = () => {
+    if (!allowedRoles || allowedRoles.length === 0) return true;
+    if (allowedRoles.includes(user.role)) return true;
+    // Allow student who is also a runner to access runner routes
+    if (allowedRoles.includes('runner') && (user.isRunner || user.role === 'student')) return true;
+    // Allow runner to access student shopping routes
+    if (allowedRoles.includes('student') && (user.role === 'runner' || user.isRunner)) return true;
+    return false;
+  };
+
+  if (!hasPermission()) {
     // Redirect if active session has different role
     return <Navigate to={`/dashboard/${user.role}`} replace />;
   }
