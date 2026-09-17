@@ -129,3 +129,21 @@ This document records the chronological history of updates, changes, test verifi
   - `npm run build` in `client/` passed with 0 errors.
 
 ---
+
+### [2026-09-18] — MongoDB Atlas SRV Connection Fix (querySrv ECONNREFUSED)
+- **Domain:** Database Connectivity & Server Runtime Configuration
+- **Status:** Server Stabilization ✅ COMPLETED
+- **Changes Summary:**
+  - **Backend**:
+    - Identified DNS SRV resolution failure (`querySrv ECONNREFUSED _mongodb._tcp.ablation.ruh5jxj.mongodb.net`) caused by Node.js c-ares DNS resolver querying Windows/local router DNS (`192.168.0.1`), which drops or rejects SRV lookups.
+    - Updated [`server/config/db.js`](server/config/db.js) to configure public DNS servers (`dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1'])`) prior to establishing the Mongoose connection.
+    - Verified smooth Mongoose connection to Atlas cluster shard (`ac-j7xwac0-shard-00-00.ruh5jxj.mongodb.net`) and confirmed server starts on port 5001.
+- **Files Modified/Created:**
+  - `server/config/db.js`
+  - `UPDATE_LOG.md`
+- **Verification:**
+  - `node index.js` -> Connected: `ac-j7xwac0-shard-00-00.ruh5jxj.mongodb.net`, server running on port 5001.
+  - `npm run build` in `client/` passed with 0 errors.
+
+---
+
