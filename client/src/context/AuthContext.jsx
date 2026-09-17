@@ -144,8 +144,15 @@ export function AuthProvider({ children }) {
     localStorage.setItem('uiu_mock_user', JSON.stringify(updated));
   };
 
+  const updateUserData = (updatedFields) => {
+    if (!user) return;
+    const updated = { ...user, ...updatedFields };
+    setUser(updated);
+    localStorage.setItem('uiu_mock_user', JSON.stringify(updated));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, login, loginApi, registerApi, logout, refreshUser, updateUserWallet, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, loginApi, registerApi, logout, refreshUser, updateUserWallet, updateUserData, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
