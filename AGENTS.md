@@ -10,6 +10,7 @@ This file sets mandatory rules and workflows for all AI coding agents working on
 - **Location:** [`PHASES.md`](PHASES.md) (in the repository root).
 - **Rule:** Before starting work on any task, check `PHASES.md` to identify the active phase and remaining deliverables.
 - **Rule:** Whenever starting or completing deliverables in a phase, update the checkboxes `[x]` and phase status (`COMPLETED`, `IN_PROGRESS`, `PENDING`) and `Last Updated` date in `PHASES.md`.
+- **Scope Notice:** This repository's phase tracking is tailored to the **Student Role** for team collaboration.
 
 ---
 
@@ -19,8 +20,8 @@ This file sets mandatory rules and workflows for all AI coding agents working on
 - **Entry Structure:**
   ```markdown
   ### [YYYY-MM-DD] — <Feature / Task Title> (Phase X Status)
-  - **Domain:** <Area of application, e.g., Shop & Menu / Orders / Auth>
-  - **Status:** <e.g., Phase 2 IN_PROGRESS / Phase 2 COMPLETED>
+  - **Domain:** <Area of application, e.g., Student Orders / Student Wallet / Auth>
+  - **Status:** <e.g., Phase 3 COMPLETED / Phase 4 IN_PROGRESS>
   - **Changes Summary:**
     - **Backend:** <List of endpoints, models, middlewares created or changed>
     - **Frontend:** <List of pages, components, context state updated>
@@ -34,6 +35,8 @@ This file sets mandatory rules and workflows for all AI coding agents working on
 ---
 
 ### 3. Engineering & Architecture Rules
+- **Role-Modular Architecture**: All student-specific backend controllers and routes must reside in `server/controllers/student/` and `server/routes/student/`, matching the frontend `client/src/pages/student/` pattern.
+- **In-App Closed-Loop Purchase**: All student purchases operate exclusively via the Campus Digital Wallet (`User.walletBalance`). Do not introduce cash-on-delivery or direct card bypasses at checkout.
 - **No Mock Bypasses**: Do not introduce fake fallback logic in frontend pages that silently ignores backend errors or fakes successful operations. All operations must validate through backend API endpoints and MongoDB.
 - **Strict Role Security**: Ensure all protected routes and endpoints verify the user's role (`student`, `runner`, `shop`, `admin`) via the `protect` and `authorize` middlewares in `server/middlewares/`.
 - **Always Validate Builds**: When frontend components are created or updated, run `npm run build` in `client/` to verify zero syntax/build errors before completing turns.

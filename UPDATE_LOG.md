@@ -129,3 +129,41 @@ This document records the chronological history of updates, changes, test verifi
   - `npm run build` in `client/` passed with 0 errors.
 
 ---
+
+### [2026-09-17] — Student Role Architecture & Phase Restructure
+- **Domain:** Student Role Engineering, Modular Backend Restructure & Collaboration Setup
+- **Status:** Architecture Setup ✅ COMPLETED / Student Phase 4 ⏳ IN_PROGRESS
+- **Changes Summary:**
+  - **Backend**:
+    - Created dedicated role-modular student controllers in `server/controllers/student/`:
+      - `studentShopController.js`: Campus vendors & dynamic menu retrieval.
+      - `studentOrderController.js`: In-app wallet order placement, status tracker & 100% refund cancellation.
+      - `studentWalletController.js`: Student balance, top-up simulation & ledger history.
+      - `studentReviewController.js`: 5-star rating for shops and runners.
+      - `studentComplaintController.js`: Student dispute & complaint ticket submission.
+      - `studentChatController.js`: Tri-party order chat for students.
+    - Created `server/routes/student/studentRoutes.js` and mounted at `/api/student` in `server/index.js`.
+  - **Documentation & Roadmap**:
+    - Rewrote [`PHASES.md`](PHASES.md) into 6 crystal-clear phases focused exclusively on the Student Role for 4-member team collaboration.
+    - Updated [`README.md`](README.md) with collaboration guidelines and role-modular architecture breakdown.
+    - Updated [`FEATURES_MAP.md`](FEATURES_MAP.md) with student frontend-to-backend endpoint and controller mapping.
+    - Updated [`AGENTS.md`](AGENTS.md) with student domain rules and coding standards.
+- **Files Modified/Created:**
+  - `server/controllers/student/studentShopController.js`
+  - `server/controllers/student/studentOrderController.js`
+  - `server/controllers/student/studentWalletController.js`
+  - `server/controllers/student/studentReviewController.js`
+  - `server/controllers/student/studentComplaintController.js`
+  - `server/controllers/student/studentChatController.js`
+  - `server/routes/student/studentRoutes.js`
+  - `server/index.js`
+  - `PHASES.md`
+  - `README.md`
+  - `FEATURES_MAP.md`
+  - `AGENTS.md`
+  - `UPDATE_LOG.md`
+- **Verification:**
+  - All `/api/student/*` routes loaded and mounted without syntax errors.
+  - `npm run build` in `client/` passed with 0 errors.
+
+---
