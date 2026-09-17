@@ -1,0 +1,14 @@
+{
+  "name": "uiu-student-tests",
+  "version": "1.0.0",
+  "description": "Visual E2E and API test suites for Student Role",
+  "type": "module",
+  "scripts": {
+    "test": "node runVisualStudentSuite.js",
+    "test:visual": "node runVisualStudentSuite.js",
+    "test:api": "node studentApiFullSuite.test.js"
+  },
+  "dependencies": {
+    "puppeteer": "^25.11.0"
+  }
+}
