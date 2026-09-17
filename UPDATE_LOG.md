@@ -167,3 +167,30 @@ This document records the chronological history of updates, changes, test verifi
   - `npm run build` in `client/` passed with 0 errors.
 
 ---
+
+### [2026-09-17] — Post-Delivery Reviews, Dispute Tickets & Tri-Party Order Chat (Student Phases 5 & 6 Complete)
+- **Domain:** Student Reviews, Dispute & Complaint Resolution, Tri-Party Order Chat
+- **Status:** Student Phase 5 ✅ COMPLETED / Student Phase 6 ✅ COMPLETED
+- **Changes Summary:**
+  - **Backend**:
+    - Verified `POST /api/student/orders/:orderId/rate` for submitting 5-star ratings and customer comments to both shop and runner.
+    - Verified `POST /api/student/complaints` and `GET /api/student/complaints` for dispute tickets (Late Delivery, Missing Food Item, Wrong Item, Food Quality, Spill/Damaged, Payment Issue).
+    - Connected `POST /api/student/chat/:orderNumber` and `GET /api/student/chat/:orderNumber` for persistent MongoDB tri-party order conversations.
+  - **Frontend**:
+    - Added dedicated **"Disputes & Tickets"** tab on [`MyOrdersPage.jsx`](client/src/pages/student/MyOrdersPage.jsx) with real-time ticket counts, category badges, priority levels (`High`, `Medium`, `Low`), status indicators (`Open`, `In Review`, `Resolved`, `Escalated`), and admin resolution boxes.
+    - Implemented interactive **Dispute & Support Ticket Modal** with category selection, order association, priority rating, and instant ticket generation.
+    - Added 1-click **"Report Issue"** buttons on individual order cards and inside the Order Receipt modal.
+    - Synchronized [`OrderChatContext.jsx`](client/src/context/OrderChatContext.jsx) with backend `POST /api/student/chat/:orderNumber` ensuring live multi-role chat synchronization across devices and persistence in MongoDB.
+- **Files Modified/Created:**
+  - `client/src/pages/student/MyOrdersPage.jsx`
+  - `client/src/context/OrderChatContext.jsx`
+  - `PHASES.md`
+  - `UPDATE_LOG.md`
+- **Verification:**
+  - `POST /api/student/complaints` -> 201 Created (Ticket `TKT-4534` created)
+  - `GET /api/student/complaints` -> 200 OK (Retrieved user tickets with status)
+  - `POST /api/student/orders/:id/rate` -> 200 OK (5-star ratings saved)
+  - `npm run build` in `client/` passed with 0 errors in 603ms.
+
+---
+
