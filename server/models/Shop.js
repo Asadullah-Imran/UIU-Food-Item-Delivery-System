@@ -33,6 +33,14 @@ const shopSchema = new mongoose.Schema(
       type: Number,
       default: 50
     },
+    walletBalance: {
+      type: Number,
+      default: 0
+    },
+    totalEarnings: {
+      type: Number,
+      default: 0
+    },
     image: {
       type: String,
       default: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80'

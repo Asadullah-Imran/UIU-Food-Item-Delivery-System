@@ -8,6 +8,7 @@ import MenuItem from '../models/MenuItem.js';
 import Order from '../models/Order.js';
 import OrderChat from '../models/OrderChat.js';
 import Complaint from '../models/Complaint.js';
+import Transaction from '../models/Transaction.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -29,6 +30,7 @@ const seedDatabase = async () => {
     await Order.deleteMany();
     await OrderChat.deleteMany();
     await Complaint.deleteMany();
+    await Transaction.deleteMany();
 
     console.log('🌱 Seeding Users...');
     // 1. Seed Users
@@ -41,7 +43,8 @@ const seedDatabase = async () => {
       phone: '+880 1900-UIUADMIN',
       avatar: 'https://i.pravatar.cc/150?u=admin',
       status: 'active',
-      isApproved: true
+      isApproved: true,
+      walletBalance: 1500
     });
 
     const studentUser = await User.create({
@@ -55,7 +58,8 @@ const seedDatabase = async () => {
       status: 'active',
       isApproved: true,
       department: 'CSE',
-      deliveryRoom: 'Room 412, Academic Building'
+      deliveryRoom: 'Room 412, Academic Building',
+      walletBalance: 650
     });
 
     const runnerUser = await User.create({
@@ -122,6 +126,8 @@ const seedDatabase = async () => {
       reviewsCount: 142,
       deliveryTime: '15-20 min',
       minOrder: 50,
+      walletBalance: 4250,
+      totalEarnings: 14800,
       image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80',
       banner: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80',
       location: 'UIU Food Court Counter #2',
@@ -141,6 +147,8 @@ const seedDatabase = async () => {
       reviewsCount: 98,
       deliveryTime: '10-15 min',
       minOrder: 80,
+      walletBalance: 2900,
+      totalEarnings: 9400,
       image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=200&q=80',
       banner: 'https://images.unsplash.com/photo-1550547660-d9450f859349?w=1200&q=80',
       location: 'UIU Cafeteria Annex (North)',
@@ -314,8 +322,9 @@ const seedDatabase = async () => {
         grandTotal: 360
       },
       payment: {
-        method: 'cod',
-        status: 'pending'
+        method: 'wallet',
+        status: 'paid',
+        transactionId: 'TXN-UIU-9912'
       },
       deliveryAddress: {
         building: 'Library Annex',
@@ -478,6 +487,47 @@ const seedDatabase = async () => {
       priority: 'Low',
       adminResolution: 'Resolved by customer credit compensation of ৳ 50.'
     });
+
+    console.log('🌱 Seeding Wallet Transactions...');
+    // 7. Seed Initial Transactions
+    await Transaction.create([
+      {
+        transactionId: 'TXN-TOPUP-1001',
+        user: studentUser._id,
+        type: 'TOPUP',
+        direction: 'CREDIT',
+        amount: 1000,
+        balanceAfter: 1000,
+        paymentGateway: 'bKash In-App Simulator',
+        description: 'Initial Wallet Top-Up via bKash (01712-987654)',
+        status: 'COMPLETED',
+        createdAt: new Date(Date.now() - 24 * 3600000)
+      },
+      {
+        transactionId: 'TXN-ORD-1002',
+        user: studentUser._id,
+        shop: chefsTableShop._id,
+        type: 'ORDER_PAYMENT',
+        direction: 'DEBIT',
+        amount: 350,
+        balanceAfter: 650,
+        paymentGateway: 'In-App Campus Wallet',
+        description: 'Payment for order #UIU-2026-1022 at Chef\'s Table',
+        status: 'COMPLETED',
+        createdAt: new Date(Date.now() - 2 * 3600000)
+      },
+      {
+        transactionId: 'TXN-RUNNER-1003',
+        user: runnerUser._id,
+        type: 'RUNNER_EARNING',
+        direction: 'CREDIT',
+        amount: 40,
+        balanceAfter: 2450,
+        description: 'Delivery trip payout for order #UIU-2026-1022',
+        status: 'COMPLETED',
+        createdAt: new Date(Date.now() - 1 * 3600000)
+      }
+    ]);
 
     console.log('\n========================================');
     console.log('🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY!');

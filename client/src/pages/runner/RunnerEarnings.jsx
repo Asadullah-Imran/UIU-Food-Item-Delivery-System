@@ -4,9 +4,29 @@ import {
   Filter, Download, ChevronDown
 } from 'lucide-react';
 import runnerEarningsData from '../../data/runnerEarningsData.json';
+import { useAuth } from '../../context/AuthContext';
 import RunnerSidebarFix from './RunnerSidebarFix';
 
 export default function RunnerEarnings() {
+  const { user, token } = useAuth();
+  const [balance, setBalance] = React.useState(user?.runnerDetails?.walletBalance || 2450);
+
+  React.useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const res = await fetch('/api/wallet/balance', {
+          headers: { Authorization: `Bearer ${token || localStorage.getItem('uiu_auth_token')}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.walletBalance !== undefined) {
+            setBalance(data.walletBalance);
+          }
+        }
+      } catch (e) {}
+    };
+    fetchBalance();
+  }, [token]);
   
   // Dummy chart data for Weekly Earnings Trend
   const chartData = [
@@ -41,8 +61,8 @@ export default function RunnerEarnings() {
           <div className="flex-[2] rounded-[32px] p-8 sm:p-10 shadow-lg text-white relative overflow-hidden flex flex-col justify-between" style={{ background: 'linear-gradient(135deg, #F89849 0%, #EA6D17 100%)' }}>
             <div className="flex justify-between items-start mb-12">
               <div>
-                <p className="text-sm font-semibold text-white/90 mb-1">Current Wallet Balance</p>
-                <h2 className="text-5xl font-extrabold tracking-tight">৳1,250.00</h2>
+                <p className="text-sm font-semibold text-white/90 mb-1">Current Runner Balance</p>
+                <h2 className="text-5xl font-extrabold tracking-tight">৳{Number(balance).toFixed(2)}</h2>
               </div>
               <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/20">
                 <Wallet className="w-7 h-7 text-white" />

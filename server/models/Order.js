@@ -47,13 +47,16 @@ const orderSchema = new mongoose.Schema(
     billing: {
       subtotal: { type: Number, required: true },
       deliveryFee: { type: Number, default: 30 },
+      platformFee: { type: Number, default: 5 },
+      runnerReward: { type: Number, default: 25 },
+      shopAmount: { type: Number, default: 0 },
       discount: { type: Number, default: 0 },
       grandTotal: { type: Number, required: true }
     },
     payment: {
       method: {
         type: String,
-        enum: ['wallet', 'bkash', 'cod'],
+        enum: ['wallet'],
         default: 'wallet'
       },
       status: {

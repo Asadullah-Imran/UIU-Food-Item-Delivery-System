@@ -1,16 +1,29 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Check, Utensils, User, Bike, MapPin, 
   RefreshCcw, LayoutDashboard, Download,
-  FileText, MapPin as MapPinIcon, Banknote,
-  Plus, ArrowRight, MessageSquare
+  FileText, MapPin as MapPinIcon, Wallet,
+  Plus, ArrowRight, MessageSquare, ShieldCheck
 } from 'lucide-react';
 import popularItemsData from '../../data/popularItems.json';
 import { useOrderChat } from '../../context/OrderChatContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function OrderSuccessPage() {
+  const location = useLocation();
+  const { user } = useAuth();
   const { openOrderChat } = useOrderChat();
+  
+  const order = location.state?.order;
+  const remainingBalance = location.state?.remainingBalance ?? user?.walletBalance ?? 0;
+  const orderNumber = order?.orderNumber || '#UIU-2026-1030';
+  const totalPaid = order?.billing?.grandTotal || 275;
+  const shopName = order?.shop?.name || "Chef's Table";
+  const addressText = order?.deliveryAddress?.room 
+    ? `${order.deliveryAddress.room}, ${order.deliveryAddress.building}`
+    : 'Room 412, Academic Building';
+
   return (
     <>
       <div className="max-w-5xl mx-auto space-y-6">
@@ -18,21 +31,30 @@ export default function OrderSuccessPage() {
         {/* Top Card: Status & Tracker */}
         <div className="bg-white rounded-3xl p-8 lg:p-12 shadow-sm border border-slate-100 flex flex-col items-center text-center">
           
-          <div className="w-20 h-20 rounded-full border-4 border-green-500 flex items-center justify-center mb-6">
-            <Check className="w-10 h-10 text-green-500" strokeWidth={3} />
+          <div className="w-20 h-20 rounded-full border-4 border-emerald-500 bg-emerald-50 flex items-center justify-center mb-6 shadow-lg shadow-emerald-500/10">
+            <Check className="w-10 h-10 text-emerald-600" strokeWidth={3} />
           </div>
           
-          <h1 className="text-3xl font-bold text-slate-800 mb-2">Order Placed Successfully! 🎉</h1>
-          <p className="text-slate-500 mb-12 max-w-md">
-            Your order has been received and is now being prepared by the shop.
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold mb-3 border border-emerald-200">
+            <ShieldCheck className="w-4 h-4" /> In-App Payment Confirmed
+          </div>
+
+          <h1 className="text-3xl font-extrabold text-slate-800 mb-2">Order Placed & Paid! 🎉</h1>
+          <p className="text-slate-500 mb-2 max-w-md text-sm">
+            Order <span className="font-bold text-slate-800">{orderNumber}</span> has been deducted from your Campus Wallet and sent to the shop kitchen.
           </p>
+
+          <div className="mb-10 px-4 py-2 bg-orange-50 border border-orange-200/80 rounded-2xl inline-flex items-center gap-2 text-xs font-bold text-orange-800">
+            <Wallet className="w-4 h-4 text-orange-500" />
+            Remaining Campus Wallet Balance: <span className="text-orange-600 font-extrabold text-sm">৳{remainingBalance}.00</span>
+          </div>
 
           {/* Progress Tracker */}
           <div className="w-full max-w-3xl relative mb-12">
             {/* Background Line */}
             <div className="absolute top-1/2 left-0 w-full h-1 bg-slate-200 -translate-y-1/2 rounded-full z-0"></div>
             {/* Active Line */}
-            <div className="absolute top-1/2 left-0 w-[35%] h-1 bg-orange-500 -translate-y-1/2 rounded-full z-0"></div>
+            <div className="absolute top-1/2 left-0 w-[30%] h-1 bg-orange-500 -translate-y-1/2 rounded-full z-0"></div>
             
             <div className="relative z-10 flex justify-between">
               
@@ -41,15 +63,15 @@ export default function OrderSuccessPage() {
                 <div className="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center mb-2 shadow-md">
                   <Check className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold text-orange-600">Order Placed</span>
+                <span className="text-[10px] font-bold text-orange-600">Paid & Placed</span>
               </div>
               
               {/* Step 2 */}
               <div className="flex flex-col items-center">
-                <div className="w-10 h-10 rounded-full bg-[#9B5110] text-white flex items-center justify-center mb-2 shadow-md">
+                <div className="w-10 h-10 rounded-full bg-amber-600 text-white flex items-center justify-center mb-2 shadow-md">
                   <Utensils className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-bold text-[#9B5110]">Preparing</span>
+                <span className="text-[10px] font-bold text-amber-700">Kitchen Prep</span>
               </div>
               
               {/* Step 3 */}
@@ -81,26 +103,20 @@ export default function OrderSuccessPage() {
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
             <button 
-              onClick={() => openOrderChat('#UIU-2026-1030')}
-              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md flex items-center text-sm cursor-pointer active:scale-95"
+              onClick={() => openOrderChat(orderNumber)}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl transition-all shadow-md shadow-orange-500/20 flex items-center text-sm cursor-pointer active:scale-95"
             >
-              <MessageSquare className="w-4 h-4 mr-2" /> Chat with Shop & Runner
+              <MessageSquare className="w-4 h-4 mr-2" /> Live Order Chat
             </button>
             <Link 
               to="/dashboard/student/orders"
-              className="bg-[#9B5110] hover:bg-[#7A3F0C] text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm shadow-md"
+              className="bg-slate-900 hover:bg-black text-white font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm shadow-md"
             >
-              <RefreshCcw className="w-4 h-4 mr-2" /> Track Order
+              <RefreshCcw className="w-4 h-4 mr-2" /> View My Orders
             </Link>
             <Link to="/dashboard/student" className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm">
               <LayoutDashboard className="w-4 h-4 mr-2" /> Back to Dashboard
             </Link>
-            <button 
-              onClick={() => alert("Receipt downloaded.")}
-              className="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 px-6 rounded-xl transition-colors flex items-center text-sm cursor-pointer"
-            >
-              <Download className="w-4 h-4 mr-2" /> Download Receipt
-            </button>
           </div>
         </div>
 
@@ -113,22 +129,26 @@ export default function OrderSuccessPage() {
               <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-600 flex items-center justify-center mr-3">
                 <FileText className="w-5 h-5" />
               </div>
-              Order Details
+              Order & Payment Details
             </h3>
             
             <div className="space-y-4 text-sm">
               <div className="flex justify-between items-center">
-                <span className="text-slate-500">Shop</span>
-                <span className="font-bold text-slate-800">Chef's Table</span>
+                <span className="text-slate-500">Order Number</span>
+                <span className="font-mono font-bold text-slate-800">{orderNumber}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-500">Campus Shop</span>
+                <span className="font-bold text-slate-800">{shopName}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-slate-500">Estimated Delivery</span>
-                <span className="font-bold text-[#9B5110]">18 Minutes</span>
+                <span className="font-bold text-orange-600">15-20 Minutes</span>
               </div>
-              <div className="flex justify-between items-center pt-2">
-                <span className="text-slate-500">Payment Method</span>
-                <span className="font-bold text-slate-800 flex items-center">
-                  <Banknote className="w-4 h-4 mr-1.5 text-slate-400" /> Cash on delivery
+              <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                <span className="text-slate-500">Payment Channel</span>
+                <span className="font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-lg flex items-center text-xs">
+                  <Wallet className="w-3.5 h-3.5 mr-1 text-emerald-600" /> In-App Campus Wallet
                 </span>
               </div>
             </div>
@@ -145,14 +165,17 @@ export default function OrderSuccessPage() {
               </h3>
               
               <div className="text-sm">
-                <p className="text-slate-400 mb-1">Delivery Address</p>
-                <p className="font-bold text-slate-800">UIU main building, Gate 2</p>
+                <p className="text-slate-400 mb-1">Campus Drop-off Location</p>
+                <p className="font-bold text-slate-800">{addressText}</p>
               </div>
             </div>
             
             <div className="flex justify-between items-end mt-8 border-t border-slate-100 pt-6">
-              <span className="text-xl font-bold text-slate-800">Total Paid</span>
-              <span className="text-4xl font-extrabold text-[#9B5110]">৳740</span>
+              <div>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Deducted from Wallet</span>
+                <span className="text-xl font-bold text-slate-800">Total Paid</span>
+              </div>
+              <span className="text-3xl font-black text-orange-600">৳{totalPaid}</span>
             </div>
           </div>
 
@@ -162,9 +185,9 @@ export default function OrderSuccessPage() {
         <div className="pt-6">
           <div className="flex justify-between items-end mb-6">
             <h3 className="text-2xl font-bold text-slate-800">Students also ordered</h3>
-            <a href="#" className="text-sm font-bold text-[#9B5110] hover:underline flex items-center">
+            <Link to="/dashboard/student/shops" className="text-sm font-bold text-orange-600 hover:underline flex items-center">
               See all <ArrowRight className="w-4 h-4 ml-1" />
-            </a>
+            </Link>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -179,10 +202,10 @@ export default function OrderSuccessPage() {
                 <div className="p-5">
                   <h4 className="font-bold text-slate-800 mb-4">{item.name}</h4>
                   <div className="flex justify-between items-center">
-                    <span className="font-bold text-[#9B5110] text-lg">৳{item.price}</span>
-                    <button className="w-8 h-8 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center transition-colors shadow-sm shadow-orange-500/30">
+                    <span className="font-bold text-orange-600 text-lg">৳{item.price}</span>
+                    <Link to="/dashboard/student/shops" className="w-8 h-8 rounded-full bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center transition-colors shadow-sm shadow-orange-500/30">
                       <Plus className="w-5 h-5" />
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>

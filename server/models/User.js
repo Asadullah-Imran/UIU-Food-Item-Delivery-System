@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema(
         return this.role === 'student' || this.role === 'admin';
       }
     },
+    walletBalance: {
+      type: Number,
+      default: 0
+    },
     // Student specific details
     department: {
       type: String,

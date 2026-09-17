@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  LogOut, Search, Menu, X, ArrowLeftRight
+  LogOut, Search, Menu, X, ArrowLeftRight, Wallet, Plus
 } from 'lucide-react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import RoleTransitionOverlay from './RoleTransitionOverlay';
+import TopUpModal from './wallet/TopUpModal';
 import { useAuth } from '../context/AuthContext';
 import { useLayout } from '../context/LayoutContext';
 
@@ -19,7 +20,8 @@ export default function SharedLayout({
   const currentPath = location.pathname;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const { logout } = useAuth();
+  const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const { user: currentUser, logout } = useAuth();
   const { headerActions, hideGlobalSearch, noPadding } = useLayout();
 
   const handleSwitchRole = (e) => {
@@ -143,7 +145,28 @@ export default function SharedLayout({
             )}
           </div>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+            {/* Live In-App Wallet Badge */}
+            {currentUser && (currentUser.role === 'student' || currentUser.role === 'runner') && (
+              <div className="flex items-center bg-white p-1.5 pl-3 rounded-full shadow-sm border border-slate-100 space-x-2">
+                <div className="flex items-center text-orange-600">
+                  <Wallet className="w-4 h-4 mr-1.5 text-orange-500" />
+                  <span className="text-xs font-black text-slate-800">
+                    ৳{currentUser.role === 'runner' ? (currentUser.runnerDetails?.walletBalance || 0) : (currentUser.walletBalance || 0)}.00
+                  </span>
+                </div>
+                {currentUser.role === 'student' && (
+                  <button
+                    onClick={() => setIsTopUpOpen(true)}
+                    className="p-1 px-2.5 bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-bold rounded-full transition-colors flex items-center shadow-sm shadow-orange-500/20"
+                    title="Top Up Campus Wallet"
+                  >
+                    <Plus className="w-3 h-3 mr-0.5" /> Top Up
+                  </button>
+                )}
+              </div>
+            )}
+
             {headerActions && (
               <div className="flex items-center space-x-3">
                 {headerActions}
@@ -164,6 +187,12 @@ export default function SharedLayout({
           {children ? children : <Outlet />}
         </main>
       </div>
+
+      {/* Global In-App Wallet Top Up Modal */}
+      <TopUpModal 
+        isOpen={isTopUpOpen} 
+        onClose={() => setIsTopUpOpen(false)} 
+      />
     </div>
     </>
   );

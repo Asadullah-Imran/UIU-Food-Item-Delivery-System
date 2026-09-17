@@ -113,9 +113,39 @@ export function AuthProvider({ children }) {
     setToken(null);
   };
 
+  const refreshUser = async () => {
+    try {
+      const storedToken = token || localStorage.getItem('uiu_auth_token');
+      if (!storedToken) return null;
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${storedToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.user) {
+          setUser(data.user);
+          localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
+          return data.user;
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to refresh user:', e);
+    }
+    return null;
+  };
+
+  const updateUserWallet = (newBalance) => {
+    if (!user) return;
+    const updated = { ...user, walletBalance: newBalance };
+    if (user.role === 'runner' && user.runnerDetails) {
+      updated.runnerDetails = { ...user.runnerDetails, walletBalance: newBalance };
+    }
+    setUser(updated);
+    localStorage.setItem('uiu_mock_user', JSON.stringify(updated));
+  };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, loginApi, registerApi, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, loginApi, registerApi, logout, refreshUser, updateUserWallet, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
