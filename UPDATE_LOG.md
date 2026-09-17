@@ -130,6 +130,7 @@ This document records the chronological history of updates, changes, test verifi
 
 ---
 
+<<<<<<< HEAD
 ### [2026-09-18] — MongoDB Atlas SRV Connection Fix (querySrv ECONNREFUSED)
 - **Domain:** Database Connectivity & Server Runtime Configuration
 - **Status:** Server Stabilization ✅ COMPLETED
@@ -146,4 +147,80 @@ This document records the chronological history of updates, changes, test verifi
   - `npm run build` in `client/` passed with 0 errors.
 
 ---
+=======
+### [2026-09-17] — Student Role Architecture & Phase Restructure
+- **Domain:** Student Role Engineering, Modular Backend Restructure & Collaboration Setup
+- **Status:** Architecture Setup ✅ COMPLETED / Student Phase 4 ⏳ IN_PROGRESS
+- **Changes Summary:**
+  - **Backend**:
+    - Created dedicated role-modular student controllers in `server/controllers/student/`:
+      - `studentShopController.js`: Campus vendors & dynamic menu retrieval.
+      - `studentOrderController.js`: In-app wallet order placement, status tracker & 100% refund cancellation.
+      - `studentWalletController.js`: Student balance, top-up simulation & ledger history.
+      - `studentReviewController.js`: 5-star rating for shops and runners.
+      - `studentComplaintController.js`: Student dispute & complaint ticket submission.
+      - `studentChatController.js`: Tri-party order chat for students.
+    - Created `server/routes/student/studentRoutes.js` and mounted at `/api/student` in `server/index.js`.
+  - **Documentation & Roadmap**:
+    - Rewrote [`PHASES.md`](PHASES.md) into 6 crystal-clear phases focused exclusively on the Student Role for 4-member team collaboration.
+    - Updated [`README.md`](README.md) with collaboration guidelines and role-modular architecture breakdown.
+    - Updated [`FEATURES_MAP.md`](FEATURES_MAP.md) with student frontend-to-backend endpoint and controller mapping.
+    - Updated [`AGENTS.md`](AGENTS.md) with student domain rules and coding standards.
+- **Files Modified/Created:**
+  - `server/controllers/student/studentShopController.js`
+  - `server/controllers/student/studentOrderController.js`
+  - `server/controllers/student/studentWalletController.js`
+  - `server/controllers/student/studentReviewController.js`
+  - `server/controllers/student/studentComplaintController.js`
+  - `server/controllers/student/studentChatController.js`
+  - `server/routes/student/studentRoutes.js`
+  - `server/index.js`
+  - `PHASES.md`
+  - `README.md`
+  - `FEATURES_MAP.md`
+  - `AGENTS.md`
+  - `UPDATE_LOG.md`
+- **Verification:**
+  - All `/api/student/*` routes loaded and mounted without syntax errors.
+  - `npm run build` in `client/` passed with 0 errors.
+
+---
+  - `POST /api/student/orders/:id/rate` -> 200 OK (5-star ratings saved)
+  - `npm run build` in `client/` passed with 0 errors in 603ms.
+
+---
+
+### [2026-09-17] — Unified Student & Runner Dual-Role Profile (Phase 1 & Integration Complete)
+- **Domain:** Student Profile, Dual-Role Switching & "Become a Runner" Activation
+- **Status:** Profile Management ✅ COMPLETED
+- **Changes Summary:**
+  - **Backend**:
+    - Added `isRunner` boolean capability flag to `User` schema in `server/models/User.js`.
+    - Added `POST /api/auth/become-runner` controller endpoint in `server/controllers/authController.js` allowing UIU students to opt-in and activate runner capability with preferred vehicle mode (`Walking`, `Bicycle`, `Scooter`).
+    - Added `department` field updating support in `PUT /api/auth/profile`.
+    - Registered `router.post('/become-runner', protect, becomeRunner)` in `server/routes/authRoutes.js`.
+  - **Frontend**:
+    - Created [`StudentProfile.jsx`](client/src/pages/student/StudentProfile.jsx) (`/dashboard/student/profile`):
+      - Displays academic student credentials (Name, Student ID, Department, UIU Email, Phone, Default Delivery Location).
+      - Integrates closed-loop Campus Digital Wallet with live balance and quick 1-click `TopUpModal`.
+      - If Student is not a runner: Prominently displays the *"Become a UIU Campus Delivery Runner"* banner with interactive *"Become a Runner"* confirmation modal (with vehicle selection, on-campus guidelines, and instant activation).
+      - If Student has Runner capability: Shows live Runner metrics (rating ⭐, total trips, on-time rate, vehicle type) and a 1-click *"Switch to Runner Mode"* navigation button.
+      - Edit Profile Modal for instant contact and delivery room updates syncing to backend `PUT /api/auth/profile`.
+    - Updated [`navigation.js`](client/src/config/navigation.js) to add `Profile` to `studentNavigation`.
+    - Registered `/dashboard/student/profile` route in [`App.jsx`](client/src/App.jsx).
+    - Added `updateUserData` helper to [`AuthContext.jsx`](client/src/context/AuthContext.jsx).
+- **Files Modified/Created:**
+  - `server/models/User.js`
+  - `server/controllers/authController.js`
+  - `server/routes/authRoutes.js`
+  - `client/src/pages/student/StudentProfile.jsx`
+  - `client/src/config/navigation.js`
+  - `client/src/App.jsx`
+  - `client/src/context/AuthContext.jsx`
+  - `UPDATE_LOG.md`
+- **Verification:**
+  - `npm run build` in `client/` passed with 0 errors in 523ms.
+  - Server restarted successfully on port 5001 with active MongoDB connection.
+
+>>>>>>> 87cc6d58a61c9b894d8900674f24d1a9092b8e6e
 

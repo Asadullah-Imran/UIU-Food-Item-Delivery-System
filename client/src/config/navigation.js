@@ -36,6 +36,7 @@ export const studentNavigation = [
   { name: 'Browse Shops', path: '/dashboard/student/shops', icon: Store },
   { name: 'My Orders', path: '/dashboard/student/orders', icon: ClipboardList },
   { name: 'Order Chats', path: '/dashboard/student/chat', icon: MessageSquare },
+  { name: 'Profile', path: '/dashboard/student/profile', icon: User },
 ];
 
 export const studentUser = {

@@ -1,149 +1,124 @@
-# UIU Food & Items Delivery System — Backend & Integration Phases
+# UIU Food & Items Delivery System — Student Role Engineering & Integration Phases
 
-This document tracks the phased development and integration of the backend services with the frontend React application.
+> **🤝 4-Member Collaboration Scope Note:**
+> This repository is collaboratively engineered by 4 team members across four dedicated roles (**Admin**, **Shop Owner**, **Delivery Runner**, and **Ordering Student**). 
+> This phase tracking document is exclusively dedicated to the **Student Role** (Ordering Customer), tracking all student-specific backend controllers, API endpoints, MongoDB models, and frontend integration deliverables.
 
 ---
 
-## 📊 Phase Status Overview
+## 📊 Student Role Phase Status Overview
 
 | Phase | Description | Scope / Domain | Status | Last Updated |
 | :---: | :--- | :--- | :---: | :---: |
-| **Phase 1** | **Authentication, Session & User Profiles** | Student, Runner, Shop, Admin Auth + JWT + Session Sync | ✅ **COMPLETED** | 2026-09-13 |
-| **Phase 2** | **Campus Shops & Menu Management** | Shop Listing, Menu CRUD, Create Food Item, Inventory Toggles | ✅ **COMPLETED** | 2026-09-13 |
-| **Phase 3** | **Student Ordering, Cart & Checkout Flow** | Cart Drawer, Order Creation, Billing Calculations, Order Tracking | ⏳ **PENDING** | — |
-| **Phase 4** | **Shop Kitchen & Order Lifecycle** | Incoming Queue, Accept/Reject, Cooking Timer, Ready for Pickup | ⏳ **PENDING** | — |
-| **Phase 5** | **Student Runner Delivery & Earnings** | Available Delivery Queue, Accept Task, Live Tracking, Wallet Payout | ⏳ **PENDING** | — |
-| **Phase 6** | **Order-Scoped Chat, Admin Approvals & Analytics** | Tri-party Chat (Student-Shop-Runner), Account Approvals, PDF Reports | ⏳ **PENDING** | — |
+| **Phase 1** | **Student Authentication, Profiles & Session Sync** | Registration, Login, JWT session hydration, Student ID & Room | ✅ **COMPLETED** | 2026-09-17 |
+| **Phase 2** | **Campus Shop Discovery & Dynamic Menus** | Shop Browsing, Categories, Dynamic Menu, Favorite Shops | ✅ **COMPLETED** | 2026-09-17 |
+| **Phase 3** | **Campus Wallet, In-App Purchase & Checkout Flow** | In-App Cash Top-Up Simulator, Insufficient Funds Blocker, Order Placement | ✅ **COMPLETED** | 2026-09-17 |
+| **Phase 4** | **Live Order Tracking, History & 100% Refund Cancellation** | Active Orders Queue, Real-Time Timeline, Drop-off Room, 1-Click Cancel | ⏳ **IN_PROGRESS** | 2026-09-17 |
+| **Phase 5** | **Post-Delivery Reviews, 5-Star Ratings & Complaints** | Rate Shop & Runner, Food Feedback, Dispute Ticket Submission | ⏳ **PENDING** | — |
+| **Phase 6** | **Student Tri-Party Order Chat & UIU Support** | In-App Messaging with Runner & Shop, Quick Replies, Notification Badges | ⏳ **PENDING** | — |
 
 ---
 
-## 🚀 Detailed Phase Breakdown
+## 🚀 Detailed Student Phase Breakdown
 
-### Phase 1: Authentication, Session & User Profiles
+### Phase 1: Student Authentication, Profile & Session Sync
 - **Status:** ✅ **COMPLETED**
 - **Target Frontend Pages:**
   - [`SelectionPage.jsx`](client/src/pages/auth/SelectionPage.jsx) (`/`)
   - [`LoginPage.jsx`](client/src/pages/auth/LoginPage.jsx) (`/login`)
   - [`RegistrationPage.jsx`](client/src/pages/auth/RegistrationPage.jsx) (`/register`)
-- **Backend Endpoints:**
-  - `POST /api/auth/register` — User registration with role-based defaults.
-  - `POST /api/auth/login` — JWT token generation & password comparison.
-  - `POST /api/auth/logout` — Invalidate user session & clear storage.
-  - `GET /api/auth/me` — Protected session verification with JWT.
-  - `PUT /api/auth/profile` — Update user profile details.
-- **Completed Deliverables:**
-  - [x] Bcrypt password hashing and JWT token generator in `User` model.
-  - [x] Role-based status defaults (students auto-active; runner/shop approval support).
-  - [x] Real backend login and registration validation on frontend (removed mock bypass).
+- **Backend Endpoints & Controllers:**
+  - `POST /api/auth/register` — Student registration with Student ID (`011XXXXXX`), department, delivery room.
+  - `POST /api/auth/login` — JWT token generation & password comparison for student account.
+  - `GET /api/auth/me` — JWT session hydration & profile retrieval.
+  - `PUT /api/auth/profile` — Update student delivery room, phone, and profile avatar.
+- **Deliverables Completed:**
+  - [x] Bcrypt password hashing & JWT auth in `User` model.
+  - [x] Role-based status defaults (`status: 'active'`, `isApproved: true` for students).
   - [x] Initial app load session hydration and JWT validation in `AuthContext.jsx`.
-  - [x] Database seeder (`npm run seed`) with default credentials for all 4 roles.
+  - [x] 1-Click demo student credentials in `LoginPage.jsx` (`student@uiu.ac.bd` / `password123`).
 
 ---
 
-### Phase 2: Campus Shops & Menu Management
+### Phase 2: Campus Shop Discovery, Dynamic Menus & Favorites
 - **Status:** ✅ **COMPLETED**
 - **Target Frontend Pages:**
+  - [`StudentDashboard.jsx`](client/src/pages/student/StudentDashboard.jsx) (`/dashboard/student`)
   - [`BrowseShops.jsx`](client/src/pages/student/BrowseShops.jsx) (`/dashboard/student/shops`)
   - [`ShopDetails.jsx`](client/src/pages/student/ShopDetails.jsx) (`/dashboard/student/shops/:shopId`)
-  - [`StudentDashboard.jsx`](client/src/pages/student/StudentDashboard.jsx) (`/dashboard/student`)
-  - [`ShopMenuManagement.jsx`](client/src/pages/shop/ShopMenuManagement.jsx) (`/dashboard/shop/menu`)
-  - [`ShopAddMenuItem.jsx`](client/src/pages/shop/ShopAddMenuItem.jsx) (`/dashboard/shop/menu/add`)
-  - [`ShopProfile.jsx`](client/src/pages/shop/ShopProfile.jsx) (`/dashboard/shop/profile`)
-- **Backend Deliverables to Build:**
-  - [x] `GET /api/shops` — List approved campus shops with category & search query filters.
-  - [x] `GET /api/shops/:shopId` — Shop profile details with full categorized menu items.
-  - [x] `GET /api/shops/my-shop` — Shop owner profile and menu management.
-  - [x] `POST /api/shops/menu` — Create food item with image, pricing, prep time, dietary tags.
-  - [x] `PUT /api/shops/menu/:itemId` — Update menu item fields and price.
-  - [x] `PATCH /api/shops/menu/:itemId/availability` — Toggle In-Stock / Out-of-Stock status.
-  - [x] `DELETE /api/shops/menu/:itemId` — Delete menu item from shop.
-  - [x] `PUT /api/shops/profile` — Shop owner updates operating hours, banner, phone, location.
-- **Frontend Integration Goals:**
-  - [x] Connect `ShopAddMenuItem.jsx` to `POST /api/shops/menu` with live MongoDB saving.
-  - [x] Connect `ShopMenuManagement.jsx` to live menu APIs with edit, delete, and in-stock switches.
-  - [x] Connect student browsing (`BrowseShops.jsx`, `StudentDashboard.jsx`) and shop menu pages (`ShopDetails.jsx`) to live database records.
-  - [x] Connect `ShopProfile.jsx` to live shop profile and updates.
-
+  - [`CartSlideOut.jsx`](client/src/components/CartSlideOut.jsx) (Global Slide-out)
+- **Backend Endpoints & Controllers:**
+  - `GET /api/student/shops` — List approved campus vendors with category filter, search query, and rating sorting (`server/controllers/student/studentShopController.js`).
+  - `GET /api/student/shops/:shopId` — Retrieve shop profile, active menu items, and distinct categories.
+- **Deliverables Completed:**
+  - [x] Live MongoDB shop listing on `BrowseShops.jsx` with category pills (Fast Food, Food Court, Stationery).
+  - [x] Real-time categorized menu rendering on `ShopDetails.jsx` with dietary tags (Halal, Spicy) and in-stock checks.
+  - [x] Favorites state persistence via `FavoritesContext.jsx` with heart toggle animation.
+  - [x] Cart item addition, quantity adjustments, and subtotal calculation in `CartContext.jsx` and `CartSlideOut.jsx`.
 
 ---
 
-### Phase 3: Student Ordering, Cart & Checkout Flow
-- **Status:** ⏳ **PENDING**
+### Phase 3: Campus Digital Wallet, In-App Purchase & Checkout Flow
+- **Status:** ✅ **COMPLETED**
 - **Target Frontend Pages:**
   - [`CheckoutPage.jsx`](client/src/pages/student/CheckoutPage.jsx) (`/checkout`)
+  - [`TopUpModal.jsx`](client/src/components/wallet/TopUpModal.jsx) (Global In-App Simulator)
   - [`OrderSuccessPage.jsx`](client/src/pages/student/OrderSuccessPage.jsx) (`/order-success`)
+- **Backend Endpoints & Controllers:**
+  - `GET /api/student/wallet/balance` — Real-time student wallet balance and transaction ledger (`server/controllers/student/studentWalletController.js`).
+  - `POST /api/student/wallet/topup` — In-App top-up simulation with bKash, Nagad, and UIU Smart ID channels.
+  - `POST /api/student/orders` — In-App Purchase validation (`walletBalance >= grandTotal`), atomic balance deduction, and financial ledger logging (`server/controllers/student/studentOrderController.js`).
+- **Deliverables Completed:**
+  - [x] Exclusive In-App Purchase payment method (removed direct COD/external cards at checkout).
+  - [x] Insufficient balance guard: Disables checkout button and provides 1-click `+ Top Up` modal with amount chips (৳100, ৳200, ৳500, ৳1000).
+  - [x] Transaction ledger schema in `Transaction.js` recording all debits and credits.
+  - [x] Live header wallet pill badge (`💳 ৳ 650.00`) and Student Dashboard wallet card.
+  - [x] Receipt confirmation on `OrderSuccessPage.jsx` showing order number and remaining balance.
+
+---
+
+### Phase 4: Real-Time Order Lifecycle Tracking & 100% Refund Cancellation
+- **Status:** ⏳ **IN_PROGRESS**
+- **Target Frontend Pages:**
   - [`MyOrdersPage.jsx`](client/src/pages/student/MyOrdersPage.jsx) (`/dashboard/student/orders`)
-- **Backend Deliverables to Build:**
-  - [ ] `POST /api/orders` — Create order, calculate billing, assign unique `#UIU-XXXX` order number.
-  - [ ] `GET /api/orders/student` — Fetch student active & historical orders.
-  - [ ] `GET /api/orders/:orderId` — Real-time order tracker and timeline details.
-  - [ ] `POST /api/orders/:orderId/rate` — Submit 5-star rating and review for shop & runner.
-  - [ ] `POST /api/orders/:orderId/cancel` — Cancel pending order.
-- **Frontend Integration Goals:**
-  - [ ] Wire checkout form submission to `POST /api/orders`.
-  - [ ] Pass live order ID to `OrderSuccessPage.jsx`.
-  - [ ] Populate `MyOrdersPage.jsx` with active order timeline and past orders from MongoDB.
+  - [`OrderSuccessPage.jsx`](client/src/pages/student/OrderSuccessPage.jsx) (`/order-success`)
+- **Backend Endpoints to Connect:**
+  - `GET /api/student/orders` — Fetch student active & completed order history with populated shop and runner info.
+  - `GET /api/student/orders/:orderId` — Single order tracking details with live 5-step status timeline (`PLACED` $\rightarrow$ `CONFIRMED` $\rightarrow$ `PREPARING` $\rightarrow$ `READY_FOR_PICKUP` $\rightarrow$ `ON_THE_WAY` $\rightarrow$ `DELIVERED`).
+  - `POST /api/student/orders/:orderId/cancel` — Cancel pending order and receive instant 100% wallet refund.
+- **Deliverables to Build:**
+  - [ ] Connect `MyOrdersPage.jsx` to live `GET /api/student/orders` from MongoDB.
+  - [ ] Implement active order progress tracker with dynamic ETA and runner contact details.
+  - [ ] Connect "Cancel Order" button to `POST /api/student/orders/:orderId/cancel` with real-time wallet balance refund.
+  - [ ] Add 1-click re-order button to quickly populate cart from previous orders.
 
 ---
 
-### Phase 4: Shop Kitchen & Order Management Lifecycle
+### Phase 5: Post-Delivery Reviews, 5-Star Ratings & Complaint Tickets
 - **Status:** ⏳ **PENDING**
 - **Target Frontend Pages:**
-  - [`ShopDashboard.jsx`](client/src/pages/shop/ShopDashboard.jsx) (`/dashboard/shop`)
-  - [`ShopIncomingOrders.jsx`](client/src/pages/shop/ShopIncomingOrders.jsx) (`/dashboard/shop/orders`)
-  - [`ShopOrderDetails.jsx`](client/src/pages/shop/ShopOrderDetails.jsx) (`/dashboard/shop/orders/:orderId`)
-  - [`ShopPreparingOrder.jsx`](client/src/pages/shop/ShopPreparingOrder.jsx) (`/dashboard/shop/orders/:orderId/preparing`)
-  - [`ShopReadyForPickup.jsx`](client/src/pages/shop/ShopReadyForPickup.jsx) (`/dashboard/shop/orders/:orderId/ready`)
-  - [`ShopSalesReports.jsx`](client/src/pages/shop/ShopSalesReports.jsx) (`/dashboard/shop/reports`)
-- **Backend Deliverables to Build:**
-  - [ ] `GET /api/orders/shop` — Retrieve incoming, cooking, ready, and completed queues.
-  - [ ] `PATCH /api/orders/:orderId/status` — State changes (`CONFIRMED`, `REJECTED`, `PREPARING`, `READY_FOR_PICKUP`).
-  - [ ] `GET /api/shops/stats` — Real-time dashboard stats (revenue, pending orders, completed sales).
-- **Frontend Integration Goals:**
-  - [ ] Connect Accept/Reject buttons in `ShopIncomingOrders.jsx`.
-  - [ ] Connect cooking timer and "Ready for Pickup" action in `ShopPreparingOrder.jsx`.
-  - [ ] Connect shop sales analytics to live orders.
+  - [`MyOrdersPage.jsx`](client/src/pages/student/MyOrdersPage.jsx) (`/dashboard/student/orders`)
+  - Rate Order Modal / Complaint Drawer
+- **Backend Endpoints to Connect:**
+  - `POST /api/student/orders/:orderId/rate` — Submit 5-star rating for shop food and runner speed (`server/controllers/student/studentReviewController.js`).
+  - `POST /api/student/complaints` — Submit dispute ticket for late delivery, missing item, or wrong location (`server/controllers/student/studentComplaintController.js`).
+  - `GET /api/student/complaints` — View student ticket resolution status.
+- **Deliverables to Build:**
+  - [ ] Connect 5-star rating modal on completed orders to update shop and runner reputation.
+  - [ ] Build student dispute / complaint submission form with category presets (Late Delivery, Missing Item, Food Quality).
+  - [ ] Display admin ticket resolutions and compensation credits.
 
 ---
 
-### Phase 5: Student Runner Delivery Dispatch & Earnings
+### Phase 6: Student Tri-Party Order Chat & UIU Support
 - **Status:** ⏳ **PENDING**
 - **Target Frontend Pages:**
-  - [`RunnerDashboard.jsx`](client/src/pages/runner/RunnerDashboard.jsx) (`/dashboard/runner`)
-  - [`RunnerAvailableDeliveries.jsx`](client/src/pages/runner/RunnerAvailableDeliveries.jsx) (`/dashboard/runner/deliveries`)
-  - [`RunnerOrderAccepted.jsx`](client/src/pages/runner/RunnerOrderAccepted.jsx) (`/dashboard/runner/active/accepted`)
-  - [`RunnerOrderTracking.jsx`](client/src/pages/runner/RunnerOrderTracking.jsx) (`/dashboard/runner/active/tracking`)
-  - [`RunnerDeliveryCompleted.jsx`](client/src/pages/runner/RunnerDeliveryCompleted.jsx) (`/dashboard/runner/active/completed`)
-  - [`RunnerDeliveryHistory.jsx`](client/src/pages/runner/RunnerDeliveryHistory.jsx) (`/dashboard/runner/history`)
-  - [`RunnerEarnings.jsx`](client/src/pages/runner/RunnerEarnings.jsx) (`/dashboard/runner/earnings`)
-- **Backend Deliverables to Build:**
-  - [ ] `GET /api/runner/available` — Unassigned orders ready for pickup.
-  - [ ] `POST /api/runner/orders/:orderId/accept` — Atomically assign order to runner.
-  - [ ] `PATCH /api/runner/orders/:orderId/step` — Advance delivery steps (`REACHED_SHOP`, `PICKED_UP`, `ON_THE_WAY`, `DELIVERED`).
-  - [ ] `POST /api/runner/orders/:orderId/complete` — Credit runner wallet (+৳ 40) and increment trip counter.
-  - [ ] `GET /api/runner/history` & `GET /api/runner/earnings` — Deliveries summary and payout history.
-- **Frontend Integration Goals:**
-  - [ ] Wire "Accept Delivery" button to live backend endpoint.
-  - [ ] Connect step progression to update order status.
-  - [ ] Sync wallet balance and delivery history.
-
----
-
-### Phase 6: Order-Scoped Chat, Admin Approvals & Analytics
-- **Status:** ⏳ **PENDING**
-- **Target Frontend Pages:**
-  - [`ChatPage.jsx`](client/src/pages/student/ChatPage.jsx) / [`SharedChat.jsx`](client/src/pages/runner/SharedChat.jsx) / [`OrderChatHub.jsx`](client/src/components/chat/OrderChatHub.jsx)
-  - [`AdminDashboard.jsx`](client/src/pages/admin/AdminDashboard.jsx) (`/dashboard/admin`)
-  - [`AdminShopOwnerApproval.jsx`](client/src/pages/admin/AdminShopOwnerApproval.jsx) (`/dashboard/admin/shop-owners`)
-  - [`AdminRunnerApproval.jsx`](client/src/pages/admin/AdminRunnerApproval.jsx) (`/dashboard/admin/runners`)
-  - [`AdminManageShops.jsx`](client/src/pages/admin/AdminManageShops.jsx) (`/dashboard/admin/shops`)
-  - [`AdminComplaintManagement.jsx`](client/src/pages/admin/AdminComplaintManagement.jsx) (`/dashboard/admin/complaints`)
-  - [`AdminReportsAnalytics.jsx`](client/src/pages/admin/AdminReportsAnalytics.jsx) (`/dashboard/admin/reports`)
-- **Backend Deliverables to Build:**
-  - [ ] `GET /api/chat/:orderNumber` & `POST /api/chat/:orderNumber` — Order messaging API.
-  - [ ] `GET /api/admin/stats` — Campus-wide high-level metrics.
-  - [ ] `PATCH /api/admin/users/:id/status` — Approve/reject pending runners and shop owners.
-  - [ ] `GET /api/admin/complaints` & `PATCH /api/admin/complaints/:id` — Dispute tickets management.
-- **Frontend Integration Goals:**
-  - [ ] Connect order chat hub to live database message exchange.
-  - [ ] Connect admin approval actions, complaint resolution, and analytics charts to live data.
+  - [`ChatPage.jsx`](client/src/pages/student/ChatPage.jsx) (`/dashboard/student/chat`)
+  - [`OrderChatDrawer.jsx`](client/src/components/chat/OrderChatDrawer.jsx)
+- **Backend Endpoints to Connect:**
+  - `GET /api/student/chat/:orderNumber` — Retrieve live order conversation thread (`server/controllers/student/studentChatController.js`).
+  - `POST /api/student/chat/:orderNumber` — Send instant message to assigned runner, shop kitchen, or UIU support.
+- **Deliverables to Build:**
+  - [ ] Connect order chat hub to MongoDB message persistence.
+  - [ ] Support quick reply chips ("I am at 4th floor elevator", "Please add extra cutlery").
+  - [ ] Simulated auto-replies for kitchen preparation status and runner delivery ETA.
