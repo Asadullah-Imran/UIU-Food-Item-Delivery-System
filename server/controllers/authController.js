@@ -29,6 +29,16 @@ export const register = async (req, res) => {
       });
     }
 
+    // Role-specific validation
+    if (role === 'shop') {
+      if (!shopName || !shopName.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Shop name is required'
+        });
+      }
+    }
+
     // Role-based defaults
     let isApproved = true;
     let status = 'active';
@@ -64,7 +74,7 @@ export const register = async (req, res) => {
 
     if (role === 'shop') {
       userData.shopDetails = {
-        shopName: shopName || name,
+        shopName: shopName.trim(),
         campusLocation: campusLocation || 'UIU Food Court Counter'
       };
     }
@@ -75,7 +85,7 @@ export const register = async (req, res) => {
     if (role === 'shop') {
       await Shop.create({
         owner: user._id,
-        name: shopName || name,
+        name: shopName.trim(),
         category: 'Food Court',
         location: campusLocation || 'UIU Food Court Counter',
         phone: phone || '+880 1819-000000',
