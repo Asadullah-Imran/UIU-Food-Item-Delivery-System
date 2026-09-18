@@ -1,5 +1,5 @@
-import Shop from '../models/Shop.js';
-import MenuItem from '../models/MenuItem.js';
+import Shop from '../../models/Shop.js';
+import MenuItem from '../../models/MenuItem.js';
 
 // @desc    Get all active campus shops
 // @route   GET /api/shops
@@ -84,29 +84,28 @@ export const getMyShop = async (req, res) => {
     const shop = await Shop.findOne({
       owner: req.user._id
     });
-  }
 
     if (!shop) {
-    return res.status(404).json({
+      return res.status(404).json({
+        success: false,
+        message: 'No shop associated with this account'
+      });
+    }
+
+    const menuItems = await MenuItem.find({ shop: shop._id }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      shop,
+      menuItems
+    });
+  } catch (error) {
+    console.error('getMyShop Error:', error);
+    res.status(500).json({
       success: false,
-      message: 'No shop associated with this account'
+      message: error.message || 'Error fetching shop information'
     });
   }
-
-  const menuItems = await MenuItem.find({ shop: shop._id }).sort({ createdAt: -1 });
-
-  res.status(200).json({
-    success: true,
-    shop,
-    menuItems
-  });
-} catch (error) {
-  console.error('getMyShop Error:', error);
-  res.status(500).json({
-    success: false,
-    message: error.message || 'Error fetching shop information'
-  });
-}
 };
 
 // @desc    Update shop profile
