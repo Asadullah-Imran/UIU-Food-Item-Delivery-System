@@ -6,11 +6,12 @@ import { useAuth } from '../../context/AuthContext';
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const { registerApi, login } = useAuth();
-  
+
   const [role, setRole] = useState('student');
   const [fullName, setFullName] = useState('');
-  const [shopName, setShopName] = useState('');
   const [universityId, setUniversityId] = useState('');
+  const [shopName, setShopName] = useState('');
+  const [campusLocation, setCampusLocation] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -82,10 +83,10 @@ export default function RegistrationPage() {
 
   return (
     <div className="min-h-screen bg-[#F5F4F1] flex flex-col items-center justify-center p-4 lg:p-8 font-sans">
-      
+
       {/* Main Card */}
       <div className="bg-white w-full max-w-6xl rounded-[2rem] shadow-xl shadow-slate-200/50 flex flex-col lg:flex-row overflow-hidden border border-slate-100">
-        
+
         {/* Left Side - Information */}
         <div className="lg:w-[45%] bg-[#F0EBE1] p-8 lg:p-12 flex flex-col relative">
           <div>
@@ -103,9 +104,9 @@ export default function RegistrationPage() {
           {/* Image */}
           <div className="flex-1 w-full flex items-center justify-center mb-10">
             <div className="w-full aspect-[4/3] rounded-2xl overflow-hidden shadow-lg border-4 border-white">
-              <img 
-                src="/UIU.webp" 
-                alt="UIU Campus" 
+              <img
+                src="/UIU.webp"
+                alt="UIU Campus"
                 className="w-full h-full object-cover"
               />
             </div>
@@ -127,7 +128,7 @@ export default function RegistrationPage() {
 
         {/* Right Side - Form */}
         <div className="lg:w-[55%] p-8 lg:p-14 flex flex-col justify-center">
-          
+
           <div className="flex items-center mb-6">
             <div className="bg-orange-500 p-2 rounded-xl mr-3">
               <Truck className="w-6 h-6 text-white" />
@@ -157,7 +158,7 @@ export default function RegistrationPage() {
           <form onSubmit={handleRegister} className="space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700">Select Role</label>
-              <select 
+              <select
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 bg-white text-sm font-medium"
@@ -173,8 +174,8 @@ export default function RegistrationPage() {
                 <label className="text-xs font-bold text-slate-700">
                   {role === 'shop' ? 'Owner / Manager Name' : 'Full Name'}
                 </label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder={role === 'shop' ? 'e.g., Mohammad Ali' : 'Rafiqul Haque'}
@@ -182,14 +183,14 @@ export default function RegistrationPage() {
                   className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
                 />
               </div>
-              
+
               {role === 'shop' ? (
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">
                     Shop / Stall Name
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={shopName}
                     onChange={(e) => setShopName(e.target.value)}
                     placeholder="e.g., Khan's Kitchen, Olympic Cafe"
@@ -202,8 +203,8 @@ export default function RegistrationPage() {
                   <label className="text-xs font-bold text-slate-700">
                     {role === 'runner' ? 'Runner / Student ID' : 'University ID'}
                   </label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={universityId}
                     onChange={(e) => setUniversityId(e.target.value)}
                     placeholder="011 213 086"
@@ -217,8 +218,8 @@ export default function RegistrationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">Email Address</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@email.com"
@@ -228,8 +229,8 @@ export default function RegistrationPage() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">Phone Number</label>
-                <input 
-                  type="tel" 
+                <input
+                  type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+880 1XXX-XXXXXX"
@@ -242,8 +243,8 @@ export default function RegistrationPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">Password</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -253,8 +254,8 @@ export default function RegistrationPage() {
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">Confirm Password</label>
-                <input 
-                  type="password" 
+                <input
+                  type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
@@ -264,8 +265,8 @@ export default function RegistrationPage() {
               </div>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isLoading}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center mt-4 shadow-lg shadow-orange-500/30 group cursor-pointer active:scale-[0.99] text-sm"
             >
