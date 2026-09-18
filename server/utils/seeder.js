@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import dns from 'dns';
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 import MenuItem from '../models/MenuItem.js';
@@ -18,6 +19,9 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const seedDatabase = async () => {
   try {
+    // Fix querySrv ECONNREFUSED issues commonly encountered on Windows / ISP routers
+    dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGO_URI);
     console.log('✅ MongoDB Connected for Seeding');
