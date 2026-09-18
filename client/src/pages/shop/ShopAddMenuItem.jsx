@@ -266,14 +266,14 @@ export default function ShopAddMenuItem() {
             <FormField label="Short Description">
               <input
                 value={form.shortDescription}
-                maxLength={60}
+                maxLength={75}
                 onChange={(event) =>
                   updateField(
                     "shortDescription",
                     event.target.value
                   )
                 }
-                placeholder="A brief hook for the student (Max 60 chars)"
+                placeholder="A brief hook for the student (Max 75 chars)"
                 className={inputStyle}
               />
             </FormField>
@@ -518,14 +518,12 @@ function ToggleSetting({
         type="button"
         onClick={onClick}
         aria-pressed={enabled}
-        className={`relative h-6 w-11 rounded-full transition ${
-          enabled ? "bg-orange-500" : "bg-slate-300"
-        }`}
+        className={`relative h-6 w-11 rounded-full transition ${enabled ? "bg-orange-500" : "bg-slate-300"
+          }`}
       >
         <span
-          className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${
-            enabled ? "left-6" : "left-1"
-          }`}
+          className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition-all ${enabled ? "left-6" : "left-1"
+            }`}
         />
       </button>
     </div>
