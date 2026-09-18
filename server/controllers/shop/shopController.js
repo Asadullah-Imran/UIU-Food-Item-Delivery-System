@@ -81,41 +81,32 @@ export const getShopById = async (req, res) => {
 // @access  Private (Shop owner only)
 export const getMyShop = async (req, res) => {
   try {
-    let shop = await Shop.findOne({ owner: req.user._id });
-
-    // Auto-create initial shop profile if not found for shop owner
-    if (!shop && req.user.role === 'shop') {
-      shop = await Shop.create({
-        owner: req.user._id,
-        name: req.user.shopDetails?.shopName || req.user.name || 'Campus Food Shop',
-        category: 'Food Court',
-        location: req.user.shopDetails?.campusLocation || 'UIU Food Court Counter #1',
-        phone: req.user.phone || '+880 1819-000000',
-        isApproved: true
-      });
-    }
-
-    if (!shop) {
-      return res.status(404).json({
-        success: false,
-        message: 'No shop associated with this account'
-      });
-    }
-
-    const menuItems = await MenuItem.find({ shop: shop._id }).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      shop,
-      menuItems
-    });
-  } catch (error) {
-    console.error('getMyShop Error:', error);
-    res.status(500).json({
-      success: false,
-      message: error.message || 'Error fetching shop information'
+    const shop = await Shop.findOne({
+      owner: req.user._id
     });
   }
+
+    if (!shop) {
+    return res.status(404).json({
+      success: false,
+      message: 'No shop associated with this account'
+    });
+  }
+
+  const menuItems = await MenuItem.find({ shop: shop._id }).sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    shop,
+    menuItems
+  });
+} catch (error) {
+  console.error('getMyShop Error:', error);
+  res.status(500).json({
+    success: false,
+    message: error.message || 'Error fetching shop information'
+  });
+}
 };
 
 // @desc    Update shop profile
