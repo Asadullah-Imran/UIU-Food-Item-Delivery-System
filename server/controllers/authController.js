@@ -75,7 +75,7 @@ export const register = async (req, res) => {
     if (role === 'shop') {
       userData.shopDetails = {
         shopName: shopName.trim(),
-        campusLocation: campusLocation || 'UIU Food Court Counter'
+        campusLocation: campusLocation?.trim() || 'UIU Food Court Counter'
       };
     }
 
@@ -87,8 +87,8 @@ export const register = async (req, res) => {
         owner: user._id,
         name: shopName.trim(),
         category: 'Food Court',
-        location: campusLocation || 'UIU Food Court Counter',
-        phone: phone || '+880 1819-000000',
+        location: campusLocation?.trim() || 'UIU Food Court Counter',
+        phone: phone?.trim() || '',
         isApproved: true
       });
     }
