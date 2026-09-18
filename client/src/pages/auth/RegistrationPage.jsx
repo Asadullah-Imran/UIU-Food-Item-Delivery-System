@@ -9,6 +9,7 @@ export default function RegistrationPage() {
   
   const [role, setRole] = useState('student');
   const [fullName, setFullName] = useState('');
+  const [shopName, setShopName] = useState('');
   const [universityId, setUniversityId] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -24,8 +25,17 @@ export default function RegistrationPage() {
     setSuccessMessage('');
 
     if (!fullName.trim()) {
+      setErrorMessage(role === 'shop' ? 'Please enter the shop owner / manager name' : 'Please enter your full name');
+      return;
+    }
 
-      setErrorMessage('Please enter your full name');
+    if (role === 'shop' && !shopName.trim()) {
+      setErrorMessage('Please enter the shop / stall name');
+      return;
+    }
+
+    if (role !== 'shop' && !universityId.trim()) {
+      setErrorMessage(role === 'runner' ? 'Please enter your runner / student ID' : 'Please enter your university ID');
       return;
     }
 
@@ -53,7 +63,7 @@ export default function RegistrationPage() {
       role,
       universityId: role !== 'shop' ? universityId.trim() : undefined,
       phone: phone.trim(),
-      shopName: role === 'shop' ? fullName.trim() : undefined
+      shopName: role === 'shop' ? shopName.trim() : undefined
     };
 
     const res = await registerApi(payload);
@@ -158,7 +168,7 @@ export default function RegistrationPage() {
               </select>
             </div>
 
-            <div className={`grid grid-cols-1 ${role !== 'shop' ? 'md:grid-cols-2' : ''} gap-4`}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">
                   {role === 'shop' ? 'Owner / Manager Name' : 'Full Name'}
@@ -173,7 +183,21 @@ export default function RegistrationPage() {
                 />
               </div>
               
-              {role !== 'shop' && (
+              {role === 'shop' ? (
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">
+                    Shop / Stall Name
+                  </label>
+                  <input 
+                    type="text" 
+                    value={shopName}
+                    onChange={(e) => setShopName(e.target.value)}
+                    placeholder="e.g., Khan's Kitchen, Olympic Cafe"
+                    required
+                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
+                  />
+                </div>
+              ) : (
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">
                     {role === 'runner' ? 'Runner / Student ID' : 'University ID'}
