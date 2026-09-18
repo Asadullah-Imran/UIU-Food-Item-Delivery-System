@@ -169,15 +169,12 @@ export const updateShopProfile = async (req, res) => {
 // @access  Private (Shop owner)
 export const addMenuItem = async (req, res) => {
   try {
-    let shop = await Shop.findOne({ owner: req.user._id });
+    const shop = await Shop.findOne({ owner: req.user._id });
 
     if (!shop) {
-      // Auto-create shop record if missing
-      shop = await Shop.create({
-        owner: req.user._id,
-        name: req.user.name || 'Campus Food Shop',
-        category: 'Food Court',
-        location: 'UIU Food Court Counter #1'
+      return res.status(404).json({
+        success: false,
+        message: 'No shop associated with this account'
       });
     }
 
