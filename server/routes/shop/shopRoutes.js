@@ -8,9 +8,9 @@ import {
   updateMenuItem,
   toggleItemAvailability,
   deleteMenuItem
-} from '../controllers/shop/shopController.js';
-import { protect } from '../middlewares/auth.js';
-import { authorizeRoles } from '../middlewares/role.js';
+} from '../../controllers/shop/shopController.js';
+import { protect } from '../../middlewares/auth.js';
+import { authorizeRoles } from '../../middlewares/role.js';
 
 const router = express.Router();
 

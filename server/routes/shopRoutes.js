@@ -8,7 +8,7 @@ import {
   updateMenuItem,
   toggleItemAvailability,
   deleteMenuItem
-} from '../controllers/shopController.js';
+} from '../controllers/shop/shopController.js';
 import { protect } from '../middlewares/auth.js';
 import { authorizeRoles } from '../middlewares/role.js';
 
