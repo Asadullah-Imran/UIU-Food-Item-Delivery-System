@@ -2,6 +2,7 @@ import Order from '../../models/Order.js';
 import User from '../../models/User.js';
 import Shop from '../../models/Shop.js';
 import Transaction from '../../models/Transaction.js';
+import { refundOrderToStudent } from '../../services/orderService.js';
 
 // @desc    Create new order using In-App Campus Wallet
 // @route   POST /api/student/orders
@@ -210,31 +211,18 @@ export const cancelStudentOrder = async (req, res) => {
 
     await order.save();
 
-    // Issue 100% Refund
-    const student = await User.findById(req.user.id);
-    const refundAmount = order.billing?.grandTotal || 0;
-    const newBalance = (student.walletBalance || 0) + refundAmount;
-    student.walletBalance = newBalance;
-    await student.save();
-
-    const refundTxn = await Transaction.create({
-      transactionId: `TXN-REFUND-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-      user: student._id,
-      order: order._id,
-      type: 'REFUND',
-      direction: 'CREDIT',
-      amount: refundAmount,
-      balanceAfter: newBalance,
-      description: `Full refund for cancelled order ${order.orderNumber}`,
-      status: 'COMPLETED'
-    });
+    // Issue 100% Refund via shared service
+    const refundInfo = await refundOrderToStudent(
+      order,
+      reason || 'Order cancelled by student. Full refund issued.'
+    );
 
     res.status(200).json({
       success: true,
-      message: `Order cancelled. ৳${refundAmount} refunded to your Campus Wallet!`,
+      message: `Order cancelled. ৳${refundInfo.refundAmount} refunded to your Campus Wallet!`,
       order,
-      remainingBalance: newBalance,
-      refundTxn
+      remainingBalance: refundInfo.newBalance,
+      refundTxn: refundInfo.refundTxn
     });
   } catch (error) {
     console.error('cancelStudentOrder Error:', error);
