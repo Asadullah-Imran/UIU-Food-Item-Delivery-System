@@ -396,17 +396,22 @@ export const deleteMenuItem = async (req, res) => {
   }
 };
 
-// Helper: upload a buffer to Cloudinary and return the result object
+// Helper: upload a buffer to Cloudinary with automatic compression and return the result object
 const uploadBufferToCloudinary = (
   buffer,
-  folder
+  folder,
+  options = {}
 ) => {
   return new Promise((resolve, reject) => {
     const stream =
       cloudinary.uploader.upload_stream(
         {
           folder,
-          resource_type: 'image'
+          resource_type: 'image',
+          transformation: options.transformation || [
+            { quality: 'auto:good' },
+            { fetch_format: 'auto' }
+          ]
         },
         (error, result) => {
           if (error) {
@@ -447,10 +452,18 @@ export const updateShopProfileImage = async (
       });
     }
 
+    // Auto-compress and square-crop profile avatar
     const result =
       await uploadBufferToCloudinary(
         req.file.buffer,
-        'uiu-delivery/shop-profile'
+        'uiu-delivery/shop-profile',
+        {
+          transformation: [
+            { width: 600, height: 600, crop: 'fill', gravity: 'face' },
+            { quality: 'auto:good' },
+            { fetch_format: 'auto' }
+          ]
+        }
       );
 
     shop.image = result.secure_url;
@@ -506,10 +519,18 @@ export const updateShopBanner = async (
       });
     }
 
+    // Auto-compress and limit banner dimensions to max 1600px width
     const result =
       await uploadBufferToCloudinary(
         req.file.buffer,
-        'uiu-delivery/shop-banner'
+        'uiu-delivery/shop-banner',
+        {
+          transformation: [
+            { width: 1600, crop: 'limit' },
+            { quality: 'auto:good' },
+            { fetch_format: 'auto' }
+          ]
+        }
       );
 
     shop.banner = result.secure_url;

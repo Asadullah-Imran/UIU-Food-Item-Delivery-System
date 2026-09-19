@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useLayout } from '../../context/LayoutContext';
 import { useAuth } from '../../context/AuthContext';
+import { compressImage } from '../../utils/imageCompressor';
 
 const ShopProfile = () => {
   const { token } = useAuth();
@@ -102,12 +103,19 @@ const ShopProfile = () => {
   const handleProfileImageUpload = async (file) => {
     if (!file) return;
 
-    const authToken = token || localStorage.getItem('uiu_auth_token');
-    const formData = new FormData();
-    formData.append('image', file);
-
     try {
       setIsUploadingImage(true);
+      // Automatically compress image in-browser before upload
+      const compressedFile = await compressImage(file, {
+        maxWidth: 800,
+        maxHeight: 800,
+        quality: 0.85
+      });
+
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const formData = new FormData();
+      formData.append('image', compressedFile);
+
       const res = await fetch('/api/shops/profile/image', {
         method: 'PUT',
         headers: {
@@ -134,12 +142,19 @@ const ShopProfile = () => {
   const handleBannerUpload = async (file) => {
     if (!file) return;
 
-    const authToken = token || localStorage.getItem('uiu_auth_token');
-    const formData = new FormData();
-    formData.append('banner', file);
-
     try {
       setIsUploadingBanner(true);
+      // Automatically compress banner in-browser before upload
+      const compressedFile = await compressImage(file, {
+        maxWidth: 1600,
+        maxHeight: 900,
+        quality: 0.85
+      });
+
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const formData = new FormData();
+      formData.append('banner', compressedFile);
+
       const res = await fetch('/api/shops/profile/banner', {
         method: 'PUT',
         headers: {
