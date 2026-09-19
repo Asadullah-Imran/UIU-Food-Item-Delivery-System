@@ -136,17 +136,45 @@ export const updateShopProfile = async (req, res) => {
       tags
     } = req.body;
 
-    if (name) shop.name = name;
-    if (category) shop.category = category;
-    if (deliveryTime) shop.deliveryTime = deliveryTime;
-    if (minOrder !== undefined) shop.minOrder = minOrder;
-    if (image) shop.image = image;
-    if (banner) shop.banner = banner;
-    if (location) shop.location = location;
-    if (phone) shop.phone = phone;
-    if (isOpen !== undefined) shop.isOpen = isOpen;
-    if (openingHours) shop.openingHours = openingHours;
-    if (tags) shop.tags = tags;
+    // Field-level validations
+    if (name !== undefined && !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shop name cannot be empty'
+      });
+    }
+
+    if (
+      minOrder !== undefined &&
+      (Number.isNaN(Number(minOrder)) || Number(minOrder) < 0)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Minimum order cannot be negative'
+      });
+    }
+
+    if (
+      phone !== undefined &&
+      !/^\+?[0-9\s-]{10,20}$/.test(phone.trim())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid phone number format'
+      });
+    }
+
+    if (name !== undefined) shop.name = name.trim();
+    if (category !== undefined) shop.category = category.trim();
+    if (deliveryTime !== undefined) shop.deliveryTime = deliveryTime.trim();
+    if (minOrder !== undefined) shop.minOrder = Number(minOrder);
+    if (image !== undefined) shop.image = image;
+    if (banner !== undefined) shop.banner = banner;
+    if (location !== undefined) shop.location = location.trim();
+    if (phone !== undefined) shop.phone = phone.trim();
+    if (isOpen !== undefined) shop.isOpen = Boolean(isOpen);
+    if (openingHours !== undefined) shop.openingHours = openingHours;
+    if (tags !== undefined) shop.tags = Array.isArray(tags) ? tags : [tags];
 
     await shop.save();
 
