@@ -58,6 +58,14 @@ async function getMyShop(token) {
   return r.body;
 }
 
+async function topup(token, amount = 500) {
+  await http('/api/wallet/topup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders(token) },
+    body: JSON.stringify({ amount })
+  });
+}
+
 async function placeOrder(studentToken, shopId, itemId, itemName, price) {
   const r = await http('/api/orders', {
     method: 'POST',
@@ -106,6 +114,9 @@ async function main() {
   console.log(`  Shop Owner 2 : ${chilloxSession.user.name} (Shop: ${chilloxData.shop.name})`);
   console.log();
 
+  // Top up student wallet to guarantee sufficient test balance
+  await topup(studentSession.token, 1000);
+
   // Create a fresh PLACED order for Shop 1
   console.log('-- Setup: Placing a new PLACED order --');
   const freshOrder = await placeOrder(studentSession.token, shopId, testItem._id, testItem.name, testItem.price);
@@ -128,12 +139,20 @@ async function main() {
   ok('Status transitioned to CONFIRMED', resAccept.body.order?.status === 'CONFIRMED', `status: ${resAccept.body.order?.status}`);
   ok('Success message returned', resAccept.body.message === 'Order accepted successfully');
 
-  // ── Test 2: Timeline Recorded ──────────────────────────────────────────────
-  console.log('\n-- Test 2: Timeline Verification --');
+  // ── Test 2: Timeline Recorded & MongoDB Persistence Check ────────────────
+  console.log('\n-- Test 2: Timeline Verification & Database Persistence --');
   const timeline = resAccept.body.order?.timeline || [];
   const confirmedEntry = timeline.find((t) => t.status === 'CONFIRMED');
   ok('Timeline contains CONFIRMED entry', Boolean(confirmedEntry), `entries: ${timeline.map((t) => t.status).join(' -> ')}`);
   ok('Timeline entry has timestamp', Boolean(confirmedEntry?.time));
+
+  // Verify directly from database via GET /api/shops/orders/:orderId
+  const resDbCheck = await http(`/api/shops/orders/${orderId}`, {
+    headers: authHeaders(shopSession.token)
+  });
+  ok('Database check: status is CONFIRMED', resDbCheck.body.order?.status === 'CONFIRMED');
+  const dbTimelineConfirmed = resDbCheck.body.order?.timeline?.find((t) => t.status === 'CONFIRMED');
+  ok('Database check: timeline contains CONFIRMED in MongoDB', Boolean(dbTimelineConfirmed?.time));
 
   // ── Test 3: Prevent Duplicate Accept ───────────────────────────────────────
   console.log('\n-- Test 3: Prevent Duplicate Accept --');

@@ -1,5 +1,6 @@
 import Shop from '../../models/Shop.js';
 import MenuItem from '../../models/MenuItem.js';
+import Order from '../../models/Order.js';
 import cloudinary from '../../config/cloudinary.js';
 import {
   uploadImageToCloudinary,

@@ -142,11 +142,14 @@ export const acceptShopOrder = async (req, res) => {
     }
 
     order.status = 'CONFIRMED';
-    order.timeline.push({
-      status: 'CONFIRMED',
-      time: new Date(),
-      note: req.body?.note || 'Order accepted and confirmed by shop'
-    });
+
+    if (Array.isArray(order.timeline)) {
+      order.timeline.push({
+        status: 'CONFIRMED',
+        time: new Date(),
+        note: req.body?.note || 'Order accepted and confirmed by shop'
+      });
+    }
 
     await order.save();
 
@@ -214,17 +217,47 @@ export const rejectShopOrder = async (req, res) => {
 
     const rejectionReason = req.body?.reason || req.body?.note || 'Order rejected by shop';
 
-    order.status = 'REJECTED';
-    order.timeline.push({
-      status: 'REJECTED',
-      time: new Date(),
-      note: rejectionReason
-    });
+    let session = null;
+    let refundResult;
 
-    await order.save();
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
 
-    // Reusable automated student wallet refund
-    const refundResult = await refundOrderToStudent(order, rejectionReason);
+      order.status = 'REJECTED';
+      order.timeline.push({
+        status: 'REJECTED',
+        time: new Date(),
+        note: rejectionReason
+      });
+
+      await order.save({ session });
+      refundResult = await refundOrderToStudent(order, rejectionReason, session);
+
+      await session.commitTransaction();
+    } catch (atomicErr) {
+      if (session) {
+        try { await session.abortTransaction(); } catch (e) { /* ignore */ }
+      }
+
+      // Standalone MongoDB fallback if replica sets are not enabled locally
+      if (atomicErr.message && atomicErr.message.includes('replica set')) {
+        order.status = 'REJECTED';
+        order.timeline.push({
+          status: 'REJECTED',
+          time: new Date(),
+          note: rejectionReason
+        });
+        await order.save();
+        refundResult = await refundOrderToStudent(order, rejectionReason);
+      } else {
+        throw atomicErr;
+      }
+    } finally {
+      if (session) {
+        session.endSession();
+      }
+    }
 
     await order.populate([
       { path: 'student', select: 'name email phone universityId' },
