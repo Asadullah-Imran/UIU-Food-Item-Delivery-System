@@ -119,10 +119,8 @@ export default function App() {
             <Route path="orders" element={<ShopIncomingOrders />} />
             <Route path="orders/:orderId" element={<ShopOrderDetails />} />
             <Route path="orders/:orderId/preparing" element={<ShopPreparingOrder />}/>
-            <Route
-  path="orders/:orderId/ready"
-  element={<ShopReadyForPickup />}
-/>
+            <Route path="orders/:orderId/ready" element={<ShopReadyForPickup />} />
+            <Route path="orders/ready" element={<ShopReadyForPickup />} />
 <Route path="menu" element={<ShopMenuManagement />} />
 
 <Route

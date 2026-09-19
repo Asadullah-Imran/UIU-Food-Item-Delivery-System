@@ -132,6 +132,43 @@ const ShopOrderDetails = () => {
     }
   };
 
+  const handleStartPreparing = async () => {
+    if (!order) return;
+    try {
+      setActionLoading(true);
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch(`/api/shops/orders/${order._id || orderId}/preparing`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${authToken}`
+        }
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to start preparing order');
+      }
+
+      // Update local state so status badge changes immediately
+      setOrder(data.order);
+      setToast({
+        type: 'success',
+        message: 'Kitchen started! Order is now being prepared.'
+      });
+      setTimeout(() => setToast(null), 4000);
+
+      // Navigate to the preparing view
+      navigate(`/dashboard/shop/orders/${order._id || orderId}/preparing`);
+    } catch (err) {
+      console.error('Start Preparing Error:', err);
+      setToast({ type: 'error', message: err.message || 'Failed to start preparing order' });
+      setTimeout(() => setToast(null), 5000);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="max-w-6xl mx-auto py-20 text-center">
@@ -482,13 +519,24 @@ const ShopOrderDetails = () => {
               )}
 
               {/* Preparing progression button */}
-              {(order.status === 'CONFIRMED' || order.status === 'PREPARING') && (
+              {order.status === 'CONFIRMED' && (
+                <button
+                  onClick={handleStartPreparing}
+                  disabled={actionLoading}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition-colors mb-4 flex justify-center items-center shadow-sm text-sm disabled:opacity-50"
+                >
+                  <ChefHat className="w-4 h-4 mr-2" />
+                  {actionLoading ? 'Starting...' : 'Start Preparing Food'}
+                </button>
+              )}
+
+              {order.status === 'PREPARING' && (
                 <button
                   onClick={() => navigate(`/dashboard/shop/orders/${order._id || orderId}/preparing`)}
                   className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 px-6 rounded-xl transition-colors mb-4 flex justify-center items-center shadow-sm text-sm"
                 >
                   <ChefHat className="w-4 h-4 mr-2" />
-                  {order.status === 'CONFIRMED' ? 'Start Preparing Food' : 'View Kitchen Queue'}
+                  View Kitchen Queue
                 </button>
               )}
 
