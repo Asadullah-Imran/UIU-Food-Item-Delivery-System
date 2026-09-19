@@ -88,7 +88,7 @@ export const getMyShop = async (req, res) => {
     if (!shop) {
       return res.status(404).json({
         success: false,
-        message: 'No shop associated with this account'
+        message: 'Shop not found'
       });
     }
 
@@ -174,7 +174,7 @@ export const addMenuItem = async (req, res) => {
     if (!shop) {
       return res.status(404).json({
         success: false,
-        message: 'No shop associated with this account'
+        message: 'Shop not found'
       });
     }
 

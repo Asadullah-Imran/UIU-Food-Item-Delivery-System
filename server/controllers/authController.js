@@ -83,14 +83,19 @@ export const register = async (req, res) => {
 
     // If shop owner, also create a linked Shop record
     if (role === 'shop') {
-      await Shop.create({
-        owner: user._id,
-        name: shopName.trim(),
-        category: 'Food Court',
-        location: campusLocation?.trim() || 'UIU Food Court Counter',
-        phone: phone?.trim() || '',
-        isApproved: true
-      });
+      try {
+        await Shop.create({
+          owner: user._id,
+          name: shopName.trim(),
+          category: 'Food Court',
+          location: campusLocation?.trim() || 'UIU Food Court Counter',
+          phone: phone?.trim() || '',
+          isApproved: true
+        });
+      } catch (shopErr) {
+        await User.findByIdAndDelete(user._id);
+        throw shopErr;
+      }
     }
 
     const token = user.generateAuthToken();
