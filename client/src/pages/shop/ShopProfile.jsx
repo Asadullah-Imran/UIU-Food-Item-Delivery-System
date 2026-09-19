@@ -149,7 +149,7 @@ const ShopProfile = () => {
           <div className="relative h-64 rounded-[28px] overflow-hidden">
             {/* Banner Image */}
             <img 
-              src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" 
+              src={shop.banner || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80"} 
               alt="Shop Cover" 
               className="w-full h-full object-cover"
             />
@@ -166,7 +166,7 @@ const ShopProfile = () => {
             <div className="relative">
               <div className="w-32 h-32 rounded-2xl bg-white p-1.5 shadow-md">
                 <img 
-                  src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80" 
+                  src={shop.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80"} 
                   alt="Profile" 
                   className="w-full h-full object-cover rounded-xl"
                 />
@@ -177,8 +177,8 @@ const ShopProfile = () => {
             </div>
             
             <div className="ml-5 pb-6">
-              <h2 className="text-xl font-bold text-slate-800">UIU Cafeteria</h2>
-              <p className="text-sm font-semibold text-slate-500">Main Campus &bull; Building A, Level 1</p>
+              <h2 className="text-xl font-bold text-slate-800">{shop.name || 'Shop Name'}</h2>
+              <p className="text-sm font-semibold text-slate-500">{shop.location || 'Campus Location'}</p>
             </div>
           </div>
         </div>
