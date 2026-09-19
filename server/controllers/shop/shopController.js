@@ -865,4 +865,14 @@ export const updateShopBanner = async (
 // Backwards compatibility alias
 export const uploadShopBanner = updateShopBanner;
 
+// Shop Orders Controller exports
+export {
+  getShopOrders,
+  getShopOrderById,
+  acceptShopOrder,
+  acceptOrder,
+  rejectShopOrder,
+  rejectOrder
+} from './shopOrderController.js';
+
 

@@ -9,7 +9,11 @@ import {
   addMenuItem,
   updateMenuItem,
   toggleItemAvailability,
-  deleteMenuItem
+  deleteMenuItem,
+  getShopOrders,
+  getShopOrderById,
+  acceptShopOrder,
+  rejectShopOrder
 } from '../../controllers/shop/shopController.js';
 import { protect } from '../../middlewares/auth.js';
 import { authorizeRoles } from '../../middlewares/role.js';
@@ -22,6 +26,10 @@ router.get('/', getShops);
 
 // Shop Owner Private routes (Must be placed before parameterized /:shopId route)
 router.get('/my-shop', protect, authorizeRoles('shop', 'admin'), getMyShop);
+router.get('/orders', protect, authorizeRoles('shop', 'admin'), getShopOrders);
+router.get('/orders/:orderId', protect, authorizeRoles('shop', 'admin'), getShopOrderById);
+router.patch('/orders/:orderId/accept', protect, authorizeRoles('shop', 'admin'), acceptShopOrder);
+router.patch('/orders/:orderId/reject', protect, authorizeRoles('shop', 'admin'), rejectShopOrder);
 router.put('/profile', protect, authorizeRoles('shop', 'admin'), updateShopProfile);
 router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateShopProfileImage);
 router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), updateShopBanner);
