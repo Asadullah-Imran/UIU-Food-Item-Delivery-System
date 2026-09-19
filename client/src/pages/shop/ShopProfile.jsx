@@ -261,7 +261,7 @@ const ShopProfile = () => {
           </div>
           
           {/* Profile Picture & Info */}
-          <div className="absolute -bottom-6 left-8 flex items-end">
+          <div className="absolute -bottom-10 left-8 flex items-end">
             <div className="relative">
               <div className="w-32 h-32 rounded-2xl bg-white p-1.5 shadow-md overflow-hidden">
                 <img 
@@ -292,7 +292,7 @@ const ShopProfile = () => {
               </button>
             </div>
             
-            <div className="ml-5 pb-6">
+            <div className="ml-5 pb-10">
               <h2 className="text-xl font-bold text-white drop-shadow-md">{shop.name || 'Shop Name'}</h2>
               <p className="text-sm font-medium text-white/90 drop-shadow-sm">{shop.location || 'Campus Location'}</p>
             </div>
@@ -300,7 +300,7 @@ const ShopProfile = () => {
         </div>
 
         {/* Metrics Row */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-14 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-20 mb-6">
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
             <div className="flex justify-between items-start mb-2">
               <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
