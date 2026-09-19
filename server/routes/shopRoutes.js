@@ -5,7 +5,7 @@ import {
   getMyShop,
   updateShopProfile,
   updateShopProfileImage,
-  uploadShopBanner,
+  updateShopBanner,
   addMenuItem,
   updateMenuItem,
   toggleItemAvailability,
@@ -24,7 +24,7 @@ router.get('/', getShops);
 router.get('/my-shop', protect, authorizeRoles('shop', 'admin'), getMyShop);
 router.put('/profile', protect, authorizeRoles('shop', 'admin'), updateShopProfile);
 router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateShopProfileImage);
-router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), uploadShopBanner);
+router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), updateShopBanner);
 router.post('/menu', protect, authorizeRoles('shop', 'admin'), addMenuItem);
 router.put('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), updateMenuItem);
 router.patch('/menu/:itemId/availability', protect, authorizeRoles('shop', 'admin'), toggleItemAvailability);

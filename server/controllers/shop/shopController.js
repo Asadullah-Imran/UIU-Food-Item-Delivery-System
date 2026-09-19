@@ -483,7 +483,10 @@ export const uploadShopImage = updateShopProfileImage;
 // @desc    Upload / replace shop banner image
 // @route   PUT /api/shops/profile/banner
 // @access  Private (Shop owner)
-export const uploadShopBanner = async (req, res) => {
+export const updateShopBanner = async (
+  req,
+  res
+) => {
   try {
     const shop = await Shop.findOne({
       owner: req.user._id
@@ -499,29 +502,41 @@ export const uploadShopBanner = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: 'Please select an image'
+        message: 'Please select a banner image'
       });
     }
 
-    const result = await uploadBufferToCloudinary(
-      req.file.buffer,
-      'uiu-delivery/shop-banner'
-    );
+    const result =
+      await uploadBufferToCloudinary(
+        req.file.buffer,
+        'uiu-delivery/shop-banner'
+      );
 
     shop.banner = result.secure_url;
+
     await shop.save();
 
     return res.status(200).json({
       success: true,
-      message: 'Shop banner updated successfully',
+      message:
+        'Shop banner updated successfully',
       shop
     });
   } catch (error) {
-    console.error('uploadShopBanner Error:', error);
+    console.error(
+      'updateShopBanner Error:',
+      error
+    );
+
     return res.status(500).json({
       success: false,
-      message: 'Failed to update shop banner'
+      message:
+        'Failed to update shop banner'
     });
   }
 };
+
+// Backwards compatibility alias
+export const uploadShopBanner = updateShopBanner;
+
 
