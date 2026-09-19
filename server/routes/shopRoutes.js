@@ -4,7 +4,7 @@ import {
   getShopById,
   getMyShop,
   updateShopProfile,
-  uploadShopImage,
+  updateShopProfileImage,
   uploadShopBanner,
   addMenuItem,
   updateMenuItem,
@@ -23,7 +23,7 @@ router.get('/', getShops);
 // Shop Owner Private routes (Must be placed before parameterized /:shopId route)
 router.get('/my-shop', protect, authorizeRoles('shop', 'admin'), getMyShop);
 router.put('/profile', protect, authorizeRoles('shop', 'admin'), updateShopProfile);
-router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), uploadShopImage);
+router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateShopProfileImage);
 router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), uploadShopBanner);
 router.post('/menu', protect, authorizeRoles('shop', 'admin'), addMenuItem);
 router.put('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), updateMenuItem);
