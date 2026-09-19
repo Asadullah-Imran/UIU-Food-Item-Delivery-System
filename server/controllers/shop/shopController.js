@@ -1,7 +1,10 @@
 import Shop from '../../models/Shop.js';
 import MenuItem from '../../models/MenuItem.js';
 import cloudinary from '../../config/cloudinary.js';
-import { uploadImageToCloudinary } from '../../utils/cloudinaryUpload.js';
+import {
+  uploadImageToCloudinary,
+  deleteImageFromCloudinary
+} from '../../utils/cloudinaryUpload.js';
 
 // @desc    Get all active campus shops
 // @route   GET /api/shops
@@ -194,6 +197,15 @@ export const updateShopProfile = async (req, res) => {
   }
 };
 
+// Helper: parse boolean values that may arrive as strings from FormData
+const parseBoolean = (value, defaultValue = false) => {
+  if (value === undefined) {
+    return defaultValue;
+  }
+
+  return value === true || value === 'true';
+};
+
 // @desc    Add a new menu item
 // @route   POST /api/shops/menu
 // @access  Private (Shop owner)
@@ -220,10 +232,10 @@ export const addMenuItem = async (req, res) => {
       taxRate,
       stockQuantity,
       lowStockWarning,
-      isAvailable = true,
-      todaySpecial = false,
-      featured = false,
-      recommended = true
+      isAvailable,
+      todaySpecial,
+      featured,
+      recommended
     } = req.body;
 
     // --- Field Validation ---
@@ -288,6 +300,19 @@ export const addMenuItem = async (req, res) => {
       imagePublicId = uploadResult.public_id;
     }
 
+    let parsedDietary = ['Halal'];
+    if (dietary) {
+      if (Array.isArray(dietary)) {
+        parsedDietary = dietary;
+      } else {
+        try {
+          parsedDietary = JSON.parse(dietary);
+        } catch {
+          parsedDietary = [dietary];
+        }
+      }
+    }
+
     const menuItem = await MenuItem.create({
       shop: shop._id,
 
@@ -311,24 +336,15 @@ export const addMenuItem = async (req, res) => {
 
       taxRate: numericTaxRate,
 
-      dietary:
-        Array.isArray(dietary)
-          ? dietary
-          : ['Halal'],
+      dietary: parsedDietary,
 
-      isAvailable:
-        isAvailable !== undefined
-          ? Boolean(isAvailable)
-          : true,
+      isAvailable: parseBoolean(isAvailable, true),
 
-      todaySpecial: Boolean(todaySpecial),
+      todaySpecial: parseBoolean(todaySpecial),
 
-      featured: Boolean(featured),
+      featured: parseBoolean(featured),
 
-      recommended:
-        recommended !== undefined
-          ? Boolean(recommended)
-          : true
+      recommended: parseBoolean(recommended, true)
     });
 
     return res.status(201).json({
@@ -350,47 +366,185 @@ export const addMenuItem = async (req, res) => {
 // @access  Private (Shop owner)
 export const updateMenuItem = async (req, res) => {
   try {
-    const shop = await Shop.findOne({ owner: req.user._id });
-    if (!shop) {
-      return res.status(404).json({ success: false, message: 'Shop not found' });
-    }
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
 
-    const item = await MenuItem.findOne({ _id: req.params.itemId, shop: shop._id });
-    if (!item) {
+    if (!shop) {
       return res.status(404).json({
         success: false,
-        message: 'Menu item not found or does not belong to your shop'
+        message: 'Shop not found'
       });
     }
 
-    const allowedUpdates = [
-      'name',
-      'description',
-      'price',
-      'category',
-      'image',
-      'preparationTime',
-      'dietary',
-      'discount',
-      'taxRate',
-      'stockQuantity',
-      'lowStockWarning',
-      'isAvailable',
-      'todaySpecial',
-      'featured',
-      'recommended',
-      'isPopular'
-    ];
-
-    allowedUpdates.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        item[field] = req.body[field];
-      }
+    const item = await MenuItem.findOne({
+      _id: req.params.itemId,
+      shop: shop._id
     });
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item not found'
+      });
+    }
+
+    if (req.body.name !== undefined) {
+      const name = req.body.name.trim();
+
+      if (!name) {
+        return res.status(400).json({
+          success: false,
+          message: 'Item name cannot be empty'
+        });
+      }
+
+      item.name = name;
+    }
+
+    if (req.body.price !== undefined) {
+      const price = Number(req.body.price);
+
+      if (Number.isNaN(price) || price <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Price must be greater than 0'
+        });
+      }
+
+      item.price = price;
+    }
+
+    if (req.body.stockQuantity !== undefined) {
+      const stockQuantity = Number(req.body.stockQuantity);
+
+      if (Number.isNaN(stockQuantity) || stockQuantity < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Stock quantity cannot be negative'
+        });
+      }
+
+      item.stockQuantity = stockQuantity;
+    }
+
+    if (req.body.discount !== undefined) {
+      const discount = Number(req.body.discount);
+
+      if (Number.isNaN(discount) || discount < 0 || discount > 100) {
+        return res.status(400).json({
+          success: false,
+          message: 'Discount must be between 0 and 100'
+        });
+      }
+
+      item.discount = discount;
+    }
+
+    if (req.body.taxRate !== undefined) {
+      const taxRate = Number(req.body.taxRate);
+
+      if (Number.isNaN(taxRate) || taxRate < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tax rate cannot be negative'
+        });
+      }
+
+      item.taxRate = taxRate;
+    }
+
+    if (req.body.lowStockWarning !== undefined) {
+      const lowStockWarning = Number(req.body.lowStockWarning);
+
+      if (Number.isNaN(lowStockWarning) || lowStockWarning < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Low-stock warning cannot be negative'
+        });
+      }
+
+      item.lowStockWarning = lowStockWarning;
+    }
+
+    if (req.body.description !== undefined) {
+      item.description = req.body.description.trim();
+    }
+
+    if (req.body.category !== undefined) {
+      item.category = req.body.category.trim();
+    }
+
+    if (req.body.preparationTime !== undefined) {
+      item.preparationTime = req.body.preparationTime.trim();
+    }
+
+    if (req.body.dietary !== undefined) {
+      if (Array.isArray(req.body.dietary)) {
+        item.dietary = req.body.dietary;
+      } else {
+        try {
+          const parsedDietary = JSON.parse(req.body.dietary);
+
+          if (!Array.isArray(parsedDietary)) {
+            return res.status(400).json({
+              success: false,
+              message: 'Dietary tags must be an array'
+            });
+          }
+
+          item.dietary = parsedDietary;
+        } catch {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid dietary tags format'
+          });
+        }
+      }
+    }
+
+    if (req.body.isAvailable !== undefined) {
+      item.isAvailable = parseBoolean(req.body.isAvailable, item.isAvailable);
+    }
+
+    if (req.body.todaySpecial !== undefined) {
+      item.todaySpecial = parseBoolean(req.body.todaySpecial, item.todaySpecial);
+    }
+
+    if (req.body.featured !== undefined) {
+      item.featured = parseBoolean(req.body.featured, item.featured);
+    }
+
+    if (req.body.recommended !== undefined) {
+      item.recommended = parseBoolean(req.body.recommended, item.recommended);
+    }
+
+    if (req.body.isPopular !== undefined) {
+      item.isPopular = parseBoolean(req.body.isPopular, item.isPopular);
+    }
+
+    let oldImagePublicId = null;
+
+    if (req.file) {
+      const uploadResult = await uploadImageToCloudinary(req.file.buffer);
+
+      oldImagePublicId = item.imagePublicId;
+
+      item.image = uploadResult.secure_url;
+      item.imagePublicId = uploadResult.public_id;
+    }
 
     await item.save();
 
-    res.status(200).json({
+    if (oldImagePublicId) {
+      try {
+        await deleteImageFromCloudinary(oldImagePublicId);
+      } catch (error) {
+        console.error('Failed to delete old Cloudinary image:', error);
+      }
+    }
+
+    return res.status(200).json({
       success: true,
       message: 'Menu item updated successfully',
       menuItem: item
@@ -422,7 +576,7 @@ export const toggleItemAvailability = async (req, res) => {
       });
     }
 
-    if (req.body.isAvailable !== undefined) {
+    if (req.body && req.body.isAvailable !== undefined) {
       item.isAvailable = Boolean(req.body.isAvailable);
     } else {
       item.isAvailable = !item.isAvailable;
@@ -461,6 +615,14 @@ export const deleteMenuItem = async (req, res) => {
         success: false,
         message: 'Menu item not found or does not belong to your shop'
       });
+    }
+
+    if (item.imagePublicId) {
+      try {
+        await deleteImageFromCloudinary(item.imagePublicId);
+      } catch (cleanupError) {
+        console.error('Old Cloudinary image cleanup failed:', cleanupError);
+      }
     }
 
     res.status(200).json({

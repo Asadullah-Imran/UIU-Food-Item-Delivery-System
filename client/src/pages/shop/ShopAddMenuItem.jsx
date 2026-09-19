@@ -16,6 +16,7 @@ export default function ShopAddMenuItem() {
   const fileInputRef = useRef(null);
 
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -44,16 +45,13 @@ export default function ShopAddMenuItem() {
     }));
   };
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files?.[0];
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
     if (!file) return;
 
-    // Convert to Data URL / base64 or object URL for instant preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+    setImageFile(file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
   const handleSave = async (e) => {
@@ -74,30 +72,39 @@ export default function ShopAddMenuItem() {
     setIsSaving(true);
 
     try {
-      const payload = {
-        name: form.itemName.trim(),
-        category: form.category,
-        description: form.fullDescription.trim() || form.shortDescription.trim(),
-        price: Number(form.price),
-        preparationTime: `${form.prepTime} mins`,
-        discount: Number(form.discount) || 0,
-        taxRate: Number(form.taxRate) || 5,
-        isAvailable: form.available,
-        todaySpecial: form.todaySpecial,
-        featured: form.featured,
-        recommended: form.recommended,
-        stockQuantity: Number(form.stockQuantity) || 50,
-        lowStockWarning: Number(form.lowStockWarning) || 10,
-        image: imagePreview || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80'
-      };
+      const formData = new FormData();
+
+      formData.append('name', form.itemName.trim());
+      formData.append('category', form.category);
+      formData.append(
+        'description',
+        form.fullDescription.trim() || form.shortDescription.trim()
+      );
+      formData.append('price', String(Number(form.price)));
+      formData.append('preparationTime', `${form.prepTime} mins`);
+      formData.append('discount', String(Number(form.discount) || 0));
+      formData.append('taxRate', String(Number(form.taxRate) || 0));
+      formData.append('stockQuantity', String(Number(form.stockQuantity)));
+      formData.append('lowStockWarning', String(Number(form.lowStockWarning)));
+      formData.append('isAvailable', String(form.available));
+      formData.append('todaySpecial', String(form.todaySpecial));
+      formData.append('featured', String(form.featured));
+      formData.append('recommended', String(form.recommended));
+
+      if (form.dietary) {
+        formData.append('dietary', JSON.stringify(form.dietary));
+      }
+
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
 
       const res = await fetch('/api/shops/menu', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           Authorization: `Bearer ${token || localStorage.getItem('uiu_auth_token')}`
         },
-        body: JSON.stringify(payload)
+        body: formData
       });
 
       const data = await res.json();
@@ -181,8 +188,8 @@ export default function ShopAddMenuItem() {
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/png,image/jpeg"
-            onChange={handleImageUpload}
+            accept="image/png,image/jpeg,image/webp"
+            onChange={handleImageChange}
             className="hidden"
           />
 

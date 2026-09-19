@@ -39,6 +39,7 @@ export default function ShopMenuManagement() {
   // Modals state
   const [viewItem, setViewItem] = useState(null);
   const [editItem, setEditItem] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const fetchMenuItems = async () => {
@@ -149,6 +150,12 @@ export default function ShopMenuManagement() {
     }
   };
 
+  const handleEditImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setEditImageFile(file);
+  };
+
   // Save edited item in MongoDB
   const handleSaveEdit = async (e) => {
     e.preventDefault();
@@ -156,28 +163,61 @@ export default function ShopMenuManagement() {
 
     try {
       const authToken = token || localStorage.getItem('uiu_auth_token');
-      const res = await fetch(`/api/shops/menu/${editItem.id || editItem._id}`, {
+      const formData = new FormData();
+
+      formData.append('name', editItem.name);
+      formData.append('description', editItem.description || '');
+      formData.append('category', editItem.category);
+      formData.append('price', String(editItem.price));
+      formData.append('preparationTime', editItem.preparationTime || editItem.prepTime || '');
+      formData.append('stockQuantity', String(editItem.stockQuantity ?? 50));
+      formData.append('discount', String(editItem.discount ?? 0));
+      formData.append('taxRate', String(editItem.taxRate ?? 5));
+      formData.append('lowStockWarning', String(editItem.lowStockWarning ?? 10));
+
+      if (editItem.available !== undefined) {
+        formData.append('isAvailable', String(editItem.available));
+      }
+
+      formData.append('dietary', JSON.stringify(editItem.dietary || []));
+
+      if (editImageFile) {
+        formData.append('image', editImageFile);
+      }
+
+      const res = await fetch(`/api/shops/menu/${editItem._id || editItem.id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authToken}`
+          Authorization: `Bearer ${localStorage.getItem('uiu_auth_token') || token}`
         },
-        body: JSON.stringify({
-          name: editItem.name,
-          price: Number(editItem.price),
-          category: editItem.category,
-          description: editItem.description,
-          preparationTime: editItem.prepTime || editItem.preparationTime
-        })
+        body: formData
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+
+      if (!res.ok) {
+        throw new Error(
+          data.message ||
+            'Failed to update menu item'
+        );
+      }
 
       setItems((prev) =>
-        prev.map((item) => (item.id === editItem.id ? { ...item, ...editItem } : item))
+        prev.map((item) =>
+          item._id === data.menuItem._id || item.id === data.menuItem._id
+            ? {
+                ...data.menuItem,
+                id: data.menuItem._id,
+                available: data.menuItem.isAvailable,
+                prepTime: data.menuItem.preparationTime || '10-15 mins',
+                badge: !data.menuItem.isAvailable ? 'OUT OF STOCK' : data.menuItem.isPopular ? 'BEST SELLER' : null
+              }
+            : item
+        )
       );
-      showToast(`Updated "${editItem.name}" successfully!`, 'success');
+
+      showToast(`Updated "${data.menuItem?.name || editItem.name}" successfully!`, 'success');
       setEditItem(null);
+      setEditImageFile(null);
     } catch (err) {
       showToast(err.message || 'Failed to update item', 'warning');
     }
@@ -606,7 +646,10 @@ export default function ShopMenuManagement() {
                       <div className="flex space-x-1">
                         <button
                           type="button"
-                          onClick={() => setEditItem(item)}
+                          onClick={() => {
+                            setEditItem(item);
+                            setEditImageFile(null);
+                          }}
                           title="Edit Item Details"
                           className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-xl transition-colors"
                         >
@@ -782,6 +825,28 @@ export default function ShopMenuManagement() {
             <h3 className="text-xl font-bold text-slate-800 mb-4">Edit Menu Item</h3>
             <form onSubmit={handleSaveEdit} className="space-y-4">
               <div>
+                <label className="block text-xs font-bold text-slate-600 mb-1.5">Item Image</label>
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shrink-0">
+                    <img
+                      src={editImageFile ? URL.createObjectURL(editImageFile) : editItem.image}
+                      alt={editItem.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleEditImageChange}
+                      className="text-xs text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-orange-50 file:text-[#9B5110] hover:file:bg-orange-100 cursor-pointer"
+                    />
+                    <p className="text-[10px] text-slate-400 mt-1">Upload a new image to replace (JPG, PNG, WEBP)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Item Name</label>
                 <input
                   type="text"
@@ -850,7 +915,10 @@ export default function ShopMenuManagement() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setEditItem(null)}
+                  onClick={() => {
+                    setEditItem(null);
+                    setEditImageFile(null);
+                  }}
                   className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-2xl text-xs transition-colors"
                 >
                   Cancel
