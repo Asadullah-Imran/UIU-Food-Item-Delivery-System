@@ -873,7 +873,9 @@ export {
   acceptShopOrder,
   acceptOrder,
   rejectShopOrder,
-  rejectOrder
+  rejectOrder,
+  startPreparingOrder,
+  markOrderReady
 } from './shopOrderController.js';
 
 

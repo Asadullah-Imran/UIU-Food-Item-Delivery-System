@@ -13,7 +13,9 @@ import {
   getShopOrders,
   getShopOrderById,
   acceptShopOrder,
-  rejectShopOrder
+  rejectShopOrder,
+  startPreparingOrder,
+  markOrderReady
 } from '../../controllers/shop/shopController.js';
 import { protect } from '../../middlewares/auth.js';
 import { authorizeRoles } from '../../middlewares/role.js';
@@ -30,6 +32,8 @@ router.get('/orders', protect, authorizeRoles('shop', 'admin'), getShopOrders);
 router.get('/orders/:orderId', protect, authorizeRoles('shop', 'admin'), getShopOrderById);
 router.patch('/orders/:orderId/accept', protect, authorizeRoles('shop', 'admin'), acceptShopOrder);
 router.patch('/orders/:orderId/reject', protect, authorizeRoles('shop', 'admin'), rejectShopOrder);
+router.patch('/orders/:orderId/preparing', protect, authorizeRoles('shop', 'admin'), startPreparingOrder);
+router.patch('/orders/:orderId/ready', protect, authorizeRoles('shop', 'admin'), markOrderReady);
 router.put('/profile', protect, authorizeRoles('shop', 'admin'), updateShopProfile);
 router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateShopProfileImage);
 router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), updateShopBanner);

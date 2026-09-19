@@ -34,6 +34,8 @@ export const getShopOrders = async (req, res) => {
     const orders = await Order.find(filter)
       .populate('student', 'name email phone universityId')
       .populate('runner', 'name phone')
+      .populate('shop', 'name location phone image')
+      .populate('items.menuItem', 'name image price category')
       .sort({
         createdAt: -1
       });
@@ -79,6 +81,7 @@ export const getShopOrderById = async (req, res) => {
     const order = await Order.findOne(query)
       .populate('student', 'name email phone universityId')
       .populate('runner', 'name phone')
+      .populate('shop', 'name location phone image')
       .populate('items.menuItem', 'name image price category');
 
     if (!order) {
@@ -143,7 +146,11 @@ export const acceptShopOrder = async (req, res) => {
 
     order.status = 'CONFIRMED';
 
-    if (Array.isArray(order.timeline)) {
+    if (!Array.isArray(order.timeline)) {
+      order.timeline = [];
+    }
+
+    if (!order.timeline.some((t) => t.status === 'CONFIRMED')) {
       order.timeline.push({
         status: 'CONFIRMED',
         time: new Date(),
@@ -283,3 +290,154 @@ export const rejectShopOrder = async (req, res) => {
 
 export const rejectOrder = rejectShopOrder;
 
+// @desc    Mark order as PREPARING (Transition: CONFIRMED -> PREPARING)
+// @route   PATCH /api/shops/orders/:orderId/preparing
+// @access  Private (Shop owner, Admin)
+export const startPreparingOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const isObjectId = mongoose.Types.ObjectId.isValid(orderId);
+    const query = isObjectId
+      ? { _id: orderId, shop: shop._id }
+      : { orderNumber: orderId, shop: shop._id };
+
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (order.status !== 'CONFIRMED') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only confirmed orders can start preparing'
+      });
+    }
+
+    order.status = 'PREPARING';
+
+    if (!Array.isArray(order.timeline)) {
+      order.timeline = [];
+    }
+
+    if (!order.timeline.some((t) => t.status === 'PREPARING')) {
+      order.timeline.push({
+        status: 'PREPARING',
+        time: new Date(),
+        note: req.body?.note || 'Kitchen started preparing the order'
+      });
+    }
+
+    await order.save();
+
+    await order.populate([
+      { path: 'student', select: 'name email phone universityId' },
+      { path: 'runner', select: 'name phone' },
+      { path: 'items.menuItem', select: 'name image price category' }
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order is now being prepared',
+      order
+    });
+  } catch (error) {
+    console.error('startPreparingOrder Error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update order status'
+    });
+  }
+};
+
+// @desc    Mark order as READY_FOR_PICKUP (Transition: PREPARING -> READY_FOR_PICKUP)
+// @route   PATCH /api/shops/orders/:orderId/ready
+// @access  Private (Shop owner, Admin)
+export const markOrderReady = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
+
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const isObjectId = mongoose.Types.ObjectId.isValid(orderId);
+    const query = isObjectId
+      ? { _id: orderId, shop: shop._id }
+      : { orderNumber: orderId, shop: shop._id };
+
+    const order = await Order.findOne(query);
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (order.status !== 'PREPARING') {
+      return res.status(400).json({
+        success: false,
+        message: 'Only preparing orders can be marked ready'
+      });
+    }
+
+    order.status = 'READY_FOR_PICKUP';
+
+    if (!Array.isArray(order.timeline)) {
+      order.timeline = [];
+    }
+
+    if (!order.timeline.some((t) => t.status === 'READY_FOR_PICKUP')) {
+      order.timeline.push({
+        status: 'READY_FOR_PICKUP',
+        time: new Date(),
+        note: req.body?.note || 'Order is ready for runner pickup'
+      });
+    }
+
+    await order.save();
+
+    await order.populate([
+      { path: 'student', select: 'name email phone universityId' },
+      { path: 'runner', select: 'name phone' },
+      { path: 'items.menuItem', select: 'name image price category' }
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order is ready for pickup',
+      order
+    });
+  } catch (error) {
+    console.error('markOrderReady Error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update order status'
+    });
+  }
+};
