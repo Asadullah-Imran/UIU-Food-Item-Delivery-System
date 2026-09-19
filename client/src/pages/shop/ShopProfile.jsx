@@ -293,8 +293,8 @@ const ShopProfile = () => {
             </div>
             
             <div className="ml-5 pb-6">
-              <h2 className="text-xl font-bold text-slate-800">{shop.name || 'Shop Name'}</h2>
-              <p className="text-sm font-semibold text-slate-500">{shop.location || 'Campus Location'}</p>
+              <h2 className="text-xl font-bold text-white drop-shadow-md">{shop.name || 'Shop Name'}</h2>
+              <p className="text-sm font-medium text-white/90 drop-shadow-sm">{shop.location || 'Campus Location'}</p>
             </div>
           </div>
         </div>
