@@ -2,6 +2,7 @@ import Order from '../models/Order.js';
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 import Transaction from '../models/Transaction.js';
+import { refundOrderToStudent } from '../services/orderService.js';
 
 // @desc    Create new order using In-App Campus Wallet
 // @route   POST /api/orders
@@ -254,25 +255,7 @@ export const updateOrderStatus = async (req, res) => {
 
     // 2. AUTOMATED REFUND ON CANCELLATION OR REJECTION
     if ((status === 'CANCELLED' || status === 'REJECTED') && previousStatus !== 'CANCELLED' && previousStatus !== 'REJECTED') {
-      const student = await User.findById(order.student);
-      if (student) {
-        const refundAmount = order.billing?.grandTotal || 0;
-        const newStudentBal = (student.walletBalance || 0) + refundAmount;
-        student.walletBalance = newStudentBal;
-        await student.save();
-
-        await Transaction.create({
-          transactionId: `TXN-REFUND-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
-          user: student._id,
-          order: order._id,
-          type: 'REFUND',
-          direction: 'CREDIT',
-          amount: refundAmount,
-          balanceAfter: newStudentBal,
-          description: `Full refund for ${status.toLowerCase()} order ${order.orderNumber}`,
-          status: 'COMPLETED'
-        });
-      }
+      await refundOrderToStudent(order);
     }
 
     res.status(200).json({
