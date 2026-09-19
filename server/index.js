@@ -49,7 +49,7 @@ app.use((err, req, res, next) => {
   if (err.name === 'MulterError') {
     return res.status(400).json({
       success: false,
-      message: err.code === 'LIMIT_FILE_SIZE' ? 'Image size exceeds 5 MB limit' : err.message
+      message: err.code === 'LIMIT_FILE_SIZE' ? 'Image size exceeds 25 MB limit' : err.message
     });
   }
 
