@@ -396,22 +396,27 @@ export const deleteMenuItem = async (req, res) => {
   }
 };
 
-// Helper: upload a buffer to Cloudinary and return the secure URL
-const uploadToCloudinary = (buffer, folder, publicId) => {
+// Helper: upload a buffer to Cloudinary and return the result object
+const uploadBufferToCloudinary = (
+  buffer,
+  folder
+) => {
   return new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder,
-        public_id: publicId,
-        overwrite: true,
-        resource_type: 'image',
-        transformation: [{ quality: 'auto', fetch_format: 'auto' }]
-      },
-      (error, result) => {
-        if (error) return reject(error);
-        resolve(result.secure_url);
-      }
-    );
+    const stream =
+      cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: 'image'
+        },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
     stream.end(buffer);
   });
 };
@@ -419,73 +424,104 @@ const uploadToCloudinary = (buffer, folder, publicId) => {
 // @desc    Upload / replace shop profile image
 // @route   PUT /api/shops/profile/image
 // @access  Private (Shop owner)
-export const uploadShopImage = async (req, res) => {
+export const updateShopProfileImage = async (
+  req,
+  res
+) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
+
+    if (!shop) {
+      return res.status(404).json({
         success: false,
-        message: 'No image file provided'
+        message: 'Shop not found'
       });
     }
 
-    const shop = await Shop.findOne({ owner: req.user._id });
-    if (!shop) {
-      return res.status(404).json({ success: false, message: 'Shop not found' });
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select an image'
+      });
     }
 
-    const publicId = `shop_${shop._id}_image`;
-    const imageUrl = await uploadToCloudinary(req.file.buffer, 'uiu-food/shops/images', publicId);
+    const result =
+      await uploadBufferToCloudinary(
+        req.file.buffer,
+        'uiu-delivery/shop-profile'
+      );
 
-    shop.image = imageUrl;
+    shop.image = result.secure_url;
+
     await shop.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: 'Shop image updated successfully',
-      imageUrl
+      message:
+        'Shop profile image updated successfully',
+      shop
     });
   } catch (error) {
-    console.error('uploadShopImage Error:', error);
-    res.status(500).json({
+    console.error(
+      'updateShopProfileImage Error:',
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: error.message || 'Error uploading shop image'
+      message:
+        'Failed to update shop profile image'
     });
   }
 };
+
+// Backwards compatibility alias
+export const uploadShopImage = updateShopProfileImage;
 
 // @desc    Upload / replace shop banner image
 // @route   PUT /api/shops/profile/banner
 // @access  Private (Shop owner)
 export const uploadShopBanner = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
+
+    if (!shop) {
+      return res.status(404).json({
         success: false,
-        message: 'No banner file provided'
+        message: 'Shop not found'
       });
     }
 
-    const shop = await Shop.findOne({ owner: req.user._id });
-    if (!shop) {
-      return res.status(404).json({ success: false, message: 'Shop not found' });
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please select an image'
+      });
     }
 
-    const publicId = `shop_${shop._id}_banner`;
-    const bannerUrl = await uploadToCloudinary(req.file.buffer, 'uiu-food/shops/banners', publicId);
+    const result = await uploadBufferToCloudinary(
+      req.file.buffer,
+      'uiu-delivery/shop-banner'
+    );
 
-    shop.banner = bannerUrl;
+    shop.banner = result.secure_url;
     await shop.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Shop banner updated successfully',
-      bannerUrl
+      shop
     });
   } catch (error) {
     console.error('uploadShopBanner Error:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message || 'Error uploading shop banner'
+      message: 'Failed to update shop banner'
     });
   }
 };
+
