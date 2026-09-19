@@ -26,7 +26,7 @@ router.put('/profile', protect, authorizeRoles('shop', 'admin'), updateShopProfi
 router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateShopProfileImage);
 router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), updateShopBanner);
 router.post('/menu', protect, authorizeRoles('shop', 'admin'), upload.single('image'), addMenuItem);
-router.put('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), updateMenuItem);
+router.put('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateMenuItem);
 router.patch('/menu/:itemId/availability', protect, authorizeRoles('shop', 'admin'), toggleItemAvailability);
 router.delete('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), deleteMenuItem);
 
