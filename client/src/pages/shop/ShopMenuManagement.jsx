@@ -86,46 +86,70 @@ export default function ShopMenuManagement() {
   };
 
   // Toggle item availability in MongoDB
-  const toggleAvailability = async (id) => {
-    const targetItem = items.find((i) => i.id === id || i._id === id);
+  const toggleAvailability = async (itemId) => {
+    const targetItem = items.find((i) => i.id === itemId || i._id === itemId);
     if (!targetItem) return;
 
     const newStatus = !targetItem.available;
 
-    // Optimistic UI update
-    setItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.id === id || item._id === id) {
-          return {
-            ...item,
-            available: newStatus,
-            isAvailable: newStatus,
-            badge: !newStatus ? 'OUT OF STOCK' : item.isPopular ? 'BEST SELLER' : null
-          };
-        }
-        return item;
-      })
-    );
-
     try {
       const authToken = token || localStorage.getItem('uiu_auth_token');
-      const res = await fetch(`/api/shops/menu/${id}/availability`, {
+      const res = await fetch(`/api/shops/menu/${itemId}/availability`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${authToken}`
         },
-        body: JSON.stringify({ isAvailable: newStatus })
+        body: JSON.stringify({
+          isAvailable: newStatus
+        })
       });
+
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message);
+
+      if (!res.ok) {
+        throw new Error(
+          data.message || 'Failed to update availability'
+        );
+      }
+
+      // Update local state immediately with the updated menu item returned from backend
+      if (data.menuItem) {
+        setItems((prev) =>
+          prev.map((item) =>
+            item._id === data.menuItem._id || item.id === data.menuItem._id
+              ? {
+                  ...item,
+                  ...data.menuItem,
+                  id: data.menuItem._id,
+                  available: data.menuItem.isAvailable,
+                  badge: !data.menuItem.isAvailable
+                    ? 'OUT OF STOCK'
+                    : data.menuItem.isPopular
+                    ? 'BEST SELLER'
+                    : null
+                }
+              : item
+          )
+        );
+
+        if (viewItem && (viewItem._id === data.menuItem._id || viewItem.id === data.menuItem._id)) {
+          setViewItem((prev) => ({
+            ...prev,
+            ...data.menuItem,
+            available: data.menuItem.isAvailable
+          }));
+        }
+      }
+
       showToast(
-        `"${targetItem.name}" is now marked as ${newStatus ? 'Available' : 'Unavailable'}`,
+        data.message ||
+          `"${targetItem.name}" is now marked as ${newStatus ? 'Available' : 'Unavailable'}`,
         newStatus ? 'success' : 'warning'
       );
     } catch (err) {
-      showToast(err.message || 'Failed to update status', 'warning');
-      fetchMenuItems(); // Rollback on error
+      showToast(err.message || 'Failed to update availability', 'warning');
+      fetchMenuItems(); // Rollback/sync on error
     }
   };
 
