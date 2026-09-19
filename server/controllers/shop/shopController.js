@@ -1,6 +1,7 @@
 import Shop from '../../models/Shop.js';
 import MenuItem from '../../models/MenuItem.js';
 import cloudinary from '../../config/cloudinary.js';
+import { uploadImageToCloudinary } from '../../utils/cloudinaryUpload.js';
 
 // @desc    Get all active campus shops
 // @route   GET /api/shops
@@ -215,43 +216,122 @@ export const addMenuItem = async (req, res) => {
       image,
       preparationTime = '10-15 mins',
       dietary = ['Halal'],
-      discount = 0,
-      taxRate = 5,
-      stockQuantity = 50,
-      lowStockWarning = 10,
+      discount,
+      taxRate,
+      stockQuantity,
+      lowStockWarning,
       isAvailable = true,
       todaySpecial = false,
       featured = false,
       recommended = true
     } = req.body;
 
-    if (!name || price === undefined) {
+    // --- Field Validation ---
+
+    if (!name || !name.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Item name and price are required'
+        message: 'Item name is required'
       });
+    }
+
+    const numericPrice = Number(price);
+    if (price === undefined || Number.isNaN(numericPrice) || numericPrice <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Price must be greater than 0'
+      });
+    }
+
+    const numericStock = stockQuantity !== undefined ? Number(stockQuantity) : 50;
+    if (Number.isNaN(numericStock) || numericStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Stock quantity cannot be negative'
+      });
+    }
+
+    const numericDiscount = discount !== undefined ? Number(discount) : 0;
+    if (Number.isNaN(numericDiscount) || numericDiscount < 0 || numericDiscount > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Discount must be between 0 and 100'
+      });
+    }
+
+    const numericTaxRate = taxRate !== undefined ? Number(taxRate) : 5;
+    if (Number.isNaN(numericTaxRate) || numericTaxRate < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Tax rate cannot be negative'
+      });
+    }
+
+    const numericLowStock = lowStockWarning !== undefined ? Number(lowStockWarning) : 10;
+    if (Number.isNaN(numericLowStock) || numericLowStock < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Low-stock warning cannot be negative'
+      });
+    }
+
+    let imageUrl =
+      (image && typeof image === 'string' && image.startsWith('http'))
+        ? image
+        : 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80';
+
+    let imagePublicId = '';
+
+    if (req.file) {
+      const uploadResult = await uploadImageToCloudinary(req.file.buffer);
+      imageUrl = uploadResult.secure_url;
+      imagePublicId = uploadResult.public_id;
     }
 
     const menuItem = await MenuItem.create({
       shop: shop._id,
-      name,
-      description: description || '',
-      price: Number(price),
-      category,
-      image: image || 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80',
-      preparationTime,
-      dietary: Array.isArray(dietary) ? dietary : [dietary],
-      discount: Number(discount) || 0,
-      taxRate: Number(taxRate) || 5,
-      stockQuantity: Number(stockQuantity) || 50,
-      lowStockWarning: Number(lowStockWarning) || 10,
-      isAvailable: Boolean(isAvailable),
+
+      name: name.trim(),
+      description: description?.trim() || '',
+
+      category: category || 'Meals',
+
+      price: numericPrice,
+
+      image: imageUrl,
+      imagePublicId,
+
+      preparationTime: preparationTime || '10-15 mins',
+
+      stockQuantity: numericStock,
+
+      lowStockWarning: numericLowStock,
+
+      discount: numericDiscount,
+
+      taxRate: numericTaxRate,
+
+      dietary:
+        Array.isArray(dietary)
+          ? dietary
+          : ['Halal'],
+
+      isAvailable:
+        isAvailable !== undefined
+          ? Boolean(isAvailable)
+          : true,
+
       todaySpecial: Boolean(todaySpecial),
+
       featured: Boolean(featured),
-      recommended: Boolean(recommended)
+
+      recommended:
+        recommended !== undefined
+          ? Boolean(recommended)
+          : true
     });
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Menu item created successfully',
       menuItem

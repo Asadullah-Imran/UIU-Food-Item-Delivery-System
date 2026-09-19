@@ -18,7 +18,8 @@ const menuItemSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      required: [true, 'Please provide item price']
+      required: [true, 'Please provide item price'],
+      min: [1, 'Price must be greater than 0']
     },
     category: {
       type: String,
@@ -28,6 +29,10 @@ const menuItemSchema = new mongoose.Schema(
     image: {
       type: String,
       default: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&q=80'
+    },
+    imagePublicId: {
+      type: String,
+      default: ''
     },
     isAvailable: {
       type: Boolean,
@@ -51,19 +56,24 @@ const menuItemSchema = new mongoose.Schema(
     },
     discount: {
       type: Number,
-      default: 0
+      default: 0,
+      min: [0, 'Discount cannot be negative'],
+      max: [100, 'Discount cannot exceed 100']
     },
     taxRate: {
       type: Number,
-      default: 5
+      default: 5,
+      min: [0, 'Tax rate cannot be negative']
     },
     stockQuantity: {
       type: Number,
-      default: 50
+      default: 50,
+      min: [0, 'Stock quantity cannot be negative']
     },
     lowStockWarning: {
       type: Number,
-      default: 10
+      default: 10,
+      min: [0, 'Low-stock warning cannot be negative']
     },
     todaySpecial: {
       type: Boolean,
