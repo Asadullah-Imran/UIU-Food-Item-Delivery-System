@@ -45,6 +45,22 @@ app.use((req, res, next) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
+  // Handle Multer upload errors (e.g. file size > 5MB)
+  if (err.name === 'MulterError') {
+    return res.status(400).json({
+      success: false,
+      message: err.code === 'LIMIT_FILE_SIZE' ? 'Image size exceeds 5 MB limit' : err.message
+    });
+  }
+
+  // Handle custom file filter errors (e.g. TXT/PDF files)
+  if (err.message && err.message.includes('images are allowed')) {
+    return res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+
   console.error(err.stack);
   res.status(500).json({ 
     success: false, 
