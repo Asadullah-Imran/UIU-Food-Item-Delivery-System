@@ -61,7 +61,10 @@ export const getShopById = async (req, res) => {
       });
     }
 
-    const menuItems = await MenuItem.find({ shop: shop._id }).sort({ isPopular: -1, createdAt: -1 });
+    const menuItems = await MenuItem.find({
+      shop: shop._id,
+      isAvailable: true
+    }).sort({ isPopular: -1, createdAt: -1 });
 
     // Group items by category for easy frontend tab rendering
     const categories = ['All', ...new Set(menuItems.map((item) => item.category))];
@@ -563,12 +566,22 @@ export const updateMenuItem = async (req, res) => {
 // @access  Private (Shop owner)
 export const toggleItemAvailability = async (req, res) => {
   try {
-    const shop = await Shop.findOne({ owner: req.user._id });
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
+
     if (!shop) {
-      return res.status(404).json({ success: false, message: 'Shop not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
     }
 
-    const item = await MenuItem.findOne({ _id: req.params.itemId, shop: shop._id });
+    const item = await MenuItem.findOne({
+      _id: req.params.itemId,
+      shop: shop._id
+    });
+
     if (!item) {
       return res.status(404).json({
         success: false,
@@ -577,24 +590,43 @@ export const toggleItemAvailability = async (req, res) => {
     }
 
     if (req.body && req.body.isAvailable !== undefined) {
-      item.isAvailable = Boolean(req.body.isAvailable);
+      item.isAvailable =
+        req.body.isAvailable === true ||
+        req.body.isAvailable === 'true';
     } else {
       item.isAvailable = !item.isAvailable;
     }
 
+    if (
+      item.isAvailable &&
+      item.stockQuantity <= 0
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          'Cannot mark an item available when stock is 0'
+      });
+    }
+
     await item.save();
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: `Item marked as ${item.isAvailable ? 'In Stock' : 'Out of Stock'}`,
-      isAvailable: item.isAvailable,
+      message: item.isAvailable
+        ? 'Menu item is now available'
+        : 'Menu item is now unavailable',
       menuItem: item
     });
   } catch (error) {
-    console.error('toggleItemAvailability Error:', error);
-    res.status(500).json({
+    console.error(
+      'toggleItemAvailability Error:',
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: error.message || 'Error updating availability'
+      message:
+        'Failed to update item availability'
     });
   }
 };
@@ -604,36 +636,67 @@ export const toggleItemAvailability = async (req, res) => {
 // @access  Private (Shop owner)
 export const deleteMenuItem = async (req, res) => {
   try {
-    const shop = await Shop.findOne({ owner: req.user._id });
-    if (!shop) {
-      return res.status(404).json({ success: false, message: 'Shop not found' });
-    }
+    const shop = await Shop.findOne({
+      owner: req.user._id
+    });
 
-    const item = await MenuItem.findOneAndDelete({ _id: req.params.itemId, shop: shop._id });
-    if (!item) {
+    if (!shop) {
       return res.status(404).json({
         success: false,
-        message: 'Menu item not found or does not belong to your shop'
+        message: 'Shop not found'
       });
     }
 
-    if (item.imagePublicId) {
+    const item = await MenuItem.findOne({
+      _id: req.params.itemId,
+      shop: shop._id
+    });
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item not found'
+      });
+    }
+
+    const imagePublicId = item.imagePublicId;
+
+    await item.deleteOne();
+
+    if (imagePublicId) {
       try {
-        await deleteImageFromCloudinary(item.imagePublicId);
-      } catch (cleanupError) {
-        console.error('Old Cloudinary image cleanup failed:', cleanupError);
+        await deleteImageFromCloudinary(
+          imagePublicId
+        );
+      } catch (error) {
+        console.error(
+          'Cloudinary image cleanup failed:',
+          error
+        );
       }
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Menu item deleted successfully'
     });
   } catch (error) {
-    console.error('deleteMenuItem Error:', error);
-    res.status(500).json({
+    // Invalid MongoDB ObjectId (e.g. "abc123") → return 404 not 500
+    if (error.name === 'CastError') {
+      return res.status(404).json({
+        success: false,
+        message: 'Menu item not found'
+      });
+    }
+
+    console.error(
+      'deleteMenuItem Error:',
+      error
+    );
+
+    return res.status(500).json({
       success: false,
-      message: error.message || 'Error deleting menu item'
+      message: 'Failed to delete menu item'
     });
   }
 };
