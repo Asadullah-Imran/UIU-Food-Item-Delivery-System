@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Search, Bell, Settings, User, Edit2, Camera, Star, ShoppingBag, 
   Wallet, Flame, CheckCircle2, Eye, Save, Lock, Shield, LogOut, ChevronRight, Loader2, AlertCircle
@@ -8,6 +8,8 @@ import { useAuth } from '../../context/AuthContext';
 
 const ShopProfile = () => {
   const { token } = useAuth();
+  const fileInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
 
   const [shop, setShop] = useState({
     name: "Chef's Table",
@@ -22,6 +24,8 @@ const ShopProfile = () => {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [toast, setToast] = useState(null);
 
   // State for toggles
@@ -95,6 +99,69 @@ const ShopProfile = () => {
     }
   };
 
+  const handleProfileImageUpload = async (file) => {
+    if (!file) return;
+
+    const authToken = token || localStorage.getItem('uiu_auth_token');
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      setIsUploadingImage(true);
+      const res = await fetch('/api/shops/profile/image', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to upload profile image');
+      }
+
+      setShop(data.shop);
+      showToast('Shop profile image updated successfully!', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to upload profile image', 'error');
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleBannerUpload = async (file) => {
+    if (!file) return;
+
+    const authToken = token || localStorage.getItem('uiu_auth_token');
+    const formData = new FormData();
+    formData.append('banner', file);
+
+    try {
+      setIsUploadingBanner(true);
+      const res = await fetch('/api/shops/profile/banner', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to upload banner image');
+      }
+
+      setShop(data.shop);
+      showToast('Shop banner updated successfully!', 'success');
+    } catch (err) {
+      showToast(err.message || 'Failed to upload banner image', 'error');
+    } finally {
+      setIsUploadingBanner(false);
+    }
+  };
 
   const headerActions = (
     <div className="flex items-center gap-4 mr-4 w-full justify-between sm:justify-end">
@@ -149,30 +216,64 @@ const ShopProfile = () => {
           <div className="relative h-64 rounded-[28px] overflow-hidden">
             {/* Banner Image */}
             <img 
-              src={shop.banner || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80"} 
-              alt="Shop Cover" 
+              src={shop?.banner || "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80"} 
+              alt={`${shop?.name} banner`} 
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/20"></div>
             
-            {/* Change Cover Button */}
-            <button className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-xs font-bold text-slate-700 flex items-center shadow-sm hover:bg-white transition-colors">
-              <Edit2 className="w-3.5 h-3.5 mr-2" /> Change Cover
+            {/* Change Cover Button & Hidden Input */}
+            <input 
+              type="file" 
+              ref={bannerInputRef} 
+              accept="image/jpeg,image/png,image/webp" 
+              className="hidden" 
+              onChange={(e) => handleBannerUpload(e.target.files?.[0])}
+            />
+            <button 
+              type="button"
+              disabled={isUploadingBanner}
+              onClick={() => bannerInputRef.current?.click()}
+              className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-xs font-bold text-slate-700 flex items-center shadow-sm hover:bg-white transition-colors cursor-pointer disabled:opacity-60"
+            >
+              {isUploadingBanner ? (
+                <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+              ) : (
+                <Edit2 className="w-3.5 h-3.5 mr-2" />
+              )}
+              {isUploadingBanner ? 'Uploading...' : 'Change Cover'}
             </button>
           </div>
           
           {/* Profile Picture & Info */}
           <div className="absolute -bottom-6 left-8 flex items-end">
             <div className="relative">
-              <div className="w-32 h-32 rounded-2xl bg-white p-1.5 shadow-md">
+              <div className="w-32 h-32 rounded-2xl bg-white p-1.5 shadow-md overflow-hidden">
                 <img 
-                  src={shop.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80"} 
-                  alt="Profile" 
+                  src={shop?.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=500&q=80"} 
+                  alt={shop?.name || 'Shop Profile'} 
                   className="w-full h-full object-cover rounded-xl"
                 />
               </div>
-              <button className="absolute -bottom-2 -right-2 bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm hover:bg-orange-600 transition-colors">
-                <Camera className="w-4 h-4" />
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                accept="image/jpeg,image/png,image/webp" 
+                className="hidden" 
+                onChange={(e) => handleProfileImageUpload(e.target.files?.[0])}
+              />
+              <button 
+                type="button"
+                disabled={isUploadingImage}
+                onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-2 -right-2 bg-orange-500 text-white w-8 h-8 rounded-full flex items-center justify-center border-2 border-white shadow-sm hover:bg-orange-600 transition-colors cursor-pointer disabled:opacity-60"
+                title="Change Profile Photo"
+              >
+                {isUploadingImage ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Camera className="w-4 h-4" />
+                )}
               </button>
             </div>
             
