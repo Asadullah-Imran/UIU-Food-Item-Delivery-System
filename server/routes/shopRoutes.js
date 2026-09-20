@@ -16,7 +16,8 @@ import {
   rejectShopOrder,
   startPreparingOrder,
   markOrderReady,
-  getShopDashboard
+  getShopDashboard,
+  getShopReviews
 } from '../controllers/shop/shopController.js';
 import { protect } from '../middlewares/auth.js';
 import { authorizeRoles } from '../middlewares/role.js';
@@ -29,6 +30,7 @@ router.get('/', getShops);
 
 // Shop Owner Private routes (Must be placed before parameterized /:shopId route)
 router.get('/dashboard', protect, authorizeRoles('shop', 'admin'), getShopDashboard);
+router.get('/reviews', protect, authorizeRoles('shop', 'admin'), getShopReviews);
 router.get('/my-shop', protect, authorizeRoles('shop', 'admin'), getMyShop);
 router.get('/orders', protect, authorizeRoles('shop', 'admin'), getShopOrders);
 router.get('/orders/:orderId', protect, authorizeRoles('shop', 'admin'), getShopOrderById);

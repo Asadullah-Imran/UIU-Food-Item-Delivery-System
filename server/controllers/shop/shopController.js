@@ -883,4 +883,9 @@ export {
   getShopDashboard
 } from './shopDashboardController.js';
 
+// Shop Reviews Controller exports
+export {
+  getShopReviews
+} from './shopReviewController.js';
+
 
