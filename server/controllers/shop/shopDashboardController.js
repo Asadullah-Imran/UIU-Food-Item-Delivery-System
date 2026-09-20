@@ -187,7 +187,15 @@ export const getShopDashboard = async (req, res) => {
         popularItems,
         bestSellingItem,
         recentOrders,
-        menuItems
+        menuItems,
+        shop: {
+          _id: shop._id,
+          name: shop.name,
+          image: shop.image,
+          rating: shop.rating,
+          reviewsCount: shop.reviewsCount,
+          isOpen: shop.isOpen
+        }
       }
     });
 
