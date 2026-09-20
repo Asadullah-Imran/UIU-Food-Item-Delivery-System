@@ -42,7 +42,8 @@ export const getShopDashboard = async (req, res) => {
       todayDeliveredOrders,
       allDeliveredOrders,
       recentOrders,
-      menuItems
+      menuItems,
+      popularItems
     ] = await Promise.all([
       Order.countDocuments({
         shop: shop._id,
@@ -87,6 +88,7 @@ export const getShopDashboard = async (req, res) => {
       Order.find({
         shop: shop._id
       })
+        .populate('student', 'name email phone studentId')
         .sort({
           createdAt: -1
         })
@@ -94,7 +96,47 @@ export const getShopDashboard = async (req, res) => {
 
       MenuItem.find({
         shop: shop._id
-      })
+      }),
+
+      // Aggregate top-selling items from DELIVERED orders
+      Order.aggregate([
+        {
+          $match: {
+            shop: shop._id,
+            status: 'DELIVERED'
+          }
+        },
+        { $unwind: '$items' },
+        {
+          $group: {
+            _id: { $ifNull: ['$items.menuItem', '$items.name'] },
+            menuItemId: { $first: '$items.menuItem' },
+            name: { $first: '$items.name' },
+            totalQuantity: { $sum: '$items.quantity' },
+            ordersCount: { $sum: 1 },
+            totalRevenue: {
+              $sum: {
+                $multiply: [
+                  { $ifNull: ['$items.price', 0] },
+                  { $ifNull: ['$items.quantity', 1] }
+                ]
+              }
+            }
+          }
+        },
+        { $sort: { totalQuantity: -1 } },
+        { $limit: 5 },
+        {
+          $project: {
+            _id: 0,
+            menuItemId: '$_id',
+            name: 1,
+            totalQuantity: 1,
+            ordersCount: 1,
+            totalRevenue: 1
+          }
+        }
+      ])
     ]);
 
     const todayRevenue = todayDeliveredOrders.reduce(
@@ -123,6 +165,16 @@ export const getShopDashboard = async (req, res) => {
       0
     );
 
+    const lowStockItems = menuItems.filter(
+      (item) => Number(item.stockQuantity ?? 0) <= Number(item.lowStockWarning ?? 10)
+    );
+
+    const lowStockCount = lowStockItems.length;
+
+    const averageRating = shop.rating || 0;
+    const reviewsCount = shop.reviewsCount || 0;
+    const bestSellingItem = popularItems && popularItems.length > 0 ? popularItems[0] : null;
+
     return res.status(200).json({
       success: true,
 
@@ -134,6 +186,12 @@ export const getShopDashboard = async (req, res) => {
         completedOrders,
         todayRevenue,
         totalRevenue,
+        lowStockItems,
+        lowStockCount,
+        averageRating,
+        reviewsCount,
+        popularItems,
+        bestSellingItem,
         recentOrders,
         menuItems
       }
