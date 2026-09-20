@@ -878,4 +878,9 @@ export {
   markOrderReady
 } from './shopOrderController.js';
 
+// Shop Dashboard Controller exports
+export {
+  getShopDashboard
+} from './shopDashboardController.js';
+
 
