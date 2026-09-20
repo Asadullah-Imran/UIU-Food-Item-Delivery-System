@@ -888,4 +888,10 @@ export {
   getShopReviews
 } from './shopReviewController.js';
 
+// Shop Reports & Transactions Controller exports
+export {
+  getShopReports,
+  getShopTransactions
+} from './shopReportController.js';
+
 
