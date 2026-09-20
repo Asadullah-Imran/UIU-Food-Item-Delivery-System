@@ -333,3 +333,5 @@ export const rejectShopOrder = async (req, res) => {
 };
 
 export { Order, Shop, User, Transaction, MenuItem, refundOrderToStudent };
+export { getShopReviews } from './shop/shopReviewController.js';
+export { getShopReports, getShopTransactions } from './shop/shopReportController.js';
