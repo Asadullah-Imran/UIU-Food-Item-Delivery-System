@@ -33,6 +33,8 @@ export const getShopDashboard = async (req, res) => {
       preparingOrders,
       readyOrders,
       completedOrders,
+      todayDeliveredOrders,
+      allDeliveredOrders,
       recentOrders,
       menuItems
     ] = await Promise.all([
@@ -64,6 +66,19 @@ export const getShopDashboard = async (req, res) => {
       }),
 
       Order.find({
+        shop: shop._id,
+        status: 'DELIVERED',
+        createdAt: {
+          $gte: startOfDay
+        }
+      }),
+
+      Order.find({
+        shop: shop._id,
+        status: 'DELIVERED'
+      }),
+
+      Order.find({
         shop: shop._id
       })
         .sort({
@@ -76,6 +91,32 @@ export const getShopDashboard = async (req, res) => {
       })
     ]);
 
+    const todayRevenue = todayDeliveredOrders.reduce(
+      (total, order) =>
+        total +
+        Number(
+          order.shopAmount ??
+          order.billing?.shopAmount ??
+          order.billing?.subtotal ??
+          order.subtotal ??
+          0
+        ),
+      0
+    );
+
+    const totalRevenue = allDeliveredOrders.reduce(
+      (total, order) =>
+        total +
+        Number(
+          order.shopAmount ??
+          order.billing?.shopAmount ??
+          order.billing?.subtotal ??
+          order.subtotal ??
+          0
+        ),
+      0
+    );
+
     return res.status(200).json({
       success: true,
 
@@ -85,6 +126,8 @@ export const getShopDashboard = async (req, res) => {
         preparingOrders,
         readyOrders,
         completedOrders,
+        todayRevenue,
+        totalRevenue,
         recentOrders,
         menuItems
       }
