@@ -1,25 +1,138 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   Check, Truck, CheckCheck, MapPin, 
   Phone, MessageSquare, Store, CheckCircle2,
   Navigation, Star, CornerUpLeft, Gauge,
-  Utensils
+  Utensils, Loader2, AlertCircle
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
 import { useOrderChat } from '../../context/OrderChatContext';
+import { useAuth } from '../../context/AuthContext';
 
 export default function RunnerOrderTracking() {
-  const { orderId, customer } = activeDeliveryData;
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { token, user, updateUserWallet, refreshUser } = useAuth();
   const { openOrderChat } = useOrderChat();
 
+  const [activeOrder, setActiveOrder] = useState(location.state?.order || null);
+  const [loading, setLoading] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null);
+
+  useEffect(() => {
+    const fetchActiveOrder = async () => {
+      try {
+        setLoading(true);
+        const authToken = token || localStorage.getItem('uiu_auth_token');
+        const res = await fetch('/api/runner/orders/active', {
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.order) {
+            setActiveOrder(data.order);
+            localStorage.setItem('uiu_active_delivery', JSON.stringify(data.order));
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch active order:', err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!activeOrder) {
+      const cached = localStorage.getItem('uiu_active_delivery');
+      if (cached) {
+        try {
+          setActiveOrder(JSON.parse(cached));
+        } catch (e) {}
+      }
+      fetchActiveOrder();
+    }
+  }, [token]);
+
+  const handleCompleteDelivery = async () => {
+    setErrorMsg(null);
+    setIsCompleting(true);
+
+    try {
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const orderId = activeOrder?._id;
+
+      if (orderId && /^[0-9a-fA-F]{24}$/.test(orderId)) {
+        const res = await fetch(`/api/runner/orders/${orderId}/complete`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+          },
+          body: JSON.stringify({
+            dropOffNote: `Delivered to student at ${activeOrder.deliveryAddress?.room || 'Academic Building'}`
+          })
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || 'Failed to complete delivery');
+        }
+
+        // Update runner's local wallet
+        if (data.runnerBalance !== undefined) {
+          updateUserWallet(data.runnerBalance);
+        }
+        await refreshUser();
+        localStorage.removeItem('uiu_active_delivery');
+
+        navigate('/dashboard/runner/active/completed', { 
+          state: { 
+            order: data.order,
+            payout: data.payout,
+            runnerBalance: data.runnerBalance
+          } 
+        });
+      } else {
+        localStorage.removeItem('uiu_active_delivery');
+        navigate('/dashboard/runner/active/completed');
+      }
+    } catch (err) {
+      console.error('Complete delivery error:', err);
+      setErrorMsg(err.message || 'Failed to mark order delivered. Please try again.');
+    } finally {
+      setIsCompleting(false);
+    }
+  };
+
+  const displayData = {
+    orderId: activeOrder?.orderNumber || activeDeliveryData.orderId,
+    mongoId: activeOrder?._id,
+    reward: activeOrder?.billing?.runnerReward || 30,
+    totalValue: activeOrder?.billing?.grandTotal || 420,
+    shop: {
+      name: activeOrder?.shop?.name || activeDeliveryData.shop.name,
+      location: activeOrder?.shop?.location || activeDeliveryData.shop.location
+    },
+    customer: {
+      name: activeOrder?.student?.name || activeDeliveryData.customer.name,
+      studentId: activeOrder?.student?.universityId || activeDeliveryData.customer.studentId,
+      phone: activeOrder?.deliveryAddress?.phone || activeOrder?.student?.phone || activeDeliveryData.customer.phone,
+      rating: activeDeliveryData.customer.rating,
+      image: activeDeliveryData.customer.image
+    },
+    dropoff: activeOrder?.deliveryAddress?.room || 'Academic Building Room 412'
+  };
+
   const timelineSteps = [
-    { label: "Accepted", time: "11:15 AM", status: "completed", icon: Check },
-    { label: "Reached Shop", time: "11:22 AM", status: "completed", icon: Check },
-    { label: "Picked Up", time: "11:30 AM", status: "completed", icon: Check },
+    { label: "Accepted", time: "Confirmed", status: "completed", icon: Check },
+    { label: "Reached Shop", time: "Done", status: "completed", icon: Check },
+    { label: "Picked Up", time: "Done", status: "completed", icon: Check },
     { label: "On the Way", time: "Active Now", status: "active", icon: Truck },
-    { label: "Delivered", time: "ETA 11:40 AM", status: "pending", icon: CheckCheck }
+    { label: "Delivered", time: "Destination", status: "pending", icon: CheckCheck }
   ];
 
   return (
@@ -34,10 +147,17 @@ export default function RunnerOrderTracking() {
               Dashboard &gt; <span className="text-[#9B5110]">Active Delivery</span>
             </p>
             <h1 className="text-3xl font-extrabold text-slate-800 tracking-tight">
-              Order Tracking
+              Live Order Route Tracking
             </h1>
           </div>
         </div>
+
+        {errorMsg && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-2xl flex items-center gap-3 animate-in fade-in">
+            <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
+            <span className="font-semibold">{errorMsg}</span>
+          </div>
+        )}
 
         {/* Top Timeline Bar */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6 flex justify-between items-center relative overflow-hidden">
@@ -79,13 +199,13 @@ export default function RunnerOrderTracking() {
         </div>
 
         {/* Two Columns */}
-        <div className="flex flex-col lg:flex-row gap-6 h-[700px]">
+        <div className="flex flex-col lg:flex-row gap-6 min-h-[600px]">
           
           {/* Left Column - Map Area */}
           <div className="flex-1 flex flex-col gap-6">
             
             {/* Map Container */}
-            <div className="bg-slate-200 rounded-3xl flex-1 relative overflow-hidden shadow-inner border border-slate-300">
+            <div className="bg-slate-200 rounded-3xl min-h-[420px] flex-1 relative overflow-hidden shadow-inner border border-slate-300">
               {/* Map Mock Background Image */}
               <img 
                 src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&q=80" 
@@ -96,24 +216,24 @@ export default function RunnerOrderTracking() {
               <div className="absolute inset-0 bg-blue-50/40 mix-blend-multiply"></div>
 
               {/* Next Maneuver Tooltip */}
-              <div className="absolute top-1/4 left-1/2 -translate-x-1/2 bg-[#1E293B] text-white rounded-xl p-4 shadow-xl flex items-center gap-4 w-72 z-20 border border-slate-700">
+              <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-[#1E293B] text-white rounded-xl p-4 shadow-xl flex items-center gap-4 w-80 z-20 border border-slate-700">
                 <div className="text-orange-400">
                   <CornerUpLeft className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">Next Maneuver</p>
-                  <p className="text-sm font-bold leading-tight">Turn left toward Academic Building</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">Next Route Segment</p>
+                  <p className="text-sm font-bold leading-tight">Head to {displayData.dropoff}</p>
                 </div>
               </div>
 
               {/* Speed Widget */}
-              <div className="absolute right-8 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur rounded-xl p-3 shadow-lg border border-slate-200 flex items-center gap-3">
+              <div className="absolute right-6 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur rounded-xl p-3 shadow-lg border border-slate-200 flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-orange-100 text-[#9B5110] flex items-center justify-center">
                   <Gauge className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Current Speed</p>
-                  <p className="text-lg font-extrabold text-slate-800 leading-none">12 <span className="text-xs font-bold text-slate-500">km/h</span></p>
+                  <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Walking Speed</p>
+                  <p className="text-lg font-extrabold text-slate-800 leading-none">5.2 <span className="text-xs font-bold text-slate-500">km/h</span></p>
                 </div>
               </div>
 
@@ -122,27 +242,30 @@ export default function RunnerOrderTracking() {
                 
                 <div className="flex-1">
                   <p className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">
-                    Estimated Delivery
+                    Estimated Drop-off Time
                   </p>
                   <div className="flex items-baseline gap-2 mb-3">
-                    <span className="text-3xl font-extrabold text-[#9B5110]">6 mins</span>
-                    <span className="text-xs font-bold text-slate-500">(0.8 km remaining)</span>
+                    <span className="text-3xl font-extrabold text-[#9B5110]">4 mins</span>
+                    <span className="text-xs font-bold text-slate-500">(150m remaining)</span>
                   </div>
                   
                   {/* Progress Bar */}
                   <div className="flex items-center gap-4">
                     <div className="flex-1 h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="w-[75%] h-full bg-[#F37623] rounded-full"></div>
+                      <div className="w-[85%] h-full bg-[#F37623] rounded-full"></div>
                     </div>
                     <div className="text-right">
-                      <span className="block text-sm font-extrabold text-slate-800 leading-none">75%</span>
-                      <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-widest">Completed</span>
+                      <span className="block text-sm font-extrabold text-slate-800 leading-none">85%</span>
+                      <span className="block text-[8px] font-bold text-slate-500 uppercase tracking-widest">On Track</span>
                     </div>
                   </div>
                 </div>
 
                 <div className="ml-8 border-l border-slate-100 pl-8">
-                  <button className="bg-[#9B5110] hover:bg-[#7a3f0c] text-white px-8 py-4 rounded-xl font-bold flex items-center transition-colors shadow-lg shadow-[#9B5110]/20 text-lg tracking-wide">
+                  <button 
+                    onClick={() => alert(`Navigating live route to ${displayData.dropoff}`)}
+                    className="bg-[#9B5110] hover:bg-[#7a3f0c] text-white px-8 py-4 rounded-xl font-bold flex items-center transition-colors shadow-lg shadow-[#9B5110]/20 text-lg tracking-wide cursor-pointer"
+                  >
                     <Navigation className="w-6 h-6 mr-3 fill-current" /> NAVIGATE
                   </button>
                 </div>
@@ -153,7 +276,7 @@ export default function RunnerOrderTracking() {
             {/* Bottom Action Grid */}
             <div className="grid grid-cols-4 gap-4 h-28">
               <button 
-                onClick={() => alert(`Calling student ${customer.name} at ${customer.phone}`)}
+                onClick={() => alert(`Calling student ${displayData.customer.name} at ${displayData.customer.phone}`)}
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
@@ -163,7 +286,7 @@ export default function RunnerOrderTracking() {
               </button>
               
               <button 
-                onClick={() => openOrderChat(orderId || '#3392', 'student')}
+                onClick={() => openOrderChat(displayData.orderId, 'student')}
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-orange-50/50 hover:border-orange-200 transition-colors cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-[#9B5110] relative">
@@ -174,7 +297,7 @@ export default function RunnerOrderTracking() {
               </button>
 
               <button 
-                onClick={() => openOrderChat(orderId || '#3392', 'shop')}
+                onClick={() => openOrderChat(displayData.orderId, 'shop')}
                 className="bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center gap-2 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
@@ -183,14 +306,23 @@ export default function RunnerOrderTracking() {
                 <span className="text-xs font-bold text-slate-700">Contact Shop</span>
               </button>
 
-              <Link to="/dashboard/runner/active/completed" className="bg-green-600 hover:bg-green-700 rounded-2xl shadow-md flex flex-col items-center justify-center gap-2 transition-colors border border-green-500 text-decoration-none">
+              <button 
+                type="button"
+                disabled={isCompleting}
+                onClick={handleCompleteDelivery}
+                className="bg-green-600 hover:bg-green-700 disabled:opacity-50 rounded-2xl shadow-md flex flex-col items-center justify-center gap-2 transition-colors border border-green-500 cursor-pointer"
+              >
                 <div className="w-10 h-10 rounded-full bg-green-500/50 flex items-center justify-center text-white border border-green-400">
-                  <CheckCircle2 className="w-6 h-6" />
+                  {isCompleting ? (
+                    <Loader2 className="w-6 h-6 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-6 h-6" />
+                  )}
                 </div>
                 <span className="text-xs font-extrabold text-white tracking-widest text-center leading-tight">
                   MARK<br/>DELIVERED
                 </span>
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -200,36 +332,33 @@ export default function RunnerOrderTracking() {
             {/* Top Order Box */}
             <div className="bg-[#EAE1D9] rounded-2xl p-5 border border-[#D4C4B4] flex justify-between items-center shadow-inner">
               <div>
-                <p className="text-[11px] font-extrabold text-[#7A5B42] uppercase tracking-widest mb-1">Order {orderId}</p>
-                <p className="text-sm font-bold text-[#5C422E]">Value: ৳420.00</p>
+                <p className="text-[11px] font-extrabold text-[#7A5B42] uppercase tracking-widest mb-1">Order {displayData.orderId}</p>
+                <p className="text-sm font-bold text-[#5C422E]">Value: ৳{displayData.totalValue}</p>
               </div>
               <div className="bg-[#9B5110] text-white text-[11px] font-extrabold px-3 py-1.5 rounded-full shadow-sm">
-                REWARD: ৳60
+                REWARD: ৳{displayData.reward}
               </div>
             </div>
 
             {/* Customer Box */}
             <div className="bg-[#FEF8F3] rounded-2xl p-6 border border-[#F6E3CF] shadow-sm flex flex-col items-center text-center">
               <div className="relative mb-3">
-                <img src={customer.image} alt={customer.name} className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
+                <img src={displayData.customer.image} alt={displayData.customer.name} className="w-16 h-16 rounded-full object-cover shadow-sm border-2 border-white" />
               </div>
-              <h3 className="text-lg font-bold text-slate-800">{customer.name}</h3>
-              <p className="text-[10px] font-semibold text-slate-500 mt-0.5 mb-2">Student ID: {customer.studentId}</p>
+              <h3 className="text-lg font-bold text-slate-800">{displayData.customer.name}</h3>
+              <p className="text-[10px] font-semibold text-slate-500 mt-0.5 mb-2">Student ID: {displayData.customer.studentId}</p>
               
               <div className="bg-white border border-slate-200 rounded-full px-2 py-0.5 flex items-center gap-1 mb-4 shadow-sm">
                 <Star className="w-3 h-3 text-orange-400 fill-current" />
-                <span className="text-[11px] font-bold text-slate-700">{customer.rating}</span>
+                <span className="text-[11px] font-bold text-slate-700">{displayData.customer.rating}</span>
               </div>
 
               <div className="flex flex-wrap justify-center gap-2">
                 <span className="bg-orange-100 text-orange-700 text-[9px] font-extrabold px-2 py-1 rounded uppercase tracking-wider">
                   On The Way
                 </span>
-                <span className="bg-red-100 text-red-600 text-[9px] font-extrabold px-2 py-1 rounded uppercase tracking-wider">
-                  High Priority
-                </span>
-                <span className="bg-green-100 text-green-700 text-[9px] font-extrabold px-2 py-1 rounded uppercase tracking-wider">
-                  Paid
+                <span className="bg-emerald-100 text-emerald-700 text-[9px] font-extrabold px-2 py-1 rounded uppercase tracking-wider">
+                  In-App Paid
                 </span>
               </div>
             </div>
@@ -248,20 +377,21 @@ export default function RunnerOrderTracking() {
                     <Utensils className="w-4 h-4" />
                   </div>
                   <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Pickup</h4>
-                  <p className="text-sm font-bold text-slate-800">Chef's Table</p>
+                  <p className="text-sm font-bold text-slate-800">{displayData.shop.name}</p>
+                  <p className="text-xs text-slate-500">{displayData.shop.location}</p>
                 </div>
 
                 {/* Destination */}
                 <div className="relative">
                   <div className="absolute -left-[35px] w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 top-0">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4 text-blue-600" />
                   </div>
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Destination</h4>
-                  <p className="text-sm font-bold text-slate-800">UIU main gate</p>
+                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Destination Room</h4>
+                  <p className="text-sm font-bold text-slate-800">{displayData.dropoff}</p>
                   
                   <div className="flex items-center gap-2 mt-3 text-slate-600">
                     <Phone className="w-3.5 h-3.5" />
-                    <span className="text-[11px] font-bold">{customer.phone}</span>
+                    <span className="text-[11px] font-bold">{displayData.customer.phone}</span>
                   </div>
                 </div>
 
