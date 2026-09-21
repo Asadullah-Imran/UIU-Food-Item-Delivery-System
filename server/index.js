@@ -7,6 +7,7 @@ import shopRoutes from './routes/shopRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import studentRoutes from './routes/student/studentRoutes.js';
+import runnerRoutes from './routes/runner/runnerRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -33,6 +34,7 @@ app.get('/api/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/runner', runnerRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/wallet', walletRoutes);
