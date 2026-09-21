@@ -55,12 +55,16 @@ export default function CheckoutPage() {
       // Determine Shop ID from cart items
       let shopId = cart[0]?.shopId || cart[0]?.shop;
       
-      // If shopId is missing, query the first campus shop
-      if (!shopId) {
-        const shopsRes = await fetch('/api/shops');
-        const shopsData = await shopsRes.json();
-        if (shopsData.shops && shopsData.shops.length > 0) {
-          shopId = shopsData.shops[0]._id;
+      // If shopId is missing or not a 24-char hex MongoDB ID, query the first campus shop
+      if (!shopId || !/^[0-9a-fA-F]{24}$/.test(String(shopId))) {
+        try {
+          const shopsRes = await fetch('/api/shops');
+          const shopsData = await shopsRes.json();
+          if (shopsData.shops && shopsData.shops.length > 0) {
+            shopId = shopsData.shops[0]._id;
+          }
+        } catch (e) {
+          console.warn('Failed to resolve shopId:', e);
         }
       }
 

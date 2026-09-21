@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
@@ -11,14 +12,21 @@ export const createOrder = async (req, res) => {
   try {
     const { shopId, items, deliveryAddress, specialInstructions } = req.body;
 
-    if (!shopId || !items || !Array.isArray(items) || items.length === 0) {
+    if (!items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'Order must contain a valid shop and at least one item'
+        message: 'Order must contain at least one item'
       });
     }
 
-    const shop = await Shop.findById(shopId);
+    let shop = null;
+    if (shopId && mongoose.Types.ObjectId.isValid(shopId)) {
+      shop = await Shop.findById(shopId);
+    }
+    if (!shop) {
+      shop = await Shop.findOne();
+    }
+
     if (!shop) {
       return res.status(404).json({
         success: false,
