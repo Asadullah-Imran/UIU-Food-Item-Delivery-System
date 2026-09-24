@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
+import { uploadImageToCloudinary } from '../utils/cloudinaryUpload.js';
 
 // @desc    Register a new user (Student, Runner, Shop Owner)
 // @route   POST /api/auth/register
@@ -221,7 +222,8 @@ export const getMe = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone, avatar, deliveryRoom, runnerDetails } = req.body;
+    const { name, phone, deliveryRoom, runnerDetails } = req.body;
+    let avatar = req.body.avatar;
 
     const user = await User.findById(req.user.id);
 
@@ -232,13 +234,19 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    if (req.file) {
+      const uploadResult = await uploadImageToCloudinary(req.file.buffer);
+      avatar = uploadResult.secure_url;
+    }
+
     if (name) user.name = name;
     if (phone) user.phone = phone;
     if (avatar) user.avatar = avatar;
     if (deliveryRoom) user.deliveryRoom = deliveryRoom;
     if (req.body.department) user.department = req.body.department;
     if (runnerDetails) {
-      user.runnerDetails = { ...user.runnerDetails, ...runnerDetails };
+      const parsedRunnerDetails = typeof runnerDetails === 'string' ? JSON.parse(runnerDetails) : runnerDetails;
+      user.runnerDetails = { ...user.runnerDetails, ...parsedRunnerDetails };
     }
 
     await user.save();
