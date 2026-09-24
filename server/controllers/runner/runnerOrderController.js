@@ -8,7 +8,7 @@ export const getAvailableDeliveries = async (req, res) => {
   try {
     const orders = await Order.find({
       runner: null,
-      status: { $in: ['PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP'] }
+      status: 'READY_FOR_PICKUP'
     })
       .populate('shop', 'name location image phone category')
       .populate('student', 'name phone universityId deliveryRoom')
@@ -56,7 +56,7 @@ export const acceptDelivery = async (req, res) => {
       {
         _id: orderId,
         runner: null,
-        status: { $in: ['PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP'] }
+        status: 'READY_FOR_PICKUP'
       },
       {
         $set: {
