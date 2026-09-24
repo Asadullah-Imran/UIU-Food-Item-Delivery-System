@@ -292,17 +292,24 @@ export default function RunnerOrderAccepted() {
 
               {/* Bottom Right Confirm Button */}
               <div className="mt-8 flex justify-end">
-                <button 
-                  type="button"
-                  disabled={isConfirming}
-                  onClick={handleConfirmPickup}
-                  className="bg-[#9B5110] hover:bg-[#7a3f0c] disabled:opacity-50 text-white px-8 py-3.5 rounded-xl font-bold flex items-center transition-colors shadow-lg shadow-[#9B5110]/20 cursor-pointer"
-                >
-                  {isConfirming ? (
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  ) : null}
-                  Confirm Arrival at Pickup <ChevronRight className="w-5 h-5 ml-2" />
-                </button>
+                {activeOrder.status === 'READY_FOR_PICKUP' ? (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 px-6 py-3.5 rounded-xl font-bold flex items-center shadow-sm w-full sm:w-auto">
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin text-amber-500" />
+                    Waiting for Shop Handover...
+                  </div>
+                ) : (
+                  <button 
+                    type="button"
+                    disabled={isConfirming || activeOrder.status !== 'HANDED_OVER'}
+                    onClick={handleConfirmPickup}
+                    className="bg-[#9B5110] hover:bg-[#7a3f0c] disabled:opacity-50 text-white px-8 py-3.5 rounded-xl font-bold flex items-center transition-colors shadow-lg shadow-[#9B5110]/20 cursor-pointer"
+                  >
+                    {isConfirming ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : null}
+                    Confirm Arrival at Pickup <ChevronRight className="w-5 h-5 ml-2" />
+                  </button>
+                )}
               </div>
 
             </div>

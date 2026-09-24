@@ -19,7 +19,8 @@ import {
   getShopDashboard,
   getShopReviews,
   getShopReports,
-  getShopTransactions
+  getShopTransactions,
+  handoverOrder
 } from '../controllers/shop/shopController.js';
 import { protect } from '../middlewares/auth.js';
 import { authorizeRoles } from '../middlewares/role.js';
@@ -42,6 +43,7 @@ router.patch('/orders/:orderId/accept', protect, authorizeRoles('shop', 'admin')
 router.patch('/orders/:orderId/reject', protect, authorizeRoles('shop', 'admin'), rejectShopOrder);
 router.patch('/orders/:orderId/preparing', protect, authorizeRoles('shop', 'admin'), startPreparingOrder);
 router.patch('/orders/:orderId/ready', protect, authorizeRoles('shop', 'admin'), markOrderReady);
+router.patch('/orders/:orderId/handover', protect, authorizeRoles('shop', 'admin'), handoverOrder);
 router.put('/profile', protect, authorizeRoles('shop', 'admin'), updateShopProfile);
 router.put('/profile/image', protect, authorizeRoles('shop', 'admin'), upload.single('image'), updateShopProfileImage);
 router.put('/profile/banner', protect, authorizeRoles('shop', 'admin'), upload.single('banner'), updateShopBanner);

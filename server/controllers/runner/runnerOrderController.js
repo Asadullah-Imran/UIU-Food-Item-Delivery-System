@@ -41,7 +41,7 @@ export const acceptDelivery = async (req, res) => {
     // Check if runner already has an active ongoing delivery
     const existingActive = await Order.findOne({
       runner: runnerId,
-      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'ON_THE_WAY'] }
+      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'HANDED_OVER', 'ON_THE_WAY'] }
     });
 
     if (existingActive && existingActive._id.toString() !== orderId) {
@@ -61,11 +61,10 @@ export const acceptDelivery = async (req, res) => {
       {
         $set: {
           runner: runnerId,
-          status: 'CONFIRMED'
         },
         $push: {
           timeline: {
-            status: 'CONFIRMED',
+            status: 'RUNNER_ASSIGNED',
             time: new Date(),
             note: `Runner ${runner.name} accepted the delivery order`
           }

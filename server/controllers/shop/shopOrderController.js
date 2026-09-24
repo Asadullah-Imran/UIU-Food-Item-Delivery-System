@@ -441,3 +441,81 @@ export const markOrderReady = async (req, res) => {
     });
   }
 };
+
+// @desc    Mark order as handed over to runner
+// @route   PATCH /api/shops/orders/:orderId/handover
+// @access  Private (Shop owner)
+export const handoverOrder = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const shop = await Shop.findOne({ owner: req.user._id });
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const order = await Order.findOne({
+      _id: orderId,
+      shop: shop._id
+    });
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found'
+      });
+    }
+
+    if (order.status !== 'READY_FOR_PICKUP') {
+      return res.status(400).json({
+        success: false,
+        message: 'Order must be READY_FOR_PICKUP to be handed over'
+      });
+    }
+
+    if (!order.runner) {
+      return res.status(400).json({
+        success: false,
+        message: 'A runner must accept the order before handover'
+      });
+    }
+
+    order.status = 'HANDED_OVER';
+
+    if (!Array.isArray(order.timeline)) {
+      order.timeline = [];
+    }
+
+    if (!order.timeline.some((t) => t.status === 'HANDED_OVER')) {
+      order.timeline.push({
+        status: 'HANDED_OVER',
+        time: new Date(),
+        note: req.body?.note || 'Order package handed over to runner'
+      });
+    }
+
+    await order.save();
+
+    await order.populate([
+      { path: 'student', select: 'name email phone universityId' },
+      { path: 'runner', select: 'name phone' },
+      { path: 'items.menuItem', select: 'name image price category' }
+    ]);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Order handed over successfully',
+      order
+    });
+  } catch (error) {
+    console.error('handoverOrder Error:', error);
+
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to update order status'
+    });
+  }
+};
