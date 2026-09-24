@@ -10,7 +10,7 @@ export const getActiveDelivery = async (req, res) => {
   try {
     const order = await Order.findOne({
       runner: req.user.id,
-      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'ON_THE_WAY'] }
+      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'HANDED_OVER', 'ON_THE_WAY'] }
     })
       .populate('shop', 'name location image phone category')
       .populate('student', 'name phone universityId deliveryRoom')
@@ -49,6 +49,10 @@ export const pickupOrder = async (req, res) => {
 
     if (order.status === 'ON_THE_WAY') {
       return res.status(200).json({ success: true, message: 'Order is already on the way', order });
+    }
+
+    if (order.status !== 'HANDED_OVER') {
+      return res.status(400).json({ success: false, message: 'Shop must handover the order before you can pick it up.' });
     }
 
     order.status = 'ON_THE_WAY';

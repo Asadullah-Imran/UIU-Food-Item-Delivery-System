@@ -8,7 +8,7 @@ export const getAvailableDeliveries = async (req, res) => {
   try {
     const orders = await Order.find({
       runner: null,
-      status: { $in: ['PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP'] }
+      status: 'READY_FOR_PICKUP'
     })
       .populate('shop', 'name location image phone category')
       .populate('student', 'name phone universityId deliveryRoom')
@@ -41,7 +41,7 @@ export const acceptDelivery = async (req, res) => {
     // Check if runner already has an active ongoing delivery
     const existingActive = await Order.findOne({
       runner: runnerId,
-      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'ON_THE_WAY'] }
+      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'HANDED_OVER', 'ON_THE_WAY'] }
     });
 
     if (existingActive && existingActive._id.toString() !== orderId) {
@@ -56,16 +56,15 @@ export const acceptDelivery = async (req, res) => {
       {
         _id: orderId,
         runner: null,
-        status: { $in: ['PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP'] }
+        status: 'READY_FOR_PICKUP'
       },
       {
         $set: {
           runner: runnerId,
-          status: 'CONFIRMED'
         },
         $push: {
           timeline: {
-            status: 'CONFIRMED',
+            status: 'RUNNER_ASSIGNED',
             time: new Date(),
             note: `Runner ${runner.name} accepted the delivery order`
           }

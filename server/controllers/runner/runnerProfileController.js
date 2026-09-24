@@ -124,7 +124,7 @@ export const getDashboardMetrics = async (req, res) => {
     // 2. Active delivery for this runner
     const activeDelivery = await Order.findOne({
       runner: runnerId,
-      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'ON_THE_WAY'] }
+      status: { $in: ['CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'HANDED_OVER', 'ON_THE_WAY'] }
     })
       .populate('shop', 'name location image phone')
       .populate('student', 'name phone universityId deliveryRoom');

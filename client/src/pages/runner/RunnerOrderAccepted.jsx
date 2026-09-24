@@ -3,9 +3,8 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   CheckCircle2, ChevronRight, MapPin, Clock, 
   MessageSquare, Phone, Store, Navigation,
-  FileText, Check, CircleDot, Loader2, AlertCircle
+  FileText, Check, Package, Loader2, AlertCircle
 } from 'lucide-react';
-import activeDeliveryData from '../../data/activeDeliveryData.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
 import { useOrderChat } from '../../context/OrderChatContext';
 import { useAuth } from '../../context/AuthContext';
@@ -90,36 +89,65 @@ export default function RunnerOrderAccepted() {
     }
   };
 
-  // Combine dynamic order data with fallbacks
+  if (loading) {
+    return (
+      <>
+        <RunnerSidebarFix />
+        <div className="flex h-screen items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+        </div>
+      </>
+    );
+  }
+
+  if (!activeOrder) {
+    return (
+      <>
+        <RunnerSidebarFix />
+        <div className="max-w-[1200px] mx-auto pt-16 pb-12 text-center">
+          <div className="bg-white p-10 rounded-3xl shadow-sm border border-slate-100 max-w-md mx-auto">
+            <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h2 className="text-xl font-bold text-slate-700 mb-2">No Active Delivery</h2>
+            <p className="text-slate-500 mb-6 text-sm">You currently don't have any ongoing deliveries. Browse available requests to start earning.</p>
+            <Link to="/dashboard/runner/deliveries" className="bg-[#F37623] hover:bg-[#d9671b] text-white px-6 py-3 rounded-xl font-bold shadow-md shadow-orange-500/20 transition-all inline-flex items-center">
+              Find Deliveries
+            </Link>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Use dynamic order data
   const displayData = {
-    orderId: activeOrder?.orderNumber || activeDeliveryData.orderId,
-    mongoId: activeOrder?._id,
+    orderId: activeOrder.orderNumber,
+    mongoId: activeOrder._id,
     shop: {
-      name: activeOrder?.shop?.name || activeDeliveryData.shop.name,
-      location: activeOrder?.shop?.location || activeDeliveryData.shop.location,
-      image: activeOrder?.shop?.image || activeDeliveryData.shop.image,
-      phone: activeOrder?.shop?.phone || '+880 1711-000000'
+      name: activeOrder.shop?.name || 'Campus Shop',
+      location: activeOrder.shop?.location || 'Unknown Location',
+      image: activeOrder.shop?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=150&h=150&fit=crop',
+      phone: activeOrder.shop?.phone || '+880 1711-000000'
     },
     customer: {
-      name: activeOrder?.student?.name || activeDeliveryData.customer.name,
-      department: activeOrder?.student?.department || activeDeliveryData.customer.department,
-      phone: activeOrder?.deliveryAddress?.phone || activeOrder?.student?.phone || activeDeliveryData.customer.phone,
-      image: activeDeliveryData.customer.image
+      name: activeOrder.student?.name || 'Student',
+      department: activeOrder.student?.department || 'Unknown',
+      phone: activeOrder.deliveryAddress?.phone || activeOrder.student?.phone || 'N/A',
+      image: 'https://i.pravatar.cc/150?u=student'
     },
     deliveryDetails: {
-      reward: activeOrder?.billing?.runnerReward || activeDeliveryData.deliveryDetails.reward,
-      distance: '180m',
-      dropOffLocation: activeOrder?.deliveryAddress?.room || activeDeliveryData.deliveryDetails.dropOffLocation,
+      reward: activeOrder.billing?.runnerReward || 30,
+      distance: '180m', // Calculate actual if coords exist
+      dropOffLocation: activeOrder.deliveryAddress?.room || 'Unknown Room',
       expectedDelivery: '10-15 mins'
     },
-    orderItems: activeOrder?.items && activeOrder.items.length > 0 
+    orderItems: activeOrder.items && activeOrder.items.length > 0 
       ? activeOrder.items.map(i => ({
           qty: i.quantity || 1,
           name: i.name || i.foodItem?.name || 'Food Item',
           note: i.note || ''
         }))
-      : activeDeliveryData.orderItems,
-    studentNote: activeOrder?.deliveryAddress?.instructions || activeDeliveryData.studentNote
+      : [],
+    studentNote: activeOrder.deliveryAddress?.instructions || ''
   };
 
   return (
@@ -264,17 +292,24 @@ export default function RunnerOrderAccepted() {
 
               {/* Bottom Right Confirm Button */}
               <div className="mt-8 flex justify-end">
-                <button 
-                  type="button"
-                  disabled={isConfirming}
-                  onClick={handleConfirmPickup}
-                  className="bg-[#9B5110] hover:bg-[#7a3f0c] disabled:opacity-50 text-white px-8 py-3.5 rounded-xl font-bold flex items-center transition-colors shadow-lg shadow-[#9B5110]/20 cursor-pointer"
-                >
-                  {isConfirming ? (
-                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  ) : null}
-                  Confirm Arrival at Pickup <ChevronRight className="w-5 h-5 ml-2" />
-                </button>
+                {activeOrder.status === 'READY_FOR_PICKUP' ? (
+                  <div className="bg-amber-50 border border-amber-200 text-amber-700 px-6 py-3.5 rounded-xl font-bold flex items-center shadow-sm w-full sm:w-auto">
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin text-amber-500" />
+                    Waiting for Shop Handover...
+                  </div>
+                ) : (
+                  <button 
+                    type="button"
+                    disabled={isConfirming || activeOrder.status !== 'HANDED_OVER'}
+                    onClick={handleConfirmPickup}
+                    className="bg-[#9B5110] hover:bg-[#7a3f0c] disabled:opacity-50 text-white px-8 py-3.5 rounded-xl font-bold flex items-center transition-colors shadow-lg shadow-[#9B5110]/20 cursor-pointer"
+                  >
+                    {isConfirming ? (
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    ) : null}
+                    Confirm Arrival at Pickup <ChevronRight className="w-5 h-5 ml-2" />
+                  </button>
+                )}
               </div>
 
             </div>

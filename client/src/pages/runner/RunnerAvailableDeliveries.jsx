@@ -165,9 +165,12 @@ export default function RunnerAvailableDeliveries() {
         </div>
 
         {actionError && (
-          <div className="p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-2xl flex items-center gap-3 animate-in fade-in">
+          <div className="fixed top-24 right-6 z-50 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-2xl flex items-center gap-3 shadow-xl animate-bounce">
             <AlertCircle className="w-5 h-5 flex-shrink-0 text-red-500" />
             <span className="font-semibold">{actionError}</span>
+            <button onClick={() => setActionError(null)} className="ml-2 text-red-500 hover:text-red-700">
+              <X className="w-4 h-4" />
+            </button>
           </div>
         )}
 
