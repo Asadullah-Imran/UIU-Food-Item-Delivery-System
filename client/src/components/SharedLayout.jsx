@@ -48,6 +48,12 @@ export default function SharedLayout({
     avatar: user.avatar || 'https://i.pravatar.cc/150'
   };
 
+  const getProfilePath = () => {
+    if (currentPath.startsWith('/dashboard/runner')) return '/dashboard/runner/profile';
+    if (currentPath.startsWith('/dashboard/shop')) return '/dashboard/shop/profile';
+    return '/dashboard/student/profile';
+  };
+
   return (
     <>
     {isTransitioning && switchRolePath && (
@@ -172,13 +178,13 @@ export default function SharedLayout({
                 {headerActions}
               </div>
             )}
-            <div className="flex items-center bg-white p-2 pr-4 rounded-full shadow-sm border border-slate-100">
+            <Link to={getProfilePath()} className="flex items-center bg-white p-2 pr-4 rounded-full shadow-sm border border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer">
               <div className="text-right mr-3 pl-3">
                 <p className="text-sm font-bold text-slate-800 leading-none">{displayUser.name}</p>
                 <p className="text-[10px] text-slate-500 mt-1 font-semibold">{displayUser.idLabel}: {displayUser.idNumber}</p>
               </div>
               <img src={displayUser.avatar} alt="Profile" className="w-10 h-10 rounded-full object-cover shadow-sm" />
-            </div>
+            </Link>
           </div>
         </header>
 
