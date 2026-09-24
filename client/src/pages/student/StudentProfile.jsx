@@ -30,6 +30,7 @@ export default function StudentProfile() {
   });
 
   const [formData, setFormData] = useState({ ...profileData });
+  const [avatarFile, setAvatarFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successToast, setSuccessToast] = useState('');
   const [errorToast, setErrorToast] = useState('');
@@ -60,19 +61,21 @@ export default function StudentProfile() {
     setErrorToast('');
 
     try {
+      const formPayload = new FormData();
+      formPayload.append('name', formData.name);
+      formPayload.append('phone', formData.phone);
+      formPayload.append('department', formData.department);
+      formPayload.append('deliveryRoom', formData.deliveryRoom);
+      if (avatarFile) {
+        formPayload.append('avatar', avatarFile);
+      }
+
       const res = await fetch('/api/auth/profile', {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
-        body: JSON.stringify({
-          name: formData.name,
-          phone: formData.phone,
-          department: formData.department,
-          deliveryRoom: formData.deliveryRoom,
-          avatar: formData.avatar
-        })
+        body: formPayload
       });
 
       const data = await res.json();
@@ -80,14 +83,19 @@ export default function StudentProfile() {
         throw new Error(data.message || 'Failed to update profile');
       }
 
-      setProfileData({ ...formData });
-      updateUserData({
-        name: formData.name,
-        phone: formData.phone,
-        department: formData.department,
-        deliveryRoom: formData.deliveryRoom,
-        avatar: formData.avatar
+      const updatedUser = data.user;
+      setProfileData({ 
+        ...formData, 
+        avatar: updatedUser.avatar 
       });
+      updateUserData({
+        name: updatedUser.name,
+        phone: updatedUser.phone,
+        department: updatedUser.department,
+        deliveryRoom: updatedUser.deliveryRoom,
+        avatar: updatedUser.avatar
+      });
+      setAvatarFile(null);
 
       setSuccessToast('Profile updated successfully!');
       setTimeout(() => {
@@ -525,12 +533,16 @@ export default function StudentProfile() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Avatar Image URL</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Avatar Image (Upload)</label>
                 <input
-                  type="url"
-                  value={formData.avatar}
-                  onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:outline-none focus:border-[#F37623] focus:ring-1 focus:ring-[#F37623]"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setAvatarFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:outline-none focus:border-[#F37623] focus:ring-1 focus:ring-[#F37623] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
                 />
               </div>
 
