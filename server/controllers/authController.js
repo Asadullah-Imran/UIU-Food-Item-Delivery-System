@@ -44,9 +44,13 @@ export const register = async (req, res) => {
     let isApproved = true;
     let status = 'active';
 
-    if (role === 'runner' || role === 'shop') {
-      // In production or demo, shops and runners can be active or pending approval
-      isApproved = true; // Set active for seamless demo/testing or configurable
+    if (role === 'shop') {
+      // Shop Owner applications require Admin review & approval
+      isApproved = false;
+      status = 'pending';
+    } else if (role === 'runner') {
+      // Runner status lifecycle
+      isApproved = true;
       status = 'active';
     }
 
@@ -82,7 +86,7 @@ export const register = async (req, res) => {
 
     const user = await User.create(userData);
 
-    // If shop owner, also create a linked Shop record
+    // If shop owner, also create a linked Shop record in pending approval state
     if (role === 'shop') {
       try {
         await Shop.create({
@@ -91,7 +95,7 @@ export const register = async (req, res) => {
           category: 'Food Court',
           location: campusLocation?.trim() || 'UIU Food Court Counter',
           phone: phone?.trim() || '',
-          isApproved: true
+          isApproved: false
         });
       } catch (shopErr) {
         await User.findByIdAndDelete(user._id);
@@ -103,7 +107,9 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: role === 'shop'
+        ? 'Shop application submitted successfully and is pending admin approval'
+        : 'User registered successfully',
       token,
       user: {
         id: user._id,
