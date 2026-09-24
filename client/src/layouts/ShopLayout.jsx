@@ -9,8 +9,8 @@ export default function ShopLayout() {
 
   const currentUser = {
     name: user?.shopDetails?.shopName || user?.name || "UIU Shop",
-    idLabel: 'Owner',
-    idNumber: user?.phone || 'N/A',
+    // idLabel: 'Owner',
+    // idNumber: user?.phone || 'N/A',
     avatar: user?.avatar || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=150&h=150&fit=crop'
   };
 
