@@ -37,7 +37,11 @@ export default function RunnerAvailableDeliveries() {
         const data = await res.json();
         if (data.success && Array.isArray(data.deliveries)) {
           setLiveOrders(data.deliveries);
+        } else {
+          setLiveOrders([]);
         }
+      } else {
+        setLiveOrders([]);
       }
     } catch (err) {
       console.warn('Could not fetch available runner deliveries:', err.message);
@@ -76,14 +80,14 @@ export default function RunnerAvailableDeliveries() {
     }));
   }, [liveOrders]);
 
-  const activeQueue = mappedLiveQueue.length > 0 ? mappedLiveQueue : defaultQueue;
+  const activeQueue = mappedLiveQueue;
 
   const activeRecommended = useMemo(() => {
     if (mappedLiveQueue.length > 0) {
       return mappedLiveQueue[0];
     }
-    return defaultRecommended;
-  }, [mappedLiveQueue, defaultRecommended]);
+    return null;
+  }, [mappedLiveQueue]);
 
   const handleAcceptOrder = async (item) => {
     setActionError(null);
@@ -93,24 +97,23 @@ export default function RunnerAvailableDeliveries() {
       const authToken = token || localStorage.getItem('uiu_auth_token');
       
       // If it's a real live MongoDB order (24-character hex ID)
-      if (item.id && /^[0-9a-fA-F]{24}$/.test(item.id)) {
-        const res = await fetch(`/api/runner/deliveries/${item.id}/accept`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authToken}`
-          }
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.message || 'Failed to accept order');
-        }
-        localStorage.setItem('uiu_active_delivery', JSON.stringify(data.order));
-        navigate('/dashboard/runner/active/accepted', { state: { order: data.order } });
-      } else {
-        // Fallback demo order
-        navigate('/dashboard/runner/active/accepted');
+      if (!item?.id || !/^[0-9a-fA-F]{24}$/.test(item.id)) {
+        throw new Error('This delivery is not available from the live backend. Please refresh and accept a real order from the queue.');
       }
+
+      const res = await fetch(`/api/runner/deliveries/${item.id}/accept`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to accept order');
+      }
+      localStorage.setItem('uiu_active_delivery', JSON.stringify(data.order));
+      navigate('/dashboard/runner/active/accepted', { state: { order: data.order } });
     } catch (err) {
       console.error('Accept delivery error:', err);
       setActionError(err.message || 'Could not claim delivery request. Please try again.');

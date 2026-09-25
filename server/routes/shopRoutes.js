@@ -22,6 +22,10 @@ import {
   getShopTransactions,
   handoverOrder
 } from '../controllers/shop/shopController.js';
+import {
+  getShopOrderChat,
+  sendShopChatMessage
+} from '../controllers/shop/shopChatController.js';
 import { protect } from '../middlewares/auth.js';
 import { authorizeRoles } from '../middlewares/role.js';
 import upload from '../middlewares/upload.js';
@@ -39,6 +43,8 @@ router.get('/reviews', protect, authorizeRoles('shop', 'admin'), getShopReviews)
 router.get('/my-shop', protect, authorizeRoles('shop', 'admin'), getMyShop);
 router.get('/orders', protect, authorizeRoles('shop', 'admin'), getShopOrders);
 router.get('/orders/:orderId', protect, authorizeRoles('shop', 'admin'), getShopOrderById);
+router.get('/chat/:orderNumber', protect, authorizeRoles('shop', 'admin'), getShopOrderChat);
+router.post('/chat/:orderNumber', protect, authorizeRoles('shop', 'admin'), sendShopChatMessage);
 router.patch('/orders/:orderId/accept', protect, authorizeRoles('shop', 'admin'), acceptShopOrder);
 router.patch('/orders/:orderId/reject', protect, authorizeRoles('shop', 'admin'), rejectShopOrder);
 router.patch('/orders/:orderId/preparing', protect, authorizeRoles('shop', 'admin'), startPreparingOrder);

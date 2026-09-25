@@ -49,17 +49,29 @@ export const getStudentOrderChat = async (req, res) => {
 export const sendStudentChatMessage = async (req, res) => {
   try {
     const { orderNumber } = req.params;
-    const { text, target = 'all' } = req.body;
+    const { text, target = 'shop' } = req.body;
+    const normalizedTarget = String(target || 'shop').toLowerCase();
 
     if (!text || !text.trim()) {
       return res.status(400).json({ success: false, message: 'Message text is required' });
+    }
+
+    const order = await Order.findOne({ orderNumber });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (normalizedTarget === 'runner') {
+      if (!order.runner) {
+        return res.status(400).json({ success: false, message: 'No runner has accepted this order yet' });
+      }
     }
 
     let chat = await OrderChat.findOne({ orderNumber });
     if (!chat) {
       chat = await OrderChat.create({
         orderNumber,
-        participants: [req.user.id],
+        participants: [req.user.id, order.shop, order.runner].filter(Boolean),
         messages: []
       });
     }
@@ -69,7 +81,7 @@ export const sendStudentChatMessage = async (req, res) => {
       senderRole: 'student',
       senderName: req.user.name,
       avatar: req.user.avatar || 'https://i.pravatar.cc/150?u=student',
-      target,
+      target: normalizedTarget,
       text: text.trim(),
       status: 'sent',
       createdAt: new Date()

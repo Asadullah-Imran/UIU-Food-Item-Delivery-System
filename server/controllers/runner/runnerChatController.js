@@ -1,7 +1,5 @@
 import Order from '../../models/Order.js';
-
-// In-memory conversation store for active order threads
-const activeOrderThreads = new Map();
+import OrderChat from '../../models/OrderChat.js';
 
 // @desc    Get tri-party chat history for an order
 // @route   GET /api/runner/chat/:orderNumber
@@ -13,28 +11,54 @@ export const getRunnerChat = async (req, res) => {
 
     const order = await Order.findOne({ orderNumber: cleanNum })
       .populate('shop', 'name location image phone')
-      .populate('student', 'name phone universityId deliveryRoom')
-      .populate('runner', 'name phone runnerDetails');
+      .populate('student', 'name phone universityId deliveryRoom avatar')
+      .populate('runner', 'name phone runnerDetails avatar');
 
-    let messages = activeOrderThreads.get(cleanNum);
-    if (!messages) {
-      messages = [
-        {
-          id: 'msg-system-1',
-          sender: 'System',
-          senderRole: 'system',
-          text: `Order ${cleanNum} confirmed. Runner tri-party coordination active.`,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        }
-      ];
-      activeOrderThreads.set(cleanNum, messages);
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (!order.runner) {
+      return res.status(403).json({ success: false, message: 'No runner has accepted this order yet' });
+    }
+
+    const runnerId = req.user._id?.toString() || req.user.id;
+    if (order.runner._id?.toString() !== runnerId && order.runner.toString() !== runnerId) {
+      return res.status(403).json({ success: false, message: 'This order is not assigned to your runner account' });
+    }
+
+    let chat = await OrderChat.findOne({ orderNumber: cleanNum });
+
+    if (!chat) {
+      const participants = [];
+      if (order?.student) participants.push(order.student._id);
+      if (order?.runner) participants.push(order.runner._id);
+      if (order?.shop) participants.push(order.shop._id);
+
+      chat = await OrderChat.create({
+        orderNumber: cleanNum,
+        order: order?._id,
+        participants,
+        messages: [
+          {
+            sender: req.user.id,
+            senderRole: 'system',
+            senderName: 'UIU Campus Support',
+            avatar: req.user.avatar || 'https://i.pravatar.cc/150?u=support',
+            target: 'all',
+            text: `Order ${cleanNum} confirmed. You can now message the ordering student directly.`,
+            status: 'read',
+            createdAt: new Date()
+          }
+        ]
+      });
     }
 
     res.status(200).json({
       success: true,
       orderNumber: cleanNum,
       order,
-      messages
+      chat
     });
   } catch (error) {
     console.error('getRunnerChat Error:', error);
@@ -48,30 +72,67 @@ export const getRunnerChat = async (req, res) => {
 export const sendRunnerMessage = async (req, res) => {
   try {
     const { orderNumber } = req.params;
-    const { text } = req.body;
+    const { text, target = 'student' } = req.body;
     const cleanNum = orderNumber.startsWith('#') ? orderNumber : `#${orderNumber}`;
 
     if (!text || text.trim() === '') {
       return res.status(400).json({ success: false, message: 'Message text cannot be empty' });
     }
 
-    let messages = activeOrderThreads.get(cleanNum) || [];
+    const order = await Order.findOne({ orderNumber: cleanNum });
+    if (!order) {
+      return res.status(404).json({ success: false, message: 'Order not found' });
+    }
+
+    if (!order.runner) {
+      return res.status(403).json({ success: false, message: 'No runner has accepted this order yet' });
+    }
+
+    const runnerId = req.user._id?.toString() || req.user.id;
+    if (order.runner.toString() !== runnerId) {
+      return res.status(403).json({ success: false, message: 'This order is not assigned to your runner account' });
+    }
+
+    if (target !== 'student') {
+      return res.status(400).json({ success: false, message: 'Runner chat is only allowed with the ordering student' });
+    }
+
+    let chat = await OrderChat.findOne({ orderNumber: cleanNum });
+    if (!chat) {
+      const participants = [];
+      if (order?.student) participants.push(order.student);
+      if (order?.runner) participants.push(order.runner);
+      if (order?.shop) participants.push(order.shop);
+
+      chat = await OrderChat.create({
+        orderNumber: cleanNum,
+        order: order?._id,
+        participants,
+        messages: []
+      });
+    }
+
     const newMsg = {
-      id: `msg-run-${Date.now()}`,
-      sender: req.user.name || 'Delivery Runner',
+      sender: req.user.id,
       senderRole: 'runner',
+      senderName: req.user.name || 'Delivery Runner',
+      avatar: req.user.avatar || 'https://i.pravatar.cc/150?u=runner',
+      target,
       text: text.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      status: 'sent',
+      createdAt: new Date()
     };
 
-    messages.push(newMsg);
-    activeOrderThreads.set(cleanNum, messages);
+    chat.messages.push(newMsg);
+    chat.lastMessage = text.trim();
+    chat.lastMessageAt = new Date();
+    await chat.save();
 
     res.status(201).json({
       success: true,
       message: 'Message sent successfully',
       newMessage: newMsg,
-      totalMessages: messages.length
+      totalMessages: chat.messages.length
     });
   } catch (error) {
     console.error('sendRunnerMessage Error:', error);
