@@ -1,16 +1,61 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   Truck, Banknote, Star, Clock, Award, Zap, CheckCircle2,
   Search, Calendar, ChevronDown, Download, Wallet, Rocket,
   Circle
 } from 'lucide-react';
-import deliveryHistoryData from '../../data/deliveryHistoryData.json';
 import { Link } from 'react-router-dom';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import { useAuth } from '../../context/AuthContext';
 
 export default function RunnerDeliveryHistory() {
-  
-  // Dummy chart data
+  const { token } = useAuth();
+  const [history, setHistory] = useState([]);
+  const [performance, setPerformance] = useState({
+    rating: 5.0,
+    totalDeliveries: 0,
+    onTimeRate: '0%',
+    acceptanceRate: '0%'
+  });
+  const [earnings, setEarnings] = useState({
+    lifetimeTotal: 0,
+    today: 0,
+    thisWeek: 0,
+    thisMonth: 0
+  });
+
+  useEffect(() => {
+    const fetchRunnerActivity = async () => {
+      if (!token) return;
+
+      try {
+        const [historyRes, performanceRes, earningsRes] = await Promise.all([
+          fetch('/api/runner/history', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('/api/runner/performance', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('/api/runner/earnings', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        const historyData = historyRes.ok ? await historyRes.json() : null;
+        const performanceData = performanceRes.ok ? await performanceRes.json() : null;
+        const earningsData = earningsRes.ok ? await earningsRes.json() : null;
+
+        if (historyData?.success) setHistory(historyData.history || []);
+        if (performanceData?.success) setPerformance(performanceData.performance || performance);
+        if (earningsData?.success) setEarnings(earningsData.earnings || earnings);
+      } catch (error) {
+        console.warn('Could not fetch runner activity history:', error.message);
+      }
+    };
+
+    fetchRunnerActivity();
+  }, [token]);
+
   const chartData = [
     { day: 'Mon', height: 40, activeHeight: 15 },
     { day: 'Tue', height: 60, activeHeight: 35 },
@@ -44,7 +89,7 @@ export default function RunnerDeliveryHistory() {
               <Truck className="w-5 h-5" />
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Deliveries</p>
-            <h3 className="text-3xl font-extrabold text-slate-800">142</h3>
+            <h3 className="text-3xl font-extrabold text-slate-800">{performance.totalDeliveries || history.length || 0}</h3>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
@@ -52,7 +97,7 @@ export default function RunnerDeliveryHistory() {
               <Banknote className="w-5 h-5" />
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Credits Earned</p>
-            <h3 className="text-3xl font-extrabold text-slate-800">৳8,520</h3>
+            <h3 className="text-3xl font-extrabold text-slate-800">৳{earnings.lifetimeTotal || 0}</h3>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
@@ -61,7 +106,7 @@ export default function RunnerDeliveryHistory() {
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Average Rating</p>
             <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-extrabold text-slate-800">4.9</h3>
+              <h3 className="text-3xl font-extrabold text-slate-800">{Number(performance.rating || 0).toFixed(1)}</h3>
               <div className="flex text-orange-400">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-3.5 h-3.5 fill-current" />
@@ -75,7 +120,7 @@ export default function RunnerDeliveryHistory() {
               <Clock className="w-5 h-5" />
             </div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">On-Time Rate</p>
-            <h3 className="text-3xl font-extrabold text-slate-800">98%</h3>
+            <h3 className="text-3xl font-extrabold text-slate-800">{performance.onTimeRate || '0%'}</h3>
           </div>
 
         </div>
@@ -207,47 +252,60 @@ export default function RunnerDeliveryHistory() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {deliveryHistoryData.map((order, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50/30 transition-colors">
-                    <td className="py-5 px-6 whitespace-nowrap">
-                      <span className="font-extrabold text-[#9B5110]">{order.orderId}</span>
-                    </td>
-                    <td className="py-5 px-6">
-                      <p className="text-sm font-bold text-slate-800">{order.shop}</p>
-                      <p className="text-[11px] font-semibold text-slate-500">{order.student}</p>
-                    </td>
-                    <td className="py-5 px-6 min-w-[200px]">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-[#F37623]"></div>
-                        <p className="text-xs font-bold text-slate-600 truncate">
-                          {order.route.from} &rarr; {order.route.to}
-                        </p>
-                      </div>
-                    </td>
-                    <td className="py-5 px-6 whitespace-nowrap">
-                      <p className="text-xs font-bold text-slate-800">{order.date},</p>
-                      <p className="text-[11px] font-semibold text-slate-500">{order.time}</p>
-                    </td>
-                    <td className="py-5 px-6 whitespace-nowrap">
-                      <p className="text-xs font-bold text-slate-600">{order.metrics.time} • {order.metrics.distance}</p>
-                    </td>
-                    <td className="py-5 px-6 whitespace-nowrap">
-                      <span className="text-base font-extrabold text-slate-800">৳{order.credits}</span>
-                    </td>
-                    <td className="py-5 px-6 whitespace-nowrap">
-                      <div className="flex text-[#F37623]">
-                        {[...Array(order.rating)].map((_, i) => (
-                          <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                        ))}
-                      </div>
-                    </td>
-                    <td className="py-5 px-6 whitespace-nowrap text-right">
-                      <button className="text-xs font-bold text-[#F37623] hover:text-[#d9671b] transition-colors">
-                        View Details
-                      </button>
+                {history.length > 0 ? history.map((order, idx) => {
+                  const dateText = order.updatedAt ? new Date(order.updatedAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' }) : 'N/A';
+                  const routeFrom = order.shop?.location || 'Campus Shop';
+                  const routeTo = order.deliveryAddress?.room || 'Student room';
+                  const earned = order.billing?.runnerReward || order.runnerReward || 0;
+                  const rating = order.ratings?.runnerRating || 5;
+
+                  return (
+                    <tr key={order._id || idx} className="hover:bg-slate-50/30 transition-colors">
+                      <td className="py-5 px-6 whitespace-nowrap">
+                        <span className="font-extrabold text-[#9B5110]">{order.orderNumber}</span>
+                      </td>
+                      <td className="py-5 px-6">
+                        <p className="text-sm font-bold text-slate-800">{order.shop?.name || 'Shop'}</p>
+                        <p className="text-[11px] font-semibold text-slate-500">{order.student?.name || 'Student'}</p>
+                      </td>
+                      <td className="py-5 px-6 min-w-[200px]">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[#F37623]"></div>
+                          <p className="text-xs font-bold text-slate-600 truncate">
+                            {routeFrom} &rarr; {routeTo}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="py-5 px-6 whitespace-nowrap">
+                        <p className="text-xs font-bold text-slate-800">{dateText}</p>
+                      </td>
+                      <td className="py-5 px-6 whitespace-nowrap">
+                        <p className="text-xs font-bold text-slate-600">{order.eta || '15-20 mins'} • 1.2 km</p>
+                      </td>
+                      <td className="py-5 px-6 whitespace-nowrap">
+                        <span className="text-base font-extrabold text-slate-800">৳{earned}</span>
+                      </td>
+                      <td className="py-5 px-6 whitespace-nowrap">
+                        <div className="flex text-[#F37623]">
+                          {[...Array(Math.max(1, Number(rating) || 5))].map((_, i) => (
+                            <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                          ))}
+                        </div>
+                      </td>
+                      <td className="py-5 px-6 whitespace-nowrap text-right">
+                        <button className="text-xs font-bold text-[#F37623] hover:text-[#d9671b] transition-colors">
+                          View Details
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr>
+                    <td colSpan="8" className="py-10 px-6 text-center text-slate-500 text-sm">
+                      No completed deliveries yet for this runner account.
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
