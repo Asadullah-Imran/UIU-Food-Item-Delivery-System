@@ -49,9 +49,9 @@ export const register = async (req, res) => {
       isApproved = false;
       status = 'pending';
     } else if (role === 'runner') {
-      // Runner status lifecycle
-      isApproved = true;
-      status = 'active';
+      // Runner applications require Admin review & approval
+      isApproved = false;
+      status = 'pending';
     }
 
     const userData = {
@@ -285,26 +285,29 @@ export const becomeRunner = async (req, res) => {
       });
     }
 
+    // Runner applications require Admin review — set to pending, not auto-activated
     user.isRunner = true;
+    user.status = 'pending';
+    user.isApproved = false;
     user.runnerDetails = {
       vehicleType: vehicleType || 'Walking/Bicycle',
       rating: user.runnerDetails?.rating || 5.0,
       totalTrips: user.runnerDetails?.totalTrips || 0,
       walletBalance: user.runnerDetails?.walletBalance || 0,
-      isAvailable: true
+      isAvailable: false
     };
 
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: 'Congratulations! You are now a registered UIU Delivery Runner.',
+      message: 'Runner application submitted successfully and is pending admin approval.',
       user
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to activate runner mode'
+      message: error.message || 'Failed to submit runner application'
     });
   }
 };
