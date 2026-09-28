@@ -29,7 +29,8 @@ import {
   ShieldOff,
   ShieldCheck,
   Sparkles,
-  Plus
+  Plus,
+  Trash2
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -83,6 +84,11 @@ const API = {
     fetch(`/api/admin/shops/${shopId}/enable`, {
       method: "PATCH",
       headers: authHeaders()
+    }).then(r => r.json()),
+  delete: (shopId) =>
+    fetch(`/api/admin/shops/${shopId}`, {
+      method: "DELETE",
+      headers: authHeaders()
     }).then(r => r.json())
 };
 
@@ -129,6 +135,10 @@ export default function AdminManageShops() {
   const [availableOwners, setAvailableOwners] = useState([]);
   const [loadingOwners, setLoadingOwners] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  // Delete modal state
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -293,6 +303,25 @@ export default function AdminManageShops() {
   };
 
   // ---------------------------------------------------------------------------
+  // Delete handler
+  // ---------------------------------------------------------------------------
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await API.delete(deleteTarget._id);
+      if (!res.success) throw new Error(res.message);
+      showToast(res.message);
+      setDeleteTarget(null);
+      fetchShops();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
   // Quick actions
   // ---------------------------------------------------------------------------
   const quickAction = async (shopId, action, arg) => {
@@ -445,6 +474,7 @@ export default function AdminManageShops() {
               <option value="featured">Featured</option>
               <option value="approved">Approved</option>
               <option value="unapproved">Disabled</option>
+              <option value="archived">Archived / Deleted</option>
             </select>
             <select value={sortOrder} onChange={handleFilterChange(setSort)}
               className="rounded-lg border border-[#e2dad2] bg-white px-4 py-2.5 text-xs font-medium outline-none">
@@ -515,16 +545,24 @@ export default function AdminManageShops() {
                         {/* Status badges */}
                         <td className="px-4 py-4">
                           <div className="flex flex-col gap-1">
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${shop.isApproved ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-red-50 text-red-600 border-red-200"}`}>
-                              {shop.isApproved ? "Active" : "Disabled"}
-                            </span>
-                            <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${shop.isOpen ? "bg-green-50 text-green-600 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
-                              {shop.isOpen ? "Open" : "Closed"}
-                            </span>
-                            {shop.isFeatured && (
-                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
-                                ★ Featured
+                            {shop.isDeleted ? (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                                Archived
                               </span>
+                            ) : (
+                              <>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${shop.isApproved ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-red-50 text-red-600 border-red-200"}`}>
+                                  {shop.isApproved ? "Active" : "Disabled"}
+                                </span>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${shop.isOpen ? "bg-green-50 text-green-600 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                  {shop.isOpen ? "Open" : "Closed"}
+                                </span>
+                                {shop.isFeatured && (
+                                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                    ★ Featured
+                                  </span>
+                                )}
+                              </>
                             )}
                           </div>
                         </td>
@@ -535,8 +573,9 @@ export default function AdminManageShops() {
                             <button
                               type="button"
                               title="Edit"
+                              disabled={shop.isDeleted}
                               onClick={() => openEdit(shop)}
-                              className="p-1.5 rounded-lg bg-orange-50 text-[#aa550f] hover:bg-orange-100 transition-colors"
+                              className="p-1.5 rounded-lg bg-orange-50 text-[#aa550f] hover:bg-orange-100 transition-colors disabled:opacity-30"
                             >
                               <Pencil size={15} />
                             </button>
@@ -544,7 +583,7 @@ export default function AdminManageShops() {
                             <button
                               type="button"
                               title={shop.isOpen ? "Close Shop" : "Open Shop"}
-                              disabled={actionLoading === shop._id || !shop.isApproved}
+                              disabled={actionLoading === shop._id || !shop.isApproved || shop.isDeleted}
                               onClick={() => quickAction(shop._id, "status", !shop.isOpen)}
                               className="p-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-40"
                             >
@@ -554,14 +593,24 @@ export default function AdminManageShops() {
                             <button
                               type="button"
                               title={shop.isFeatured ? "Unfeature" : "Feature"}
-                              disabled={actionLoading === shop._id}
+                              disabled={actionLoading === shop._id || shop.isDeleted}
                               onClick={() => quickAction(shop._id, "featured")}
                               className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 ${shop.isFeatured ? "bg-amber-50 text-amber-600 hover:bg-amber-100" : "bg-slate-50 text-slate-400 hover:bg-slate-100"}`}
                             >
                               <Sparkles size={15} />
                             </button>
-                            {/* Disable / Enable */}
-                            {shop.isApproved ? (
+                            {/* Disable / Enable / Restore */}
+                            {shop.isDeleted ? (
+                              <button
+                                type="button"
+                                title="Restore / Re-enable Shop"
+                                disabled={actionLoading === shop._id}
+                                onClick={() => quickAction(shop._id, "enable")}
+                                className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-40"
+                              >
+                                <ShieldCheck size={15} />
+                              </button>
+                            ) : shop.isApproved ? (
                               <button
                                 type="button"
                                 title="Disable Shop"
@@ -580,6 +629,18 @@ export default function AdminManageShops() {
                                 className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-40"
                               >
                                 <ShieldCheck size={15} />
+                              </button>
+                            )}
+                            {/* Delete / Archive */}
+                            {!shop.isDeleted && (
+                              <button
+                                type="button"
+                                title="Archive / Delete Shop"
+                                disabled={actionLoading === shop._id}
+                                onClick={() => setDeleteTarget(shop)}
+                                className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors disabled:opacity-40"
+                              >
+                                <Trash2 size={15} />
                               </button>
                             )}
                           </div>
@@ -892,6 +953,52 @@ export default function AdminManageShops() {
                 className="flex-1 rounded-xl border-2 border-slate-200 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ARCHIVE / DELETE CONFIRMATION MODAL */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-3 text-rose-600 mb-3">
+              <div className="p-2.5 rounded-full bg-rose-50 border border-rose-100">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Archive / Delete Shop</h3>
+                <p className="text-xs text-slate-500">Historical records protected (Option B)</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-3">
+              Are you sure you want to archive <strong>{deleteTarget.name}</strong>?
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 mb-5 leading-relaxed space-y-1">
+              <p className="font-bold text-amber-800 flex items-center gap-1.5">
+                <span>🛡️</span> Data Protection Policy Active
+              </p>
+              <p>• All past student orders, delivery logs, and platform financial transactions remain 100% intact.</p>
+              <p>• Active catalog items will be disabled and the shop will be hidden from customer ordering.</p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition flex items-center gap-2 disabled:opacity-50"
+              >
+                {deleting && <Loader2 size={14} className="animate-spin" />}
+                Confirm Archive
               </button>
             </div>
           </div>
