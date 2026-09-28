@@ -22,6 +22,7 @@ import {
 import {
   listShops,
   getShop,
+  createShop,
   updateShop,
   setShopOpenStatus,
   toggleFeatured,
@@ -61,6 +62,7 @@ router.patch('/runners/:userId/suspend',      suspendRunner);
 // --- Shop Administration Routes (Phase 4) ---
 router.get('/shops',                      listShops);
 router.get('/shops/:shopId',              getShop);
+router.post('/shops',                     createShop);
 router.put('/shops/:shopId',              updateShop);
 router.patch('/shops/:shopId/status',     setShopOpenStatus);
 router.patch('/shops/:shopId/featured',   toggleFeatured);
