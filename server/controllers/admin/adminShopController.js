@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Shop from '../../models/Shop.js';
 import User from '../../models/User.js';
 
@@ -102,6 +103,135 @@ export const getShop = async (req, res) => {
   } catch (err) {
     console.error('[getShop]', err);
     return res.status(500).json({ success: false, message: 'Server error fetching shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/shops
+// Create shop with valid owner linkage
+// ---------------------------------------------------------------------------
+export const createShop = async (req, res) => {
+  try {
+    const {
+      owner,
+      ownerId,
+      name,
+      category,
+      location,
+      phone,
+      image,
+      banner,
+      deliveryTime,
+      minOrder,
+      tags,
+      openingHours,
+      isOpen,
+      isFeatured,
+      isApproved
+    } = req.body;
+
+    const targetOwnerId = owner || ownerId;
+
+    if (!targetOwnerId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Owner ID is required to link the shop to a registered Shop Owner.'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(targetOwnerId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid owner ID format.'
+      });
+    }
+
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shop name is required.'
+      });
+    }
+
+    // 1. Verify owner exists and has 'shop' role
+    const ownerUser = await User.findById(targetOwnerId);
+    if (!ownerUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Target owner user not found.'
+      });
+    }
+
+    if (ownerUser.role !== 'shop') {
+      return res.status(400).json({
+        success: false,
+        message: `User '${ownerUser.name}' has role '${ownerUser.role}', not 'shop'. Shops can only be owned by shop accounts.`
+      });
+    }
+
+    // 2. Verify owner does not already own a shop (enforce 1:1 shop-owner relationship)
+    const existingShop = await Shop.findOne({ owner: targetOwnerId });
+    if (existingShop) {
+      return res.status(409).json({
+        success: false,
+        message: `Owner '${ownerUser.name}' is already linked to shop '${existingShop.name}'.`
+      });
+    }
+
+    // Determine initial approval status
+    const approvedState = typeof isApproved === 'boolean' ? isApproved : ownerUser.isApproved;
+
+    const shopData = {
+      owner: ownerUser._id,
+      name: name.trim(),
+      category: typeof category === 'string' && category.trim() ? category.trim() : 'Food Court',
+      location: typeof location === 'string' && location.trim() ? location.trim() : 'UIU Food Court Counter',
+      phone: typeof phone === 'string' && phone.trim() ? phone.trim() : (ownerUser.phone || '+880 1819-876543'),
+      deliveryTime: typeof deliveryTime === 'string' && deliveryTime.trim() ? deliveryTime.trim() : '15-20 min',
+      minOrder: typeof minOrder === 'number' ? Math.max(0, minOrder) : 50,
+      isOpen: typeof isOpen === 'boolean' ? isOpen : true,
+      isFeatured: typeof isFeatured === 'boolean' ? isFeatured : false,
+      isApproved: approvedState
+    };
+
+    if (image && typeof image === 'string' && image.trim()) {
+      shopData.image = image.trim();
+    }
+    if (banner && typeof banner === 'string' && banner.trim()) {
+      shopData.banner = banner.trim();
+    }
+    if (Array.isArray(tags)) {
+      shopData.tags = tags.map(t => String(t).trim()).filter(Boolean);
+    }
+    if (openingHours && typeof openingHours === 'object') {
+      shopData.openingHours = {
+        open: openingHours.open || '08:30 AM',
+        close: openingHours.close || '08:00 PM'
+      };
+    }
+
+    const shop = await Shop.create(shopData);
+
+    // Sync owner's shopDetails
+    ownerUser.shopDetails = {
+      shopName: shop.name,
+      campusLocation: shop.location,
+      tradeLicense: ownerUser.shopDetails?.tradeLicense || ''
+    };
+    await ownerUser.save();
+
+    const populatedShop = await Shop.findById(shop._id)
+      .populate('owner', 'name email phone status isApproved')
+      .lean();
+
+    return res.status(201).json({
+      success: true,
+      message: `Shop '${shop.name}' created and linked to owner '${ownerUser.name}' successfully.`,
+      data: populatedShop
+    });
+  } catch (err) {
+    console.error('[createShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error creating shop.' });
   }
 };
 

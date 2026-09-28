@@ -28,7 +28,8 @@ import {
   ToggleRight,
   ShieldOff,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  Plus
 } from "lucide-react";
 
 // ---------------------------------------------------------------------------
@@ -48,6 +49,14 @@ const API = {
   },
   get: (shopId) =>
     fetch(`/api/admin/shops/${shopId}`, { headers: authHeaders() }).then(r => r.json()),
+  create: (body) =>
+    fetch(`/api/admin/shops`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    }).then(r => r.json()),
+  listOwners: () =>
+    fetch(`/api/admin/shop-owners?limit=100`, { headers: authHeaders() }).then(r => r.json()),
   update: (shopId, body) =>
     fetch(`/api/admin/shops/${shopId}`, {
       method: "PUT",
@@ -101,6 +110,25 @@ export default function AdminManageShops() {
   const [editForm, setEditForm]       = useState({});
   const [saving, setSaving]           = useState(false);
   const [actionLoading, setActionLoading] = useState(null); // shopId
+
+  // Create modal state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    owner: "",
+    name: "",
+    category: "Food Court",
+    location: "UIU Food Court Counter",
+    phone: "",
+    deliveryTime: "15-20 min",
+    minOrder: 50,
+    tags: "",
+    openHour: "08:30 AM",
+    closeHour: "08:00 PM",
+    isApproved: true
+  });
+  const [availableOwners, setAvailableOwners] = useState([]);
+  const [loadingOwners, setLoadingOwners] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   // Toast
   const [toast, setToast] = useState(null);
@@ -187,6 +215,80 @@ export default function AdminManageShops() {
       showToast(err.message, "error");
     } finally {
       setSaving(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Create shop handlers
+  // ---------------------------------------------------------------------------
+  const openCreateModal = async () => {
+    setIsCreateOpen(true);
+    setLoadingOwners(true);
+    try {
+      const res = await API.listOwners();
+      if (res.success && Array.isArray(res.data)) {
+        setAvailableOwners(res.data);
+        const unlinked = res.data.find(o => !o.shop);
+        if (unlinked) {
+          setCreateForm(f => ({ ...f, owner: unlinked.userId }));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingOwners(false);
+    }
+  };
+
+  const handleCreateChange = (field, value) => {
+    setCreateForm(f => ({ ...f, [field]: value }));
+  };
+
+  const handleCreateShop = async () => {
+    if (!createForm.owner) {
+      showToast("Please select a Shop Owner to link this shop to.", "error");
+      return;
+    }
+    if (!createForm.name.trim()) {
+      showToast("Please provide a shop name.", "error");
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload = {
+        owner: createForm.owner,
+        name: createForm.name.trim(),
+        category: createForm.category,
+        location: createForm.location.trim(),
+        phone: createForm.phone.trim(),
+        deliveryTime: createForm.deliveryTime,
+        minOrder: Number(createForm.minOrder) || 50,
+        tags: createForm.tags.split(",").map(t => t.trim()).filter(Boolean),
+        openingHours: { open: createForm.openHour, close: createForm.closeHour },
+        isApproved: Boolean(createForm.isApproved)
+      };
+      const res = await API.create(payload);
+      if (!res.success) throw new Error(res.message);
+      showToast(`Shop "${res.data.name}" created and linked successfully!`);
+      setIsCreateOpen(false);
+      setCreateForm({
+        owner: "",
+        name: "",
+        category: "Food Court",
+        location: "UIU Food Court Counter",
+        phone: "",
+        deliveryTime: "15-20 min",
+        minOrder: 50,
+        tags: "",
+        openHour: "08:30 AM",
+        closeHour: "08:00 PM",
+        isApproved: true
+      });
+      fetchShops();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -303,15 +405,25 @@ export default function AdminManageShops() {
                 View, edit, open/close, feature, and disable campus shops. Disabling a shop preserves all historical order data.
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => fetchShops()}
-              disabled={loading}
-              className="flex items-center gap-2 rounded-xl border border-[#d1cbc5] px-4 py-3 text-xs font-semibold text-[#5c5049] hover:bg-slate-50 disabled:opacity-50"
-            >
-              <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
-              Refresh
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => fetchShops()}
+                disabled={loading}
+                className="flex items-center gap-2 rounded-xl border border-[#d1cbc5] px-4 py-3 text-xs font-semibold text-[#5c5049] hover:bg-slate-50 disabled:opacity-50"
+              >
+                <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                Refresh
+              </button>
+              <button
+                type="button"
+                onClick={openCreateModal}
+                className="flex items-center gap-2 rounded-xl bg-[#ff7a18] px-4 py-3 text-xs font-semibold text-white hover:bg-orange-600 transition shadow-sm"
+              >
+                <Plus size={15} />
+                Create Shop
+              </button>
+            </div>
           </section>
 
           {/* Filters */}
@@ -597,6 +709,186 @@ export default function AdminManageShops() {
               <button
                 type="button"
                 onClick={() => setEditing(null)}
+                className="flex-1 rounded-xl border-2 border-slate-200 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE SHOP MODAL */}
+      {isCreateOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
+                  <Store size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-800">Create Campus Shop</h3>
+                  <p className="text-xs text-slate-500">Register and link a campus shop to a shop owner</p>
+                </div>
+              </div>
+              <button onClick={() => setIsCreateOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Form body */}
+            <div className="px-7 py-6 space-y-5">
+              {/* Owner selection */}
+              <Field label="Shop Owner (Required Linkage)">
+                {loadingOwners ? (
+                  <div className="flex items-center gap-2 h-11 px-4 text-xs text-slate-400 border rounded-lg bg-slate-50">
+                    <Loader2 size={16} className="animate-spin text-orange-500" />
+                    <span>Loading registered shop owners...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={createForm.owner}
+                    onChange={e => handleCreateChange("owner", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option value="">-- Select Registered Shop Owner --</option>
+                    {availableOwners.map(owner => (
+                      <option
+                        key={owner.userId}
+                        value={owner.userId}
+                        disabled={Boolean(owner.shop)}
+                      >
+                        {owner.name} ({owner.email}) {owner.shop ? `— [Already linked: ${owner.shop.name}]` : "— Available"}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+
+              {/* Name + Category */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Shop Name *">
+                  <input
+                    value={createForm.name}
+                    onChange={e => handleCreateChange("name", e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. UIU Cafe & Bakery"
+                  />
+                </Field>
+                <Field label="Category">
+                  <select
+                    value={createForm.category}
+                    onChange={e => handleCreateChange("category", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option>Food Court</option>
+                    <option>Fast Food & Snacks</option>
+                    <option>Food & Cafe</option>
+                    <option>Stationery</option>
+                    <option>Medicine</option>
+                  </select>
+                </Field>
+              </div>
+
+              {/* Location + Phone */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Campus Location">
+                  <input
+                    value={createForm.location}
+                    onChange={e => handleCreateChange("location", e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. UIU Food Court Counter #3"
+                  />
+                </Field>
+                <Field label="Contact Phone">
+                  <input
+                    value={createForm.phone}
+                    onChange={e => handleCreateChange("phone", e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. +880 1819-000000"
+                  />
+                </Field>
+              </div>
+
+              {/* Delivery time + Min order */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Est. Delivery Time">
+                  <input
+                    value={createForm.deliveryTime}
+                    onChange={e => handleCreateChange("deliveryTime", e.target.value)}
+                    className={inputCls}
+                    placeholder="15-20 min"
+                  />
+                </Field>
+                <Field label="Min Order (৳)">
+                  <input
+                    type="number"
+                    value={createForm.minOrder}
+                    onChange={e => handleCreateChange("minOrder", e.target.value)}
+                    className={inputCls}
+                    min={0}
+                  />
+                </Field>
+              </div>
+
+              {/* Opening hours */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Opening Time">
+                  <input
+                    value={createForm.openHour}
+                    onChange={e => handleCreateChange("openHour", e.target.value)}
+                    className={inputCls}
+                    placeholder="08:30 AM"
+                  />
+                </Field>
+                <Field label="Closing Time">
+                  <input
+                    value={createForm.closeHour}
+                    onChange={e => handleCreateChange("closeHour", e.target.value)}
+                    className={inputCls}
+                    placeholder="08:00 PM"
+                  />
+                </Field>
+              </div>
+
+              {/* Tags */}
+              <Field label="Tags (comma separated)">
+                <input
+                  value={createForm.tags}
+                  onChange={e => handleCreateChange("tags", e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. halal, coffee, breakfast, snacks"
+                />
+              </Field>
+
+              {/* Approval status check */}
+              <label className="flex items-center gap-2 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={createForm.isApproved}
+                  onChange={e => handleCreateChange("isApproved", e.target.checked)}
+                  className="rounded text-orange-500 focus:ring-orange-400 h-4 w-4"
+                />
+                <span className="text-xs font-semibold text-slate-700">Set shop status as Approved & Active immediately</span>
+              </label>
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex gap-3 px-7 pb-7">
+              <button
+                type="button"
+                onClick={handleCreateShop}
+                disabled={creating || loadingOwners}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#ff7a18] py-3.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-60"
+              >
+                {creating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                Create Shop
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
                 className="flex-1 rounded-xl border-2 border-slate-200 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
               >
                 Cancel
