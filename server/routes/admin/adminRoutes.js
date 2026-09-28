@@ -27,7 +27,8 @@ import {
   setShopOpenStatus,
   toggleFeatured,
   disableShop,
-  enableShop
+  enableShop,
+  deleteShop
 } from '../../controllers/admin/adminShopController.js';
 
 const router = express.Router();
@@ -68,5 +69,6 @@ router.patch('/shops/:shopId/status',     setShopOpenStatus);
 router.patch('/shops/:shopId/featured',   toggleFeatured);
 router.patch('/shops/:shopId/disable',    disableShop);
 router.patch('/shops/:shopId/enable',     enableShop);
+router.delete('/shops/:shopId',            deleteShop);
 
 export default router;

@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Shop from '../../models/Shop.js';
 import User from '../../models/User.js';
+import MenuItem from '../../models/MenuItem.js';
 
 // ---------------------------------------------------------------------------
 // Allowed sort keys (prevent arbitrary MongoDB injection)
@@ -57,6 +58,12 @@ export const listShops = async (req, res) => {
       if (status === 'featured')   filter.isFeatured = true;
       if (status === 'unapproved') filter.isApproved = false;
       if (status === 'approved')   filter.isApproved = true;
+      if (status === 'archived' || status === 'deleted') filter.isDeleted = true;
+    }
+
+    // Default: hide soft-deleted/archived shops unless explicitly filtering for them
+    if (status !== 'archived' && status !== 'deleted') {
+      filter.isDeleted = { $ne: true };
     }
 
     const sortField = ALLOWED_SORT[sort] || ALLOWED_SORT.newest;
@@ -169,8 +176,8 @@ export const createShop = async (req, res) => {
       });
     }
 
-    // 2. Verify owner does not already own a shop (enforce 1:1 shop-owner relationship)
-    const existingShop = await Shop.findOne({ owner: targetOwnerId });
+    // 2. Verify owner does not already own an active shop (enforce 1:1 shop-owner relationship)
+    const existingShop = await Shop.findOne({ owner: targetOwnerId, isDeleted: { $ne: true } });
     if (existingShop) {
       return res.status(409).json({
         success: false,
@@ -355,18 +362,20 @@ export const disableShop = async (req, res) => {
 
 // ---------------------------------------------------------------------------
 // PATCH /api/admin/shops/:shopId/enable
-// Re-enable a disabled shop: sets isApproved=true, syncs owner status
+// Re-enable a disabled/archived shop: sets isApproved=true, isDeleted=false, syncs owner status
 // ---------------------------------------------------------------------------
 export const enableShop = async (req, res) => {
   try {
     const shop = await Shop.findById(req.params.shopId);
     if (!shop) return res.status(404).json({ success: false, message: 'Shop not found.' });
 
-    if (shop.isApproved) {
+    if (shop.isApproved && !shop.isDeleted) {
       return res.status(409).json({ success: false, message: 'Shop is already active.' });
     }
 
     shop.isApproved = true;
+    shop.isDeleted  = false;
+    shop.deletedAt  = null;
     await shop.save();
 
     await User.updateOne(
@@ -376,11 +385,75 @@ export const enableShop = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: `Shop '${shop.name}' has been re-enabled.`,
-      data: { shopId: shop._id, isApproved: true }
+      message: `Shop '${shop.name}' has been re-enabled and restored.`,
+      data: { shopId: shop._id, isApproved: true, isDeleted: false }
     });
   } catch (err) {
     console.error('[enableShop]', err);
     return res.status(500).json({ success: false, message: 'Server error enabling shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// DELETE /api/admin/shops/:shopId
+// Option B: Soft-Archive / isDeleted Data Policy.
+// Protects all historical orders, transactions, reviews, and analytics.
+// Sets isDeleted=true, deletedAt=now, isOpen=false, isApproved=false.
+// Soft-disables menu items and suspends the owner's active operations.
+// ---------------------------------------------------------------------------
+export const deleteShop = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(shopId)) {
+      return res.status(400).json({ success: false, message: 'Invalid shop ID format.' });
+    }
+
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Shop not found.' });
+    }
+
+    if (shop.isDeleted) {
+      return res.status(409).json({
+        success: false,
+        message: `Shop '${shop.name}' is already archived / deleted.`
+      });
+    }
+
+    // Apply soft-delete & archive
+    shop.isDeleted = true;
+    shop.deletedAt = new Date();
+    shop.isOpen = false;
+    shop.isApproved = false;
+    await shop.save();
+
+    // Mark menu items as unavailable
+    await MenuItem.updateMany(
+      { shop: shop._id },
+      { $set: { isAvailable: false } }
+    );
+
+    // Suspend owner
+    if (shop.owner) {
+      await User.updateOne(
+        { _id: shop.owner },
+        { $set: { isApproved: false, status: 'suspended' } }
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' archived successfully. Historical orders and financial records are preserved.`,
+      data: {
+        shopId: shop._id,
+        name: shop.name,
+        isDeleted: true,
+        deletedAt: shop.deletedAt
+      }
+    });
+  } catch (err) {
+    console.error('[deleteShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error archiving shop.' });
   }
 };
