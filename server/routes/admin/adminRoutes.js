@@ -38,6 +38,9 @@ import {
   resolveComplaint,
   escalateComplaint
 } from '../../controllers/admin/adminComplaintController.js';
+import {
+  getDashboardOverview
+} from '../../controllers/admin/adminDashboardController.js';
 
 const router = express.Router();
 
@@ -86,5 +89,8 @@ router.patch('/complaints/:complaintId/status',    updateComplaintStatus);
 router.patch('/complaints/:complaintId/priority',  updateComplaintPriority);
 router.patch('/complaints/:complaintId/resolve',   resolveComplaint);
 router.patch('/complaints/:complaintId/escalate',  escalateComplaint);
+
+// --- Admin Dashboard & Operations Routes (Phase 6) ---
+router.get('/dashboard',                          getDashboardOverview);
 
 export default router;
