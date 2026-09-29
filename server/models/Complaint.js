@@ -27,7 +27,16 @@ const complaintSchema = new mongoose.Schema(
     },
     category: {
       type: String,
-      enum: ['Late Delivery', 'Wrong Food Items', 'Spill / Damaged Item', 'Payment Issue', 'Other'],
+      enum: [
+        'Late Delivery',
+        'Wrong Food Items',
+        'Spill / Damaged Item',
+        'Payment Issue',
+        'Payment Sync',
+        'Food Quality',
+        'App Technical',
+        'Other'
+      ],
       default: 'Other'
     },
     description: {
