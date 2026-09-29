@@ -30,6 +30,14 @@ import {
   enableShop,
   deleteShop
 } from '../../controllers/admin/adminShopController.js';
+import {
+  listComplaints,
+  getComplaint,
+  updateComplaintStatus,
+  updateComplaintPriority,
+  resolveComplaint,
+  escalateComplaint
+} from '../../controllers/admin/adminComplaintController.js';
 
 const router = express.Router();
 
@@ -70,5 +78,13 @@ router.patch('/shops/:shopId/featured',   toggleFeatured);
 router.patch('/shops/:shopId/disable',    disableShop);
 router.patch('/shops/:shopId/enable',     enableShop);
 router.delete('/shops/:shopId',            deleteShop);
+
+// --- Complaint & Dispute Administration Routes (Phase 5) ---
+router.get('/complaints',                         listComplaints);
+router.get('/complaints/:complaintId',             getComplaint);
+router.patch('/complaints/:complaintId/status',    updateComplaintStatus);
+router.patch('/complaints/:complaintId/priority',  updateComplaintPriority);
+router.patch('/complaints/:complaintId/resolve',   resolveComplaint);
+router.patch('/complaints/:complaintId/escalate',  escalateComplaint);
 
 export default router;
