@@ -1,30 +1,74 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   Check, CheckCircle2, Store, User, Clock, 
-  MapPin, Timer, Navigation, Hourglass
+  MapPin, Timer, Navigation, Hourglass, Wallet
 } from 'lucide-react';
 import activeDeliveryData from '../../data/activeDeliveryData.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import { useAuth } from '../../context/AuthContext';
 
 export default function RunnerDeliveryCompleted() {
-  const { orderId, shop, customer, deliveryDetails } = activeDeliveryData;
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user, token } = useAuth();
+
+  const completedOrder = location.state?.order;
+  const payoutInfo = location.state?.payout;
+  const [walletBalance, setWalletBalance] = useState(
+    location.state?.runnerBalance ?? user?.runnerDetails?.walletBalance ?? user?.walletBalance ?? 2450
+  );
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const authToken = token || localStorage.getItem('uiu_auth_token');
+        const res = await fetch('/api/wallet/balance', {
+          headers: { Authorization: `Bearer ${authToken}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.walletBalance !== undefined) {
+            setWalletBalance(data.walletBalance);
+          }
+        }
+      } catch (e) {}
+    };
+    fetchBalance();
+  }, [token]);
+
+  const earnedReward = completedOrder?.billing?.runnerReward || payoutInfo?.runnerReward || 30;
+
+  const displayData = {
+    orderId: completedOrder?.orderNumber || activeDeliveryData.orderId,
+    shop: {
+      name: completedOrder?.shop?.name || activeDeliveryData.shop.name
+    },
+    customer: {
+      name: completedOrder?.student?.name || activeDeliveryData.customer.name
+    },
+    distance: '180m',
+    dropoff: completedOrder?.deliveryAddress?.room || activeDeliveryData.deliveryDetails.dropOffLocation
+  };
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
   return (
     <>
-      <RunnerSidebarFix activeDelivery />
+      <RunnerSidebarFix activeDelivery={false} />
       <div className="max-w-[1200px] mx-auto pt-4 pb-12">
         
         {/* Top Success Card */}
         <div className="bg-white rounded-[32px] shadow-sm p-10 flex flex-col items-center text-center mb-6 border border-slate-100 relative overflow-hidden">
-          <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center mb-6">
-            <Check className="w-8 h-8 text-green-500" />
+          <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mb-6 shadow-xs">
+            <Check className="w-8 h-8" />
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight mb-2">
             Delivery Completed Successfully! 🎉
           </h1>
           <p className="text-slate-500 font-medium max-w-lg text-sm sm:text-base leading-relaxed">
-            Great job! The order has been successfully delivered to the student and your wallet has been updated.
+            Great job! The order has been verified and delivered to the student. Your campus delivery reward of <strong className="text-emerald-700">৳{earnedReward}</strong> has been credited to your wallet.
           </p>
         </div>
 
@@ -37,8 +81,8 @@ export default function RunnerDeliveryCompleted() {
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
               <div className="flex justify-between items-center mb-8">
                 <h2 className="text-xl font-bold text-[#9B5110]">Delivery Summary</h2>
-                <div className="flex items-center gap-1.5 bg-green-50 text-green-600 px-3 py-1.5 rounded-full text-xs font-bold border border-green-100">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> Completed
+                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-full text-xs font-bold border border-emerald-100">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Payout Settled
                 </div>
               </div>
 
@@ -48,21 +92,21 @@ export default function RunnerDeliveryCompleted() {
                     <Store className="w-4 h-4 text-[#F37623]" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Order ID</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">{orderId}</p>
+                  <p className="text-sm font-bold text-slate-800">{displayData.orderId}</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Store className="w-4 h-4 text-[#F37623]" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shop</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">{shop.name}</p>
+                  <p className="text-sm font-bold text-slate-800">{displayData.shop.name}</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <User className="w-4 h-4 text-[#F37623]" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">{customer.name}</p>
+                  <p className="text-sm font-bold text-slate-800">{displayData.customer.name}</p>
                 </div>
                 
                 <div>
@@ -70,63 +114,54 @@ export default function RunnerDeliveryCompleted() {
                     <Clock className="w-4 h-4 text-[#F37623]" />
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Completion Time</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">11:42 AM</p>
+                  <p className="text-sm font-bold text-slate-800">{timeStr}</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Timer className="w-4 h-4 text-[#F37623]" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Duration</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">22 mins</p>
+                  <p className="text-sm font-bold text-emerald-600">DELIVERED</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1.5">
                     <Navigation className="w-4 h-4 text-[#F37623]" />
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Distance Covered</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Drop-off Point</span>
                   </div>
-                  <p className="text-sm font-bold text-slate-800">{deliveryDetails.distance}</p>
+                  <p className="text-sm font-bold text-slate-800">{displayData.dropoff}</p>
                 </div>
               </div>
             </div>
 
             {/* Activity Timeline */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-slate-100">
-              <h2 className="text-xl font-bold text-[#9B5110] mb-8">Activity Timeline</h2>
+              <h2 className="text-xl font-bold text-[#9B5110] mb-8">Trip Milestones</h2>
               
               <div className="relative pl-3 space-y-6">
-                {/* Connecting Line */}
                 <div className="absolute left-[15px] top-2 bottom-2 w-0.5 bg-slate-100"></div>
 
                 <div className="relative flex justify-between items-center z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-2 h-2 rounded-full bg-[#9B5110] ring-4 ring-white shadow-sm border border-[#9B5110]"></div>
-                    <span className="font-bold text-slate-800 text-sm">Accepted</span>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#9B5110] ring-4 ring-white shadow-sm border border-[#9B5110]"></div>
+                    <span className="font-bold text-slate-800 text-sm">Order Accepted</span>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-400">11:15 AM</span>
+                  <span className="text-[11px] font-bold text-slate-400">Completed</span>
                 </div>
 
                 <div className="relative flex justify-between items-center z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-2 h-2 rounded-full bg-[#9B5110] ring-4 ring-white shadow-sm border border-[#9B5110]"></div>
-                    <span className="font-bold text-slate-800 text-sm">Reached Shop</span>
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#9B5110] ring-4 ring-white shadow-sm border border-[#9B5110]"></div>
+                    <span className="font-bold text-slate-800 text-sm">Picked Up at Counter</span>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-400">11:22 AM</span>
+                  <span className="text-[11px] font-bold text-slate-400">Completed</span>
                 </div>
 
                 <div className="relative flex justify-between items-center z-10">
                   <div className="flex items-center gap-4">
-                    <div className="w-2 h-2 rounded-full bg-[#9B5110] ring-4 ring-white shadow-sm border border-[#9B5110]"></div>
-                    <span className="font-bold text-slate-800 text-sm">Picked Up</span>
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-white shadow-sm border border-emerald-500"></div>
+                    <span className="font-bold text-emerald-600 text-sm">Delivered to Room</span>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-400">11:30 AM</span>
-                </div>
-
-                <div className="relative flex justify-between items-center z-10">
-                  <div className="flex items-center gap-4">
-                    <div className="w-2.5 h-2.5 rounded-full bg-green-500 ring-4 ring-white shadow-sm border border-green-500"></div>
-                    <span className="font-bold text-green-600 text-sm">Delivered</span>
-                  </div>
-                  <span className="text-[11px] font-bold text-slate-400">11:42 AM</span>
+                  <span className="text-[11px] font-bold text-emerald-600">{timeStr}</span>
                 </div>
               </div>
             </div>
@@ -137,7 +172,7 @@ export default function RunnerDeliveryCompleted() {
           <div className="flex flex-col gap-6">
             
             {/* Earnings Card */}
-            <div className="bg-slate-700 rounded-3xl p-6 sm:p-8 shadow-lg text-white relative overflow-hidden">
+            <div className="bg-slate-800 rounded-3xl p-6 sm:p-8 shadow-lg text-white relative overflow-hidden">
               <div className="absolute -right-10 -bottom-10 opacity-10">
                 <span className="text-9xl font-black">৳</span>
               </div>
@@ -145,26 +180,17 @@ export default function RunnerDeliveryCompleted() {
               <h3 className="text-[11px] font-bold text-slate-300 uppercase tracking-widest mb-4">
                 Earnings This Delivery
               </h3>
-              <div className="flex items-end gap-3 mb-10">
-                <span className="text-5xl font-extrabold leading-none tracking-tight">৳60</span>
-                <span className="bg-slate-600/50 text-slate-200 text-[10px] font-bold px-2.5 py-1 rounded-full border border-slate-500/50 mb-1">
-                  ⚡ +৳10 Bonus
+              <div className="flex items-end gap-3 mb-8">
+                <span className="text-5xl font-extrabold leading-none tracking-tight text-white">৳{earnedReward}</span>
+                <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/30 mb-1">
+                  ✓ Paid
                 </span>
               </div>
 
-              <div className="pt-6 border-t border-slate-600/50 space-y-3">
+              <div className="pt-6 border-t border-slate-700 space-y-3">
                 <div className="flex justify-between items-end mb-2">
-                  <span className="text-xs font-bold text-slate-300">Today's Total</span>
-                  <span className="font-extrabold">৳600</span>
-                </div>
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Goal Progress</span>
-                    <span className="text-[10px] font-bold text-slate-300">12/20</span>
-                  </div>
-                  <div className="h-1.5 bg-slate-700 rounded-full overflow-hidden">
-                    <div className="h-full bg-white rounded-full w-[60%]"></div>
-                  </div>
+                  <span className="text-xs font-bold text-slate-300">Updated Wallet Balance</span>
+                  <span className="font-extrabold text-lg text-amber-400">৳{walletBalance}</span>
                 </div>
               </div>
             </div>
@@ -172,13 +198,13 @@ export default function RunnerDeliveryCompleted() {
             {/* Performance Stats */}
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex-1">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">
-                Performance Stats
+                Delivery Performance
               </h3>
               
               <div className="grid grid-cols-2 gap-3 mb-4">
                 <div className="bg-[#F8F7F5] rounded-2xl p-4 flex flex-col justify-center">
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Avg Delivery</span>
-                  <span className="font-extrabold text-slate-800 text-lg">18m</span>
+                  <span className="font-extrabold text-slate-800 text-lg">14m</span>
                 </div>
                 <div className="bg-[#F8F7F5] rounded-2xl p-4 flex flex-col justify-center">
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Rating</span>
@@ -188,11 +214,11 @@ export default function RunnerDeliveryCompleted() {
                 </div>
                 <div className="bg-[#F8F7F5] rounded-2xl p-4 flex flex-col justify-center">
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">On-Time</span>
-                  <span className="font-extrabold text-slate-800 text-lg">98%</span>
+                  <span className="font-extrabold text-slate-800 text-lg">99%</span>
                 </div>
                 <div className="bg-[#F8F7F5] rounded-2xl p-4 flex flex-col justify-center">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total</span>
-                  <span className="font-extrabold text-slate-800 text-lg">142</span>
+                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1">Status</span>
+                  <span className="font-extrabold text-emerald-600 text-sm">Available</span>
                 </div>
               </div>
 
@@ -201,8 +227,8 @@ export default function RunnerDeliveryCompleted() {
                   <Hourglass className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] font-bold text-slate-600 leading-tight italic">
-                    Customer Rating (Pending) - You'll receive the student's review shortly.
+                  <p className="text-[11px] font-bold text-slate-600 leading-tight">
+                    Double-entry ledger recorded. Both student and shop accounts synchronized.
                   </p>
                 </div>
               </div>
@@ -216,26 +242,35 @@ export default function RunnerDeliveryCompleted() {
         {/* Bottom Bar Prompt */}
         <div className="bg-slate-100 rounded-3xl p-6 sm:p-8 mt-8 flex flex-col md:flex-row justify-between items-center gap-6 border border-slate-200/60 shadow-inner">
           <div>
-            <h2 className="text-xl font-bold text-slate-800 mb-1">Ready for the next one?</h2>
-            <p className="text-sm font-medium text-slate-500">Earn more by completing deliveries during peak hours.</p>
+            <h2 className="text-xl font-bold text-slate-800 mb-1">Ready for the next delivery?</h2>
+            <p className="text-sm font-medium text-slate-500">Pick up another order nearby to keep earning rewards on campus.</p>
           </div>
           <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
             <Link 
               to="/dashboard/runner/deliveries"
-              className="w-full sm:w-auto bg-[#F37623] hover:bg-[#d9671b] text-white px-6 py-3 rounded-xl font-bold flex items-center justify-center transition-colors shadow-sm"
+              className="w-full sm:w-auto bg-[#F37623] hover:bg-[#d9671b] text-white px-6 py-3.5 rounded-xl font-bold flex items-center justify-center transition-colors shadow-sm text-decoration-none"
             >
               <Navigation className="w-4 h-4 mr-2" /> Accept Another Delivery
             </Link>
             <div className="flex flex-1 sm:flex-none gap-2">
-              <button className="flex-1 sm:flex-none bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
+              <Link 
+                to="/dashboard/runner/history" 
+                className="flex-1 sm:flex-none bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-sm text-center text-decoration-none"
+              >
                 History
-              </button>
-              <button className="flex-1 sm:flex-none bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm">
-                Dashboard
-              </button>
-              <button className="flex-1 sm:flex-none bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-3 rounded-xl text-sm font-bold transition-colors shadow-sm hidden sm:block">
+              </Link>
+              <Link 
+                to="/dashboard/runner/earnings" 
+                className="flex-1 sm:flex-none bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-sm text-center text-decoration-none"
+              >
                 Earnings
-              </button>
+              </Link>
+              <Link 
+                to="/dashboard/runner" 
+                className="flex-1 sm:flex-none bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-5 py-3.5 rounded-xl text-sm font-bold transition-colors shadow-sm text-center text-decoration-none hidden sm:block"
+              >
+                Dashboard
+              </Link>
             </div>
           </div>
         </div>

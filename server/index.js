@@ -7,6 +7,8 @@ import shopRoutes from './routes/shopRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import studentRoutes from './routes/student/studentRoutes.js';
+import runnerRoutes from './routes/runner/runnerRoutes.js';
+import adminRoutes from './routes/admin/adminRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -32,7 +34,9 @@ app.get('/api/health', (req, res) => {
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
+app.use('/api/runner', runnerRoutes);
 app.use('/api/shops', shopRoutes);
 app.use('/api/shop', shopRoutes);
 app.use('/api/wallet', walletRoutes);
@@ -70,6 +74,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server is running on port ${PORT}`);
+const host = '0.0.0.0';
+
+app.listen(PORT, host, () => {
+  console.log(`🚀 Server is running on http://${host}:${PORT}`);
 });

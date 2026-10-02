@@ -8,6 +8,12 @@ import { Link } from 'react-router-dom';
 import { useOrderChat } from '../../context/OrderChatContext';
 import { useAuth } from '../../context/AuthContext';
 
+const normalizeOrderNumber = (orderId) => {
+  if (!orderId) return '';
+  const value = String(orderId).trim();
+  return value.startsWith('#') ? value : `#${value}`;
+};
+
 export default function OrderChatHub() {
   const { 
     orderChats, 
@@ -17,7 +23,8 @@ export default function OrderChatHub() {
     sendMessage, 
     typingParticipants,
     activeTabFilter,
-    setActiveTabFilter
+    setActiveTabFilter,
+    loadOrderChat
   } = useOrderChat();
 
   const { user } = useAuth();
@@ -37,16 +44,75 @@ export default function OrderChatHub() {
   const currentUserName = user?.name || (currentRole === 'runner' ? 'Tanvir Ahmed' : currentRole === 'shop' ? "Chef's Table" : 'Rafiqul Haque');
   const currentUserAvatar = user?.avatar || (currentRole === 'runner' ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80' : currentRole === 'shop' ? "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80" : 'https://i.pravatar.cc/150?u=student');
 
+  const orderMatchesCurrentUser = (order) => {
+    if (!user) return true;
+    const currentUserId = String(user._id || user.id || '').trim();
+    const studentId = String(order?.student?.id || order?.student?._id || order?.student || '').trim();
+    const runnerId = String(order?.runner?.id || order?.runner?._id || order?.runner || '').trim();
+    const shopId = String(order?.shop?.id || order?.shop?._id || order?.shop || '').trim();
+
+    if (user.role === 'student') {
+      return !currentUserId || studentId === currentUserId || order?.student?.name === user.name;
+    }
+
+    if (user.role === 'runner') {
+      if (!order?.runner) return false;
+      const isAcceptedByRunner = ['READY_FOR_PICKUP', 'HANDED_OVER', 'ON_THE_WAY', 'DELIVERED'].includes(order?.status);
+      if (!isAcceptedByRunner) return false;
+      if (currentUserId) return runnerId === currentUserId;
+      return order?.runner?.name === user.name;
+    }
+
+    if (user.role === 'shop') {
+      return true;
+    }
+    return true;
+  };
+
   const filteredOrders = orderChats.filter(order => {
+    if (!orderMatchesCurrentUser(order)) return false;
     if (orderFilter === 'active') return order.status !== 'DELIVERED';
     if (orderFilter === 'completed') return order.status === 'DELIVERED';
     return true;
   });
 
+  const hasAssignedRunner = Boolean(activeOrder?.runner && activeOrder.runner.name && activeOrder.runner.name !== 'Not Assigned' && activeOrder.runner.name !== 'N/A');
+
+  useEffect(() => {
+    if (currentRole === 'student' && !hasAssignedRunner && activeTabFilter === 'runner') {
+      setActiveTabFilter('shop');
+    }
+  }, [currentRole, hasAssignedRunner, activeTabFilter, setActiveTabFilter]);
+
+  const activeViewRole = currentRole === 'runner' && activeTabFilter === 'runner' ? 'student' : activeTabFilter;
   const displayedMessages = (activeOrder?.messages || []).filter(msg => {
-    if (activeTabFilter === 'all') return true;
-    if (activeTabFilter === 'shop') return msg.senderRole === 'shop' || msg.target === 'shop';
-    if (activeTabFilter === 'runner') return msg.senderRole === 'runner' || msg.target === 'runner';
+    const sender = msg.senderRole;
+    const target = msg.target || 'all';
+
+    if (currentRole === 'shop') {
+      const isShopMessage = sender === 'shop' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'shop' || target === 'all');
+      return isShopMessage || isStudentMessage;
+    }
+
+    if (currentRole === 'runner') {
+      const isRunnerMessage = sender === 'runner' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'runner' || target === 'all');
+      return isRunnerMessage || isStudentMessage;
+    }
+
+    if (activeViewRole === 'shop') {
+      const isShopMessage = sender === 'shop' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'shop' || target === 'all');
+      return isShopMessage || isStudentMessage;
+    }
+
+    if (activeViewRole === 'runner') {
+      const isRunnerMessage = sender === 'runner' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'runner' || target === 'all');
+      return isRunnerMessage || isStudentMessage;
+    }
+
     return true;
   });
 
@@ -160,8 +226,22 @@ export default function OrderChatHub() {
             return (
               <div
                 key={order.orderId}
-                onClick={() => {
-                  setActiveOrderId(order.orderId);
+                onClick={async () => {
+                  const nextOrderId = normalizeOrderNumber(order.orderId);
+                  setActiveOrderId(nextOrderId);
+
+                  if (user?.role === 'student') {
+                    setActiveTabFilter(order.runner?.name && order.runner.name !== 'Unassigned Runner' ? 'runner' : 'shop');
+                  } else if (user?.role === 'runner') {
+                    setActiveTabFilter('student');
+                  } else {
+                    setActiveTabFilter('student');
+                  }
+
+                  if (nextOrderId) {
+                    await loadOrderChat(nextOrderId);
+                  }
+
                   inputRef.current?.focus();
                 }}
                 className={`p-3.5 rounded-2xl cursor-pointer transition-all border ${
@@ -231,13 +311,15 @@ export default function OrderChatHub() {
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
-            <button
-              onClick={() => setCallModal(activeOrder?.runner)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 font-bold text-xs transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span>Call Runner</span>
-            </button>
+            {currentRole !== 'student' || hasAssignedRunner ? (
+              <button
+                onClick={() => setCallModal(activeOrder?.runner)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 font-bold text-xs transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                <span>Call Runner</span>
+              </button>
+            ) : null}
             <button
               onClick={() => setCallModal(activeOrder?.shop)}
               className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-orange-50 text-[#9B5110] hover:bg-orange-100 font-bold text-xs transition-colors"
@@ -250,38 +332,47 @@ export default function OrderChatHub() {
 
         {/* Stakeholder Channel Filter Tabs */}
         <div className="px-6 py-2 bg-slate-100 border-b border-slate-200 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveTabFilter('all')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
-              activeTabFilter === 'all'
-                ? 'bg-[#9B5110] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            👥 All Order Activity
-          </button>
-          <button
-            onClick={() => setActiveTabFilter('shop')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              activeTabFilter === 'shop'
-                ? 'bg-[#9B5110] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            <Store className="w-3.5 h-3.5 text-orange-500" />
-            {activeOrder?.shop.name}
-          </button>
-          <button
-            onClick={() => setActiveTabFilter('runner')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              activeTabFilter === 'runner'
-                ? 'bg-[#9B5110] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            <Bike className="w-3.5 h-3.5 text-green-600" />
-            Runner: {activeOrder?.runner.name}
-          </button>
+          {currentRole === 'student' ? (
+            <>
+              <button
+                onClick={() => setActiveTabFilter('shop')}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTabFilter === 'shop'
+                    ? 'bg-[#9B5110] text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+                }`}
+              >
+                <Store className="w-3.5 h-3.5 text-orange-500" />
+                {activeOrder?.shop.name}
+              </button>
+
+              {hasAssignedRunner && (
+                <button
+                  onClick={() => setActiveTabFilter('runner')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                    activeTabFilter === 'runner'
+                      ? 'bg-[#9B5110] text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+                  }`}
+                >
+                  <Bike className="w-3.5 h-3.5 text-green-600" />
+                  Runner: {activeOrder?.runner.name}
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={() => setActiveTabFilter('student')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeTabFilter === 'student'
+                  ? 'bg-[#9B5110] text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+              }`}
+            >
+              <User className="w-3.5 h-3.5 text-blue-600" />
+              Ordering Student: {activeOrder?.student.name}
+            </button>
+          )}
         </div>
 
         {/* Messages Stream */}

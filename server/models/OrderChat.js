@@ -46,6 +46,18 @@ const orderChatSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Order'
     },
+    participants: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    }],
+    lastMessage: {
+      type: String,
+      default: ''
+    },
+    lastMessageAt: {
+      type: Date,
+      default: Date.now
+    },
     messages: [messageSchema]
   },
   {
