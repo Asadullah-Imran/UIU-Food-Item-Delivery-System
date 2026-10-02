@@ -131,37 +131,25 @@ export default function StudentProfile() {
 
       updateUserData({
         isRunner: true,
+        isApproved: false,
+        status: 'pending',
         runnerDetails: {
           vehicleType,
           rating: 5.0,
           totalTrips: 0,
           walletBalance: user?.walletBalance || 0,
-          isAvailable: true
+          isAvailable: false
         }
       });
 
-      setSuccessToast('Congratulations! Runner status activated.');
+      setSuccessToast('Runner application submitted! It is now pending admin approval.');
       setTimeout(() => {
         setSuccessToast('');
         setIsRunnerModalOpen(false);
-      }, 1200);
+      }, 2000);
     } catch (err) {
-      // Local fallback for offline simulation
-      updateUserData({
-        isRunner: true,
-        runnerDetails: {
-          vehicleType,
-          rating: 5.0,
-          totalTrips: 0,
-          walletBalance: user?.walletBalance || 0,
-          isAvailable: true
-        }
-      });
-      setSuccessToast('Runner status activated successfully!');
-      setTimeout(() => {
-        setSuccessToast('');
-        setIsRunnerModalOpen(false);
-      }, 1200);
+      setErrorToast(err.message || 'Failed to submit runner application.');
+      setTimeout(() => setErrorToast(''), 3000);
     } finally {
       setIsActivatingRunner(false);
     }

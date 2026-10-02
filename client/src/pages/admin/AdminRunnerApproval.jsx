@@ -69,7 +69,7 @@ const API = {
     const qs = new URLSearchParams();
     Object.entries(params).forEach(([k, v]) => v && qs.set(k, v));
     return fetch(`/api/admin/runners?${qs}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      headers: { Authorization: `Bearer ${localStorage.getItem("uiu_auth_token")}` }
     }).then((r) => r.json());
   },
   patch: (userId, action) =>
@@ -77,7 +77,7 @@ const API = {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`
+        Authorization: `Bearer ${localStorage.getItem("uiu_auth_token")}`
       }
     }).then((r) => r.json())
 };
