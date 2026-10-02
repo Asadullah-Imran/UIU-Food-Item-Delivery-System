@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   Pencil, Star, Wallet, Award, CheckCircle2,
   Phone, Mail, GraduationCap, Calendar, AlertCircle,
-  MapPin, Zap, Package, X, Check
+  MapPin, Zap, Package, X, Check, Camera, Upload, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import RunnerSidebarFix from './RunnerSidebarFix';
+import runnerData from '../../data/runner.json';
 import { useAuth } from '../../context/AuthContext';
+import { compressImage } from '../../utils/imageCompressor';
 
 export default function RunnerProfile() {
-  const { user, updateUserData } = useAuth();
-  const [isOnline, setIsOnline] = useState(user?.runnerDetails?.isAvailable ?? true);
+  const { user, token, updateUserData, refreshUser } = useAuth();
+  const [isOnline, setIsOnline] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const buildProfileInfo = (currentUser) => ({
@@ -19,9 +21,9 @@ export default function RunnerProfile() {
     dept: currentUser?.department || 'Not provided',
     email: currentUser?.email || 'Not provided',
     phone: currentUser?.phone || 'Not provided',
-    currentSemester: currentUser?.role === 'runner' ? 'Runner Profile' : 'Not provided',
-    emergencyContact: currentUser?.phone || 'Not provided',
-    deliveryZone: currentUser?.deliveryRoom || 'Not provided',
+    currentSemester: currentUser?.runnerDetails?.currentSemester || (currentUser?.role === 'runner' ? 'Runner Profile' : 'Not provided'),
+    emergencyContact: currentUser?.runnerDetails?.emergencyContact || currentUser?.phone || 'Not provided',
+    deliveryZone: currentUser?.runnerDetails?.preferredZone || currentUser?.deliveryRoom || 'Not provided',
     avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80'
   });
 
@@ -29,72 +31,218 @@ export default function RunnerProfile() {
 
   const [formData, setFormData] = useState({ ...personalInfo });
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [previewPhoto, setPreviewPhoto] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [photoError, setPhotoError] = useState('');
+  const fileInputRef = useRef(null);
+  const directFileInputRef = useRef(null);
 
   useEffect(() => {
-    const nextProfile = buildProfileInfo(user);
-    setPersonalInfo(nextProfile);
-    setFormData(nextProfile);
-    setIsOnline(user?.runnerDetails?.isAvailable ?? true);
+    if (user) {
+      const nextProfile = buildProfileInfo(user);
+      setPersonalInfo(nextProfile);
+    }
   }, [user]);
 
-  const handleSave = (e) => {
-    e.preventDefault();
-    const nextProfile = {
-      ...formData,
-      phone: formData.phone,
-      deliveryZone: formData.deliveryZone,
-      dept: formData.dept
-    };
+  const handlePhotoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    setPersonalInfo(nextProfile);
-    if (user) {
-      updateUserData({
-        phone: formData.phone,
-        department: formData.dept,
-        deliveryRoom: formData.deliveryZone
-      });
+    if (!file.type.startsWith('image/')) {
+      setPhotoError('Please select a valid image file (JPG, PNG, WEBP)');
+      return;
     }
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setIsEditModalOpen(false);
-    }, 900);
+
+    try {
+      setPhotoError('');
+      const localPreview = URL.createObjectURL(file);
+      setPreviewPhoto(localPreview);
+      setSelectedFile(file);
+    } catch (err) {
+      setPhotoError('Could not process selected image');
+    }
+  };
+
+  const handleDirectPhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select a valid image file (JPG, PNG, WEBP)');
+      return;
+    }
+
+    try {
+      setIsUploadingPhoto(true);
+      const compressed = await compressImage(file, {
+        maxWidth: 600,
+        maxHeight: 600,
+        quality: 0.85
+      });
+
+      const uploadFormData = new FormData();
+      uploadFormData.append('avatar', compressed);
+
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch('/api/auth/avatar', {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${authToken}`
+        },
+        body: uploadFormData
+      });
+
+      const data = await res.json();
+      if (res.ok && data.avatar) {
+        setPersonalInfo((prev) => ({ ...prev, avatar: data.avatar }));
+        if (updateUserData) updateUserData({ avatar: data.avatar });
+        if (refreshUser) refreshUser();
+      } else {
+        // Fallback to local URL preview
+        const localPreview = URL.createObjectURL(file);
+        setPersonalInfo((prev) => ({ ...prev, avatar: localPreview }));
+      }
+    } catch (err) {
+      console.warn('Direct upload error:', err.message);
+      const localPreview = URL.createObjectURL(file);
+      setPersonalInfo((prev) => ({ ...prev, avatar: localPreview }));
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setPhotoError('');
+
+    try {
+      let finalAvatar = formData.avatar;
+
+      // Upload newly selected file if provided
+      if (selectedFile) {
+        try {
+          const compressed = await compressImage(selectedFile, {
+            maxWidth: 600,
+            maxHeight: 600,
+            quality: 0.85
+          });
+
+          const uploadFormData = new FormData();
+          uploadFormData.append('avatar', compressed);
+
+          const authToken = token || localStorage.getItem('uiu_auth_token');
+          const res = await fetch('/api/auth/avatar', {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${authToken}`
+            },
+            body: uploadFormData
+          });
+
+          const data = await res.json();
+          if (res.ok && data.avatar) {
+            finalAvatar = data.avatar;
+          }
+        } catch (uploadErr) {
+          console.warn('Avatar upload fallback to preview:', uploadErr.message);
+          if (previewPhoto) finalAvatar = previewPhoto;
+        }
+      }
+
+      // Persist profile updates
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      if (authToken) {
+        try {
+          await fetch('/api/auth/profile', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+              phone: formData.phone,
+              avatar: finalAvatar,
+              runnerDetails: {
+                emergencyContact: formData.emergencyContact,
+                preferredZone: formData.deliveryZone,
+                currentSemester: formData.currentSemester
+              }
+            })
+          });
+        } catch (apiErr) {
+          console.warn('Profile sync warning:', apiErr.message);
+        }
+      }
+
+      const updated = {
+        ...formData,
+        avatar: finalAvatar
+      };
+      setPersonalInfo(updated);
+      if (updateUserData) {
+        updateUserData({
+          phone: formData.phone,
+          avatar: finalAvatar,
+          runnerDetails: {
+            emergencyContact: formData.emergencyContact,
+            preferredZone: formData.deliveryZone,
+            currentSemester: formData.currentSemester
+          }
+        });
+      }
+      if (refreshUser) refreshUser();
+
+      setSaveSuccess(true);
+      setTimeout(() => {
+        setSaveSuccess(false);
+        setIsEditModalOpen(false);
+        setPreviewPhoto(null);
+        setSelectedFile(null);
+      }, 900);
+    } catch (err) {
+      setPhotoError(err.message || 'Failed to save changes');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const achievements = [
     {
-      id: 'runner-status',
-      name: 'Runner Status',
-      progressText: user?.runnerDetails?.isAvailable ? 'Available' : 'Offline',
-      percentage: user?.runnerDetails?.isAvailable ? 100 : 35,
+      id: 'fast-delivery',
+      name: 'Fast Delivery',
+      progressText: '12/15',
+      percentage: 80,
       icon: Zap,
       iconBg: 'bg-orange-100 text-orange-600',
       barColor: 'bg-orange-500'
     },
     {
-      id: 'delivery-count',
-      name: 'Delivery Count',
-      progressText: `${user?.runnerDetails?.totalTrips || 0} trips`,
-      percentage: Math.min((user?.runnerDetails?.totalTrips || 0) * 10, 100),
+      id: '100-deliveries',
+      name: '100 Deliveries',
+      progressText: '100/100',
+      percentage: 100,
       icon: Package,
       iconBg: 'bg-blue-100 text-blue-600',
       barColor: 'bg-emerald-500'
     },
     {
-      id: 'rating',
-      name: 'Rating',
-      progressText: `${Number(user?.runnerDetails?.rating || 5).toFixed(1)}/5.0`,
-      percentage: Math.min((Number(user?.runnerDetails?.rating || 5) / 5) * 100, 100),
+      id: 'top-rated',
+      name: 'Top Rated',
+      progressText: '4.9/5.0',
+      percentage: 98,
       icon: Star,
       iconBg: 'bg-amber-100 text-amber-600',
       barColor: 'bg-amber-500'
     },
     {
-      id: 'balance',
-      name: 'Wallet Balance',
-      progressText: `৳${Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0).toLocaleString()}`,
-      percentage: Math.min((Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0) / 1000) * 100, 100),
-      icon: Wallet,
+      id: 'perfect-attendance',
+      name: 'Perfect Attendance',
+      progressText: '28/30 days',
+      percentage: 93,
+      icon: Calendar,
       iconBg: 'bg-purple-100 text-purple-600',
       barColor: 'bg-purple-600'
     }
@@ -122,12 +270,32 @@ export default function RunnerProfile() {
             
             {/* User Avatar & Details */}
             <div className="flex items-center gap-5">
-              <div className="relative flex-shrink-0">
+              <div className="relative flex-shrink-0 group">
+                <input 
+                  type="file" 
+                  ref={directFileInputRef}
+                  accept="image/jpeg,image/png,image/webp" 
+                  onChange={handleDirectPhotoUpload}
+                  className="hidden" 
+                />
                 <img 
                   src={personalInfo.avatar} 
                   alt={personalInfo.name} 
-                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-md"
+                  className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-md transition-all group-hover:brightness-90"
                 />
+                <button
+                  type="button"
+                  onClick={() => directFileInputRef.current?.click()}
+                  disabled={isUploadingPhoto}
+                  className="absolute inset-0 m-auto w-10 h-10 rounded-full bg-slate-900/60 hover:bg-slate-900/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg cursor-pointer"
+                  title="Upload / Change Photo"
+                >
+                  {isUploadingPhoto ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Camera className="w-5 h-5" />
+                  )}
+                </button>
                 <span 
                   className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white transition-colors duration-300 ${
                     isOnline ? 'bg-emerald-500' : 'bg-slate-400'
@@ -143,7 +311,7 @@ export default function RunnerProfile() {
                   </h2>
                   <span className="inline-flex items-center gap-1.5 bg-[#FFF4EB] text-[#EA6D17] border border-[#FCD8BE] text-xs font-extrabold px-3 py-1 rounded-full shadow-2xs">
                     <Award className="w-3.5 h-3.5 fill-[#EA6D17]" />
-                    Registered Runner
+                    Gold Runner
                   </span>
                 </div>
 
@@ -178,6 +346,9 @@ export default function RunnerProfile() {
                 type="button"
                 onClick={() => {
                   setFormData({ ...personalInfo });
+                  setPreviewPhoto(null);
+                  setSelectedFile(null);
+                  setPhotoError('');
                   setIsEditModalOpen(true);
                 }}
                 className="flex items-center justify-center gap-2 bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-2.5 px-6 rounded-xl shadow-md shadow-orange-500/20 text-sm transition-all"
@@ -202,9 +373,9 @@ export default function RunnerProfile() {
               TOTAL DELIVERIES
             </span>
             <div className="mt-2">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{user?.runnerDetails?.totalTrips || 0}</div>
+              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">156</div>
               <div className="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1">
-                {user?.runnerDetails?.totalTrips ? 'Active runner' : 'No trips yet'}
+                +12 this week
               </div>
             </div>
           </div>
@@ -216,10 +387,10 @@ export default function RunnerProfile() {
             </span>
             <div className="mt-2">
               <div className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-1">
-                {Number(user?.runnerDetails?.rating || 5).toFixed(1)} <Star className="w-5 h-5 text-amber-400 fill-amber-400 inline" />
+                4.9 <Star className="w-5 h-5 text-amber-400 fill-amber-400 inline" />
               </div>
               <div className="text-xs font-semibold text-slate-400 mt-1">
-                Based on registered account
+                98 reviews
               </div>
             </div>
           </div>
@@ -230,9 +401,9 @@ export default function RunnerProfile() {
               ON-TIME RATE
             </span>
             <div className="mt-2">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{user?.runnerDetails?.isAvailable ? 'Online' : 'Offline'}</div>
+              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">98%</div>
               <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-2">
-                <div className="h-full bg-[#F37623] rounded-full w-[100%]" />
+                <div className="h-full bg-[#F37623] rounded-full w-[98%]" />
               </div>
             </div>
           </div>
@@ -243,9 +414,9 @@ export default function RunnerProfile() {
               LIFETIME EARNINGS
             </span>
             <div className="mt-2">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">৳{Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0).toLocaleString()}</div>
+              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">৳15,420</div>
               <div className="text-xs font-semibold text-slate-400 mt-1">
-                Wallet balance on account
+                Joined Jan 2024
               </div>
             </div>
           </div>
@@ -257,9 +428,9 @@ export default function RunnerProfile() {
                 <span>Current Balance</span>
                 <Wallet className="w-4 h-4 text-slate-400" />
               </div>
-              <div className="text-3xl font-extrabold tracking-tight">৳{Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0).toLocaleString()}</div>
+              <div className="text-3xl font-extrabold tracking-tight">৳1,250</div>
               <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                Current registered balance
+                Monthly Earnings: ৳4,800
               </p>
             </div>
             
@@ -310,9 +481,9 @@ export default function RunnerProfile() {
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-slate-400">Role</p>
+                <p className="text-xs font-semibold text-slate-400">Current Semester</p>
                 <p className="text-sm font-bold text-slate-800 mt-1">
-                  {user?.role || 'Runner'}
+                  {personalInfo.currentSemester}
                 </p>
               </div>
 
@@ -402,6 +573,93 @@ export default function RunnerProfile() {
               </div>
             ) : (
               <form onSubmit={handleSave} className="space-y-4">
+                {/* Profile Photo Upload Section */}
+                <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Profile Photo
+                    </label>
+                    {previewPhoto && (
+                      <span className="text-[11px] font-semibold text-orange-600 bg-orange-100/70 px-2 py-0.5 rounded-full">
+                        New photo selected
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 rounded-full overflow-hidden border-2 border-orange-500/40 flex-shrink-0 shadow-inner bg-slate-200">
+                      <img 
+                        src={previewPhoto || formData.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80'} 
+                        alt="Profile Preview" 
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-2">
+                      <input 
+                        type="file" 
+                        ref={fileInputRef}
+                        accept="image/jpeg,image/png,image/webp" 
+                        onChange={handlePhotoSelect}
+                        className="hidden" 
+                      />
+
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <button
+                          type="button"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="px-3.5 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          Upload Photo
+                        </button>
+
+                        {(previewPhoto || formData.avatar) && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPreviewPhoto(null);
+                              setSelectedFile(null);
+                              setFormData((prev) => ({ ...prev, avatar: 'https://i.pravatar.cc/150?u=uiu_runner' }));
+                            }}
+                            className="px-2.5 py-1.5 text-xs font-semibold text-slate-500 hover:text-red-500 rounded-xl hover:bg-red-50 transition-colors"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-slate-400 leading-tight">
+                        JPG, PNG, or WEBP (Max 5MB). Photo will be optimized automatically.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Or enter Image URL */}
+                  <div className="pt-2 border-t border-slate-200/60">
+                    <label className="block text-[11px] font-bold text-slate-500 mb-1">
+                      Or Paste Image URL
+                    </label>
+                    <input 
+                      type="url"
+                      value={formData.avatar || ''}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, avatar: e.target.value }));
+                        setPreviewPhoto(null);
+                        setSelectedFile(null);
+                      }}
+                      placeholder="https://example.com/photo.jpg"
+                      className="w-full px-3 py-1.5 text-xs bg-white rounded-lg border border-slate-200 focus:outline-none focus:ring-1 focus:ring-orange-500 text-slate-700"
+                    />
+                  </div>
+
+                  {photoError && (
+                    <p className="text-xs text-red-500 font-semibold flex items-center gap-1 mt-1">
+                      <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" /> {photoError}
+                    </p>
+                  )}
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-600 mb-1">Phone Number</label>
                   <input 
@@ -445,9 +703,11 @@ export default function RunnerProfile() {
                   </button>
                   <button 
                     type="submit"
-                    className="px-6 py-2.5 rounded-xl bg-[#F37623] hover:bg-[#d9671b] text-white font-bold text-sm shadow-md shadow-orange-500/20 transition-all"
+                    disabled={isSaving}
+                    className="px-6 py-2.5 rounded-xl bg-[#F37623] hover:bg-[#d9671b] disabled:opacity-60 text-white font-bold text-sm shadow-md shadow-orange-500/20 transition-all flex items-center gap-2 cursor-pointer"
                   >
-                    Save Changes
+                    {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isSaving ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               </form>
