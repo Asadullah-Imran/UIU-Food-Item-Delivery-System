@@ -56,15 +56,29 @@ export default function RunnerDeliveryHistory() {
     fetchRunnerActivity();
   }, [token]);
 
-  const chartData = [
-    { day: 'Mon', height: 40, activeHeight: 15 },
-    { day: 'Tue', height: 60, activeHeight: 35 },
-    { day: 'Wed', height: 50, activeHeight: 25 },
-    { day: 'Thu', height: 75, activeHeight: 50 },
-    { day: 'Fri', height: 35, activeHeight: 15 },
-    { day: 'Sat', height: 30, activeHeight: 10 },
-    { day: 'Sun', height: 55, activeHeight: 40 }
-  ];
+  // Build chart from real delivery history (last 7 days)
+  const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const deliveryCounts = Array(7).fill(0);
+  const today = new Date();
+  history.forEach(order => {
+    const d = order.updatedAt ? new Date(order.updatedAt) : null;
+    if (!d) return;
+    const diffDays = Math.floor((today - d) / (1000 * 60 * 60 * 24));
+    if (diffDays >= 0 && diffDays < 7) {
+      deliveryCounts[diffDays]++;
+    }
+  });
+  const maxCount = Math.max(...deliveryCounts, 1);
+  // Build 7-entry array Mon→Sun relative to today
+  const chartData = Array.from({ length: 7 }, (_, i) => {
+    const dayOffset = 6 - i; // 6 days ago .. today
+    const date = new Date(today);
+    date.setDate(today.getDate() - dayOffset);
+    const dayName = DAY_NAMES[date.getDay()];
+    const count = deliveryCounts[dayOffset] || 0;
+    const heightPct = Math.max(8, Math.round((count / maxCount) * 100));
+    return { day: dayName, height: heightPct, activeHeight: count > 0 ? heightPct : 0, isToday: dayOffset === 0 };
+  });
 
   return (
     <>

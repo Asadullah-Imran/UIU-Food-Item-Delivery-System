@@ -2,6 +2,9 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+// localStorage key for the cached user profile (no longer "mock" — it mirrors the backend session)
+const USER_CACHE_KEY = 'uiu_user_cache';
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -12,14 +15,17 @@ export function AuthProvider({ children }) {
     const initializeAuth = async () => {
       try {
         const storedToken = localStorage.getItem('uiu_auth_token');
-        const storedUser = localStorage.getItem('uiu_mock_user');
-        
+        // Support both the old key (migration) and the new key
+        const storedUser =
+          localStorage.getItem(USER_CACHE_KEY) ||
+          localStorage.getItem('uiu_mock_user');
+
         if (storedToken) {
           setToken(storedToken);
           if (storedUser) {
-            setUser(JSON.parse(storedUser));
+            try { setUser(JSON.parse(storedUser)); } catch (_) {}
           }
-          // Verify with backend
+          // Verify with backend — always prefer live data
           try {
             const res = await fetch('/api/auth/me', {
               headers: { Authorization: `Bearer ${storedToken}` }
@@ -28,11 +34,14 @@ export function AuthProvider({ children }) {
               const data = await res.json();
               if (data.user) {
                 setUser(data.user);
-                localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
+                localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
+                // Remove legacy key if present
+                localStorage.removeItem('uiu_mock_user');
               }
             } else if (res.status === 401 || res.status === 403) {
-              // Expired or invalid token
+              // Expired or invalid token — clear everything
               localStorage.removeItem('uiu_auth_token');
+              localStorage.removeItem(USER_CACHE_KEY);
               localStorage.removeItem('uiu_mock_user');
               setToken(null);
               setUser(null);
@@ -58,20 +67,32 @@ export function AuthProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      const data = await res.json();
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(
+          res.status >= 500
+            ? 'Backend server is offline or unreachable on port 5001. Please check that the backend is running.'
+            : 'Invalid response from server'
+        );
+      }
+
       if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data?.message || 'Login failed');
       }
 
       localStorage.removeItem('uiu_order_chats_v1');
       localStorage.removeItem('uiu_active_delivery');
+      localStorage.removeItem('uiu_mock_user'); // remove legacy key on fresh login
       localStorage.setItem('uiu_auth_token', data.token);
-      localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
+      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
       return { success: true, user: data.user, token: data.token };
     } catch (err) {
-      console.warn('API login error, using local fallback:', err.message);
+      console.warn('API login error:', err.message);
       return { success: false, error: err.message };
     }
   };
@@ -83,15 +104,27 @@ export function AuthProvider({ children }) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(userData)
       });
-      const data = await res.json();
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(
+          res.status >= 500
+            ? 'Backend server is offline or unreachable on port 5001. Please check that the backend is running.'
+            : 'Invalid response from server'
+        );
+      }
+
       if (!res.ok) {
-        throw new Error(data.message || 'Registration failed');
+        throw new Error(data?.message || 'Registration failed');
       }
 
       localStorage.removeItem('uiu_order_chats_v1');
       localStorage.removeItem('uiu_active_delivery');
+      localStorage.removeItem('uiu_mock_user');
       localStorage.setItem('uiu_auth_token', data.token);
-      localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
+      localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
       return { success: true, user: data.user, token: data.token };
@@ -100,20 +133,14 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const login = (userData) => {
-    localStorage.removeItem('uiu_order_chats_v1');
-    localStorage.removeItem('uiu_active_delivery');
-    localStorage.setItem('uiu_mock_user', JSON.stringify(userData));
-    setUser(userData);
-  };
-
   const logout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {
       console.warn('Logout API notification error:', e);
     }
-    localStorage.removeItem('uiu_mock_user');
+    localStorage.removeItem(USER_CACHE_KEY);
+    localStorage.removeItem('uiu_mock_user'); // clean up legacy key
     localStorage.removeItem('uiu_auth_token');
     localStorage.removeItem('uiu_order_chats_v1');
     localStorage.removeItem('uiu_active_delivery');
@@ -132,7 +159,8 @@ export function AuthProvider({ children }) {
         const data = await res.json();
         if (data.user) {
           setUser(data.user);
-          localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
+          localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
+          localStorage.removeItem('uiu_mock_user');
           return data.user;
         }
       }
@@ -149,18 +177,18 @@ export function AuthProvider({ children }) {
       updated.runnerDetails = { ...user.runnerDetails, walletBalance: newBalance };
     }
     setUser(updated);
-    localStorage.setItem('uiu_mock_user', JSON.stringify(updated));
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(updated));
   };
 
   const updateUserData = (updatedFields) => {
     if (!user) return;
     const updated = { ...user, ...updatedFields };
     setUser(updated);
-    localStorage.setItem('uiu_mock_user', JSON.stringify(updated));
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(updated));
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, loginApi, registerApi, logout, refreshUser, updateUserWallet, updateUserData, isLoading }}>
+    <AuthContext.Provider value={{ user, token, loginApi, registerApi, logout, refreshUser, updateUserWallet, updateUserData, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
