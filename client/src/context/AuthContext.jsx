@@ -80,6 +80,21 @@ export function AuthProvider({ children }) {
       }
 
       if (!res.ok) {
+        if (res.status === 403 && data?.isPendingApproval) {
+          if (data.token) {
+            localStorage.setItem('uiu_auth_token', data.token);
+            localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
+            setToken(data.token);
+            setUser(data.user);
+          }
+          return {
+            success: false,
+            isPendingApproval: true,
+            user: data.user,
+            token: data.token,
+            error: data.message
+          };
+        }
         throw new Error(data?.message || 'Login failed');
       }
 
@@ -127,7 +142,13 @@ export function AuthProvider({ children }) {
       localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
       setToken(data.token);
       setUser(data.user);
-      return { success: true, user: data.user, token: data.token };
+      return {
+        success: true,
+        user: data.user,
+        token: data.token,
+        isPendingApproval: Boolean(data.isPendingApproval),
+        message: data.message
+      };
     } catch (err) {
       return { success: false, error: err.message };
     }
