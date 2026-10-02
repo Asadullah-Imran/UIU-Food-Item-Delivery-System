@@ -166,7 +166,7 @@ export function OrderChatProvider({ children }) {
 
           orders = [...activeOrders, ...historyOrders];
         } else if (user.role === 'shop') {
-          const res = await fetch('/api/shop/orders', {
+          const res = await fetch('/api/shops/orders', {
             headers: { Authorization: `Bearer ${token}` }
           });
           if (!res.ok) throw new Error('Failed to fetch shop orders');
@@ -213,7 +213,7 @@ export function OrderChatProvider({ children }) {
     } else if (user.role === 'runner') {
       endpoint = `/api/runner/chat/${encodeURIComponent(normalizedOrderId)}`;
     } else if (user.role === 'shop') {
-      endpoint = `/api/shop/chat/${encodeURIComponent(normalizedOrderId)}`;
+      endpoint = `/api/shops/chat/${encodeURIComponent(normalizedOrderId)}`;
     }
 
     if (!endpoint) return;
@@ -302,7 +302,7 @@ export function OrderChatProvider({ children }) {
       : user?.role === 'runner'
         ? `/api/runner/chat/${encodeURIComponent(normalizedOrderId)}`
         : user?.role === 'shop'
-          ? `/api/shop/chat/${encodeURIComponent(normalizedOrderId)}`
+          ? `/api/shops/chat/${encodeURIComponent(normalizedOrderId)}`
           : null;
 
     const localMessage = {

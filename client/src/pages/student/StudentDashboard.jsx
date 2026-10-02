@@ -39,7 +39,7 @@ export default function StudentDashboard() {
   React.useEffect(() => {
     const fetchShops = async () => {
       try {
-        const res = await fetch('/api/shops');
+        const res = await fetch('/api/student/shops');
         const data = await res.json();
         if (res.ok && data.shops && data.shops.length > 0) {
           setShops(data.shops);
