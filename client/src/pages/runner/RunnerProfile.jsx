@@ -6,13 +6,13 @@ import {
   MapPin, Zap, Package, X, Check, Camera, Upload, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import RunnerSidebarFix from './RunnerSidebarFix';
-import runnerData from '../../data/runner.json';
+
 import { useAuth } from '../../context/AuthContext';
 import { compressImage } from '../../utils/imageCompressor';
 
 export default function RunnerProfile() {
   const { user, token, updateUserData, refreshUser } = useAuth();
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(user?.runnerDetails?.isAvailable ?? true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const buildProfileInfo = (currentUser) => ({
