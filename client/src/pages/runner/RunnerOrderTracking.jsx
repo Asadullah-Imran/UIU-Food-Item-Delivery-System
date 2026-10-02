@@ -6,7 +6,6 @@ import {
   Navigation, Star, CornerUpLeft, Gauge,
   Utensils, Loader2, AlertCircle
 } from 'lucide-react';
-import activeDeliveryData from '../../data/activeDeliveryData.json';
 import RunnerSidebarFix from './RunnerSidebarFix';
 import { useOrderChat } from '../../context/OrderChatContext';
 import { useAuth } from '../../context/AuthContext';
@@ -109,22 +108,22 @@ export default function RunnerOrderTracking() {
   };
 
   const displayData = {
-    orderId: activeOrder?.orderNumber || activeDeliveryData.orderId,
+    orderId: activeOrder?.orderNumber || 'N/A',
     mongoId: activeOrder?._id,
     reward: activeOrder?.billing?.runnerReward || 30,
-    totalValue: activeOrder?.billing?.grandTotal || 420,
+    totalValue: activeOrder?.billing?.grandTotal || 0,
     shop: {
-      name: activeOrder?.shop?.name || activeDeliveryData.shop.name,
-      location: activeOrder?.shop?.location || activeDeliveryData.shop.location
+      name: activeOrder?.shop?.name || 'Campus Shop',
+      location: activeOrder?.shop?.location || 'UIU Campus'
     },
     customer: {
-      name: activeOrder?.student?.name || activeDeliveryData.customer.name,
-      studentId: activeOrder?.student?.universityId || activeDeliveryData.customer.studentId,
-      phone: activeOrder?.deliveryAddress?.phone || activeOrder?.student?.phone || activeDeliveryData.customer.phone,
-      rating: activeDeliveryData.customer.rating,
-      image: activeDeliveryData.customer.image
+      name: activeOrder?.student?.name || 'Student',
+      studentId: activeOrder?.student?.universityId || 'N/A',
+      phone: activeOrder?.deliveryAddress?.phone || activeOrder?.student?.phone || 'N/A',
+      rating: activeOrder?.ratings?.studentRating || 5.0,
+      image: activeOrder?.student?.avatar || `https://i.pravatar.cc/150?u=${activeOrder?.student?._id || 'student'}`
     },
-    dropoff: activeOrder?.deliveryAddress?.room || 'Academic Building Room 412'
+    dropoff: activeOrder?.deliveryAddress?.room || 'Academic Building'
   };
 
   const timelineSteps = [
@@ -204,16 +203,16 @@ export default function RunnerOrderTracking() {
           {/* Left Column - Map Area */}
           <div className="flex-1 flex flex-col gap-6">
             
-            {/* Map Container */}
+            {/* Map Container — OpenStreetMap embed (no API key needed) */}
             <div className="bg-slate-200 rounded-3xl min-h-[420px] flex-1 relative overflow-hidden shadow-inner border border-slate-300">
-              {/* Map Mock Background Image */}
-              <img 
-                src="https://images.unsplash.com/photo-1524661135-423995f22d0b?w=1200&q=80" 
-                alt="Map Background" 
-                className="w-full h-full object-cover opacity-70"
+              {/* Live map: centred on UIU Dhaka campus */}
+              <iframe
+                title="Delivery Route Map"
+                src="https://www.openstreetmap.org/export/embed.html?bbox=90.3630%2C23.7700%2C90.3800%2C23.7820&layer=mapnik&marker=23.7760%2C90.3715"
+                className="w-full h-full min-h-[420px] border-0"
+                loading="lazy"
+                allowFullScreen
               />
-              {/* Overlay tint to match UI style */}
-              <div className="absolute inset-0 bg-blue-50/40 mix-blend-multiply"></div>
 
               {/* Next Maneuver Tooltip */}
               <div className="absolute top-8 left-1/2 -translate-x-1/2 bg-[#1E293B] text-white rounded-xl p-4 shadow-xl flex items-center gap-4 w-80 z-20 border border-slate-700">
