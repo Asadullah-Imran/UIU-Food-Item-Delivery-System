@@ -35,6 +35,8 @@ export default function LoginPage() {
 
     if (result && result.success) {
       navigate(`/dashboard/${result.user.role || demo.role}`);
+    } else if (result?.isPendingApproval) {
+      navigate('/shop/pending-approval');
     } else {
       setErrorMessage(result?.error || 'Unable to sign in with demo account. Please check server connection.');
     }
@@ -61,6 +63,8 @@ export default function LoginPage() {
 
     if (result && result.success) {
       navigate(`/dashboard/${result.user.role || role}`);
+    } else if (result?.isPendingApproval) {
+      navigate('/shop/pending-approval');
     } else {
       setErrorMessage(result?.error || 'Invalid email or password');
     }
