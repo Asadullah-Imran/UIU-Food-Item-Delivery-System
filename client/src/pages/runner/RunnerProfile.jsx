@@ -15,18 +15,19 @@ export default function RunnerProfile() {
   const [isOnline, setIsOnline] = useState(true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  // Editable personal info state
-  const [personalInfo, setPersonalInfo] = useState({
-    name: user?.name || 'Tanvir Ahmed',
-    studentId: user?.universityId || '011213086',
-    dept: user?.department || 'CSE',
-    email: user?.email || 'mtonmoy213086@bscse.uiu.ac.bd',
-    phone: user?.phone || '+880 1700-000000',
-    currentSemester: user?.runnerDetails?.currentSemester || '10th Semester (Fall 26)',
-    emergencyContact: user?.runnerDetails?.emergencyContact || '+880 1912-876543 (Father)',
-    deliveryZone: user?.runnerDetails?.preferredZone || 'Main Campus & Hostels',
-    avatar: user?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80',
+  const buildProfileInfo = (currentUser) => ({
+    name: currentUser?.name || 'Runner',
+    studentId: currentUser?.universityId || 'Not provided',
+    dept: currentUser?.department || 'Not provided',
+    email: currentUser?.email || 'Not provided',
+    phone: currentUser?.phone || 'Not provided',
+    currentSemester: currentUser?.runnerDetails?.currentSemester || (currentUser?.role === 'runner' ? 'Runner Profile' : 'Not provided'),
+    emergencyContact: currentUser?.runnerDetails?.emergencyContact || currentUser?.phone || 'Not provided',
+    deliveryZone: currentUser?.runnerDetails?.preferredZone || currentUser?.deliveryRoom || 'Not provided',
+    avatar: currentUser?.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80'
   });
+
+  const [personalInfo, setPersonalInfo] = useState(buildProfileInfo(user));
 
   const [formData, setFormData] = useState({ ...personalInfo });
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -40,18 +41,8 @@ export default function RunnerProfile() {
 
   useEffect(() => {
     if (user) {
-      setPersonalInfo((prev) => ({
-        ...prev,
-        name: user.name || prev.name,
-        studentId: user.universityId || prev.studentId,
-        dept: user.department || prev.dept,
-        email: user.email || prev.email,
-        phone: user.phone || prev.phone,
-        currentSemester: user.runnerDetails?.currentSemester || prev.currentSemester,
-        emergencyContact: user.runnerDetails?.emergencyContact || prev.emergencyContact,
-        deliveryZone: user.runnerDetails?.preferredZone || prev.deliveryZone,
-        avatar: user.avatar || prev.avatar
-      }));
+      const nextProfile = buildProfileInfo(user);
+      setPersonalInfo(nextProfile);
     }
   }, [user]);
 
