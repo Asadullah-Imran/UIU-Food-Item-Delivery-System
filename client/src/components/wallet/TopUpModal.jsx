@@ -30,6 +30,12 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
 
   const handleCustomChange = (e) => {
     const val = e.target.value;
+    if (val && Number(val) > 10000) {
+      setCustomAmount('10000');
+      setAmount(10000);
+      setError('Maximum top-up limit is ৳10,000');
+      return;
+    }
     setCustomAmount(val);
     if (val && !isNaN(val)) {
       setAmount(Number(val));
@@ -41,6 +47,10 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
     e.preventDefault();
     if (amount <= 0) {
       setError('Please enter a valid amount greater than 0');
+      return;
+    }
+    if (amount > 10000) {
+      setError('Maximum top-up limit is ৳10,000');
       return;
     }
     if (!phone || phone.length < 11) {
@@ -252,7 +262,8 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
                   <input
                     type="number"
                     min="10"
-                    placeholder="Or enter custom amount..."
+                    max="10000"
+                    placeholder="Or enter custom amount (max ৳10,000)..."
                     value={customAmount}
                     onChange={handleCustomChange}
                     className="w-full pl-9 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all placeholder-slate-400"

@@ -66,6 +66,13 @@ export const topUpWallet = async (req, res) => {
       });
     }
 
+    if (topUpAmount > 10000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Maximum top-up amount is ৳10,000 per transaction'
+      });
+    }
+
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
