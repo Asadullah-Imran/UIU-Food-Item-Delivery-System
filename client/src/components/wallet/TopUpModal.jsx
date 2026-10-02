@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   X, Wallet, CheckCircle2, ArrowRight, ShieldCheck, 
-  Smartphone, CreditCard, Sparkles, AlertCircle, RefreshCw 
+  Smartphone, Sparkles, AlertCircle, RefreshCw 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -74,9 +74,7 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
     try {
       const methodName = method === 'bkash' 
         ? 'bKash In-App Simulator' 
-        : method === 'nagad' 
-        ? 'Nagad In-App Simulator' 
-        : 'UIU Student Smart Card';
+        : 'Nagad In-App Simulator';
 
       const res = await fetch('/api/wallet/topup', {
         method: 'POST',
@@ -173,8 +171,8 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
                 <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-2.5">
                   Select Payment Simulator
                 </label>
-                <div className="grid grid-cols-3 gap-3">
-                  
+                <div className="grid grid-cols-2 gap-3">
+                   
                   {/* bKash */}
                   <button
                     type="button"
@@ -210,25 +208,6 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
                     <div>
                       <p className="text-xs font-bold text-slate-800 leading-tight">Nagad</p>
                       <p className="text-[10px] text-slate-400">Simulation</p>
-                    </div>
-                  </button>
-
-                  {/* Student Smart Card */}
-                  <button
-                    type="button"
-                    onClick={() => setMethod('card')}
-                    className={`p-3 rounded-2xl border-2 text-left transition-all flex flex-col justify-between ${
-                      method === 'card' 
-                        ? 'border-blue-500 bg-blue-50/50 ring-2 ring-blue-500/20' 
-                        : 'border-slate-100 hover:border-slate-200 bg-white'
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white font-black text-xs flex items-center justify-center mb-2 shadow-sm">
-                      <CreditCard className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-slate-800 leading-tight">UIU Card</p>
-                      <p className="text-[10px] text-slate-400">Smart ID</p>
                     </div>
                   </button>
 
@@ -274,7 +253,7 @@ export default function TopUpModal({ isOpen, onClose, onSuccess }) {
               {/* Mobile / ID Input */}
               <div>
                 <label className="block text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">
-                  {method === 'card' ? 'Student ID Card Number' : 'Mobile Banking Account'}
+                  Mobile Banking Account
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
