@@ -63,6 +63,8 @@ export function AuthProvider({ children }) {
         throw new Error(data.message || 'Login failed');
       }
 
+      localStorage.removeItem('uiu_order_chats_v1');
+      localStorage.removeItem('uiu_active_delivery');
       localStorage.setItem('uiu_auth_token', data.token);
       localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
       setToken(data.token);
@@ -86,6 +88,8 @@ export function AuthProvider({ children }) {
         throw new Error(data.message || 'Registration failed');
       }
 
+      localStorage.removeItem('uiu_order_chats_v1');
+      localStorage.removeItem('uiu_active_delivery');
       localStorage.setItem('uiu_auth_token', data.token);
       localStorage.setItem('uiu_mock_user', JSON.stringify(data.user));
       setToken(data.token);
@@ -97,6 +101,8 @@ export function AuthProvider({ children }) {
   };
 
   const login = (userData) => {
+    localStorage.removeItem('uiu_order_chats_v1');
+    localStorage.removeItem('uiu_active_delivery');
     localStorage.setItem('uiu_mock_user', JSON.stringify(userData));
     setUser(userData);
   };
@@ -109,6 +115,8 @@ export function AuthProvider({ children }) {
     }
     localStorage.removeItem('uiu_mock_user');
     localStorage.removeItem('uiu_auth_token');
+    localStorage.removeItem('uiu_order_chats_v1');
+    localStorage.removeItem('uiu_active_delivery');
     setUser(null);
     setToken(null);
   };

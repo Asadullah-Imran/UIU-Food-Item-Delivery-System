@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
@@ -10,208 +10,379 @@ import {
   CircleUserRound,
   LogOut,
   Search,
-  Bell,
-  Settings,
   Pencil,
-  Camera,
-  Image,
   Info,
-  UserRoundSearch,
-  Contact,
   MapPin,
   Clock3,
-  Truck,
   SlidersHorizontal,
   CheckCircle2,
   PauseCircle,
-  Wrench,
   Star,
   Save,
-  Eye,
+  X,
+  Loader2,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  ToggleLeft,
+  ToggleRight,
+  ShieldOff,
+  ShieldCheck,
+  Sparkles,
+  Plus,
+  Trash2
 } from "lucide-react";
-import adminData from "../../data/adminData.json";
 
+// ---------------------------------------------------------------------------
+// API helpers
+// ---------------------------------------------------------------------------
+const token = () => localStorage.getItem("token");
+const authHeaders = () => ({
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token()}`
+});
+
+const API = {
+  list: (params = {}) => {
+    const qs = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => v !== undefined && v !== "" && qs.set(k, v));
+    return fetch(`/api/admin/shops?${qs}`, { headers: authHeaders() }).then(r => r.json());
+  },
+  get: (shopId) =>
+    fetch(`/api/admin/shops/${shopId}`, { headers: authHeaders() }).then(r => r.json()),
+  create: (body) =>
+    fetch(`/api/admin/shops`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    }).then(r => r.json()),
+  listOwners: () =>
+    fetch(`/api/admin/shop-owners?limit=100`, { headers: authHeaders() }).then(r => r.json()),
+  update: (shopId, body) =>
+    fetch(`/api/admin/shops/${shopId}`, {
+      method: "PUT",
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    }).then(r => r.json()),
+  status: (shopId, isOpen) =>
+    fetch(`/api/admin/shops/${shopId}/status`, {
+      method: "PATCH",
+      headers: authHeaders(),
+      body: JSON.stringify({ isOpen })
+    }).then(r => r.json()),
+  featured: (shopId) =>
+    fetch(`/api/admin/shops/${shopId}/featured`, {
+      method: "PATCH",
+      headers: authHeaders()
+    }).then(r => r.json()),
+  disable: (shopId) =>
+    fetch(`/api/admin/shops/${shopId}/disable`, {
+      method: "PATCH",
+      headers: authHeaders()
+    }).then(r => r.json()),
+  enable: (shopId) =>
+    fetch(`/api/admin/shops/${shopId}/enable`, {
+      method: "PATCH",
+      headers: authHeaders()
+    }).then(r => r.json()),
+  delete: (shopId) =>
+    fetch(`/api/admin/shops/${shopId}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    }).then(r => r.json())
+};
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 export default function AdminManageShops() {
   const navigate = useNavigate();
-  const logoInputRef = useRef(null);
-  const bannerInputRef = useRef(null);
 
-  const defaultData = adminData.manageShopsDefault || {};
+  // List state
+  const [shops, setShops]           = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
+  const [search, setSearch]         = useState("");
+  const [categoryFilter, setCategory] = useState("");
+  const [statusFilter, setStatus]   = useState("");
+  const [sortOrder, setSort]        = useState("newest");
+  const [page, setPage]             = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const LIMIT = 20;
 
-  const [shop, setShop] = useState(
-    defaultData.shop || {
-      name: "Chef's Table",
-      category: "Food & Restaurant",
-      description: "Providing nutritious and hygienic meals for students and faculty.",
-      email: "chefsTable@gmail.com",
-      phone: "+880 1712-345678",
-      building: "100 feet",
-      floor: "Ground Floor",
-      counter: "C-04",
-      prepTime: "15",
-      maxOrders: "20",
-    }
-  );
+  // Edit drawer state
+  const [editing, setEditing]         = useState(null); // shop object being edited
+  const [editForm, setEditForm]       = useState({});
+  const [saving, setSaving]           = useState(false);
+  const [actionLoading, setActionLoading] = useState(null); // shopId
 
-  const [owner, setOwner] = useState(
-    defaultData.owner || {
-      name: "Rahat Khan",
-      email: "rahat@gmail.com",
-      phone: "+880 1712-998877",
-    }
-  );
-
-  const [deliveryEnabled, setDeliveryEnabled] = useState(defaultData.deliveryEnabled ?? true);
-  const [shopStatus, setShopStatus] = useState(defaultData.shopStatus || "Active");
-  const [saved, setSaved] = useState(false);
-
-  const [logoPreview, setLogoPreview] = useState(null);
-  const [bannerPreview, setBannerPreview] = useState(null);
-
-  const [hours, setHours] = useState({
-    Monday: {
-      open: "08:00 AM",
-      close: "08:00 PM",
-      closed: false,
-    },
-    Tuesday: {
-      open: "08:00 AM",
-      close: "08:00 PM",
-      closed: false,
-    },
-    Friday: {
-      open: "12:00 AM",
-      close: "12:00 AM",
-      closed: true,
-    },
+  // Create modal state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    owner: "",
+    name: "",
+    category: "Food Court",
+    location: "UIU Food Court Counter",
+    phone: "",
+    deliveryTime: "15-20 min",
+    minOrder: 50,
+    tags: "",
+    openHour: "08:30 AM",
+    closeHour: "08:00 PM",
+    isApproved: true
   });
+  const [availableOwners, setAvailableOwners] = useState([]);
+  const [loadingOwners, setLoadingOwners] = useState(false);
+  const [creating, setCreating] = useState(false);
+
+  // Delete modal state
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+
+  // Toast
+  const [toast, setToast] = useState(null);
 
   const menuItems = [
-  {
-    label: "Dashboard",
-    icon: LayoutDashboard,
-    path: "/dashboard/admin",
-  },
-  {
-    label: "Approve Shop Owners",
-    icon: UserCheck,
-    path: "/dashboard/admin/shop-owners",
-  },
-  {
-    label: "Approve Delivery Runners",
-    icon: Bike,
-    path: "/dashboard/admin/runners",
-  },
-  {
-    label: "Manage Shops",
-    icon: Store,
-    path: "/dashboard/admin/shops",
-    active: true,
+    { label: "Dashboard",                icon: LayoutDashboard,   path: "/dashboard/admin" },
+    { label: "Approve Shop Owners",      icon: UserCheck,         path: "/dashboard/admin/shop-owners" },
+    { label: "Approve Delivery Runners", icon: Bike,              path: "/dashboard/admin/runners" },
+    { label: "Manage Shops",             icon: Store,             path: "/dashboard/admin/shops", active: true },
+    { label: "Complaint Management",     icon: TriangleAlert,     path: "/dashboard/admin/complaints" },
+    { label: "Reports & Analytics",      icon: ChartNoAxesColumn, path: "/dashboard/admin/reports" },
+    { label: "Admin Profile",            icon: CircleUserRound,   path: "/dashboard/admin/profile" },
+  ];
 
-  },
-  {
-    label: "Complaint Management",
-    icon: TriangleAlert,
-    path: "/dashboard/admin/complaints",
-  },
-  {
-    label: "Reports & Analytics",
-    icon: ChartNoAxesColumn,
-    path: "/dashboard/admin/reports",
-  },
-  {
-    label: "Admin Profile",
-    icon: CircleUserRound,
-    path: "/dashboard/admin/profile",
-  },
-];
+  // ---------------------------------------------------------------------------
+  // Fetch list
+  // ---------------------------------------------------------------------------
+  const fetchShops = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await API.list({ search, category: categoryFilter, status: statusFilter, sort: sortOrder, page, limit: LIMIT });
+      if (!result.success) throw new Error(result.message || "Failed to load shops.");
+      setShops(result.data || []);
+      setTotalPages(result.pagination?.pages ?? 1);
+      setTotalCount(result.pagination?.total ?? 0);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [search, categoryFilter, statusFilter, sortOrder, page]);
 
-  const updateShop = (field, value) => {
-    setShop((current) => ({
-      ...current,
-      [field]: value,
-    }));
-    setSaved(false);
+  useEffect(() => { fetchShops(); }, [fetchShops]);
+
+  // ---------------------------------------------------------------------------
+  // Toast
+  // ---------------------------------------------------------------------------
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3500);
   };
 
-  const updateHours = (day, field, value) => {
-    setHours((current) => ({
-      ...current,
-      [day]: {
-        ...current[day],
-        [field]: value,
-      },
-    }));
-  };
-
-  const handleImage = (event, setter) => {
-    const file = event.target.files?.[0];
-
-    if (!file) return;
-
-    setter(URL.createObjectURL(file));
-  };
-
-  const handleReset = () => {
-    setShop({
-      name: "",
-      category: "",
-      description: "",
-      email: "chefsTable@gmail.com",
-      phone: "+880",
-      building: "100 feet",
-      floor: "",
-      counter: "C-04",
-      prepTime: "15",
-      maxOrders: "20",
+  // ---------------------------------------------------------------------------
+  // Open edit drawer
+  // ---------------------------------------------------------------------------
+  const openEdit = (shop) => {
+    setEditing(shop);
+    setEditForm({
+      name:          shop.name         || "",
+      category:      shop.category     || "",
+      location:      shop.location     || "",
+      phone:         shop.phone        || "",
+      deliveryTime:  shop.deliveryTime || "",
+      minOrder:      shop.minOrder     ?? 50,
+      tags:          (shop.tags || []).join(", "),
+      openHour:      shop.openingHours?.open  || "08:30 AM",
+      closeHour:     shop.openingHours?.close || "08:00 PM"
     });
-
-    setLogoPreview(null);
-    setBannerPreview(null);
-    setDeliveryEnabled(true);
-    setShopStatus("Active");
-    setSaved(false);
   };
 
-  const handleSave = () => {
-    setSaved(true);
+  const handleEditChange = (field, value) => setEditForm(f => ({ ...f, [field]: value }));
 
-    setTimeout(() => {
-      setSaved(false);
-    }, 2500);
+  const handleSaveEdit = async () => {
+    if (!editing) return;
+    setSaving(true);
+    try {
+      const body = {
+        name:          editForm.name,
+        category:      editForm.category,
+        location:      editForm.location,
+        phone:         editForm.phone,
+        deliveryTime:  editForm.deliveryTime,
+        minOrder:      Number(editForm.minOrder) || 50,
+        tags:          editForm.tags.split(",").map(t => t.trim()).filter(Boolean),
+        openingHours:  { open: editForm.openHour, close: editForm.closeHour }
+      };
+      const result = await API.update(editing._id, body);
+      if (!result.success) throw new Error(result.message);
+      showToast(`"${editForm.name}" updated successfully.`);
+      setEditing(null);
+      fetchShops();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
+  // ---------------------------------------------------------------------------
+  // Create shop handlers
+  // ---------------------------------------------------------------------------
+  const openCreateModal = async () => {
+    setIsCreateOpen(true);
+    setLoadingOwners(true);
+    try {
+      const res = await API.listOwners();
+      if (res.success && Array.isArray(res.data)) {
+        setAvailableOwners(res.data);
+        const unlinked = res.data.find(o => !o.shop);
+        if (unlinked) {
+          setCreateForm(f => ({ ...f, owner: unlinked.userId }));
+        }
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingOwners(false);
+    }
+  };
+
+  const handleCreateChange = (field, value) => {
+    setCreateForm(f => ({ ...f, [field]: value }));
+  };
+
+  const handleCreateShop = async () => {
+    if (!createForm.owner) {
+      showToast("Please select a Shop Owner to link this shop to.", "error");
+      return;
+    }
+    if (!createForm.name.trim()) {
+      showToast("Please provide a shop name.", "error");
+      return;
+    }
+    setCreating(true);
+    try {
+      const payload = {
+        owner: createForm.owner,
+        name: createForm.name.trim(),
+        category: createForm.category,
+        location: createForm.location.trim(),
+        phone: createForm.phone.trim(),
+        deliveryTime: createForm.deliveryTime,
+        minOrder: Number(createForm.minOrder) || 50,
+        tags: createForm.tags.split(",").map(t => t.trim()).filter(Boolean),
+        openingHours: { open: createForm.openHour, close: createForm.closeHour },
+        isApproved: Boolean(createForm.isApproved)
+      };
+      const res = await API.create(payload);
+      if (!res.success) throw new Error(res.message);
+      showToast(`Shop "${res.data.name}" created and linked successfully!`);
+      setIsCreateOpen(false);
+      setCreateForm({
+        owner: "",
+        name: "",
+        category: "Food Court",
+        location: "UIU Food Court Counter",
+        phone: "",
+        deliveryTime: "15-20 min",
+        minOrder: 50,
+        tags: "",
+        openHour: "08:30 AM",
+        closeHour: "08:00 PM",
+        isApproved: true
+      });
+      fetchShops();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Delete handler
+  // ---------------------------------------------------------------------------
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const res = await API.delete(deleteTarget._id);
+      if (!res.success) throw new Error(res.message);
+      showToast(res.message);
+      setDeleteTarget(null);
+      fetchShops();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Quick actions
+  // ---------------------------------------------------------------------------
+  const quickAction = async (shopId, action, arg) => {
+    setActionLoading(shopId);
+    try {
+      let result;
+      if (action === "status")   result = await API.status(shopId, arg);
+      if (action === "featured") result = await API.featured(shopId);
+      if (action === "disable")  result = await API.disable(shopId);
+      if (action === "enable")   result = await API.enable(shopId);
+      if (!result.success) throw new Error(result.message);
+      showToast(result.message);
+      fetchShops();
+    } catch (err) {
+      showToast(err.message, "error");
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleFilterChange = (setter) => (e) => { setter(e.target.value); setPage(1); };
+
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
   return (
-    <div className="min-h-screen bg-[#faf8f5] text-[#322a24]">
+    <div className="min-h-screen bg-[#faf8f5] text-[#28211d]">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed top-20 right-8 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className={`px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-3 text-sm font-bold text-white ${
+            toast.type === "success" ? "bg-emerald-600 border-emerald-500"
+            : toast.type === "error" ? "bg-red-600 border-red-500"
+            : "bg-amber-600 border-amber-500"
+          }`}>
+            <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+            <span>{toast.message}</span>
+          </div>
+        </div>
+      )}
+
       {/* SIDEBAR */}
       <aside className="fixed left-0 top-0 z-40 h-screen w-[250px] border-r border-[#eee7df] bg-white">
         <div className="px-6 py-7">
-          <h1 className="text-xl font-bold text-orange-500">
-            UIU Food and Items
-          </h1>
-
-          <p className="mt-1 text-sm text-[#5f554e]">
-            Official Portal
-          </p>
+          <h1 className="text-xl font-bold text-orange-500">UIU Food and Items</h1>
+          <p className="mt-1 text-sm text-[#5f554e]">Official Portal</p>
         </div>
-
         <nav className="mt-3 px-3">
-          {menuItems.map(({ label, icon: Icon, path, active }) => (
+          {menuItems.map(({ label, icon: Icon, active, path }) => (
             <button
               key={label}
               type="button"
               onClick={() => path && navigate(path)}
               className={`mb-2 flex min-h-[50px] w-full items-center gap-4 rounded-lg px-4 py-3 text-left text-[15px] transition ${
-                active
-                  ? "bg-[#ff7a18] font-semibold text-[#24170d]"
-                  : "text-[#51463f] hover:bg-orange-50"
+                active ? "bg-[#ff7a18] font-semibold text-white" : "text-[#51463f] hover:bg-orange-50"
               }`}
             >
               <Icon size={20} strokeWidth={1.8} />
               <span className="max-w-[155px]">{label}</span>
             </button>
           ))}
-
           <button
             type="button"
             onClick={() => navigate("/")}
@@ -226,709 +397,627 @@ export default function AdminManageShops() {
       {/* RIGHT */}
       <div className="ml-[250px] min-h-screen">
         {/* HEADER */}
-        <header className="sticky top-0 z-30 flex h-[70px] items-center justify-between border-b border-[#eee8e2] bg-white px-8">
+        <header className="flex h-[70px] items-center justify-between border-b border-[#eee8e2] bg-white px-8">
           <div className="flex w-[380px] items-center gap-3 rounded-full bg-[#f3f0ed] px-5 py-3">
             <Search size={19} className="text-[#6f655e]" />
-
             <input
-              placeholder="Search orders, shops, users..."
-              className="w-full bg-transparent text-sm outline-none"
+              type="text"
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Search shops by name or location..."
+              className="w-full bg-transparent text-sm outline-none placeholder:text-[#96908c]"
             />
           </div>
-
-          <div className="flex items-center gap-5">
-            <Bell size={18} />
-            <Settings size={18} />
-
-            <div className="h-10 w-10 rounded-full border border-[#ded8d2] bg-white" />
+          <div className="flex items-center gap-4 border-l border-[#eee7df] pl-6">
+            <span className="text-sm font-semibold">Admin</span>
+            <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-orange-500 bg-orange-100 text-xs font-bold text-orange-600">AD</div>
           </div>
         </header>
 
         {/* MAIN */}
         <main className="px-8 py-7">
-          {/* BREADCRUMB */}
-          <div className="mb-7 text-sm text-[#6e635c]">
-            <button
-              type="button"
-              onClick={() => navigate("/admin-preview")}
-              className="hover:text-orange-600"
-            >
-              Dashboard
-            </button>
-
+          {/* Breadcrumb */}
+          <div className="mb-3 text-sm text-[#655b54]">
+            <button type="button" onClick={() => navigate("/dashboard/admin")} className="hover:text-orange-600">Dashboard</button>
             <span className="mx-2">›</span>
-
-            <span>Manage Shops</span>
-
-            <span className="mx-2">›</span>
-
-            <strong className="text-[#a8510b]">
-              Create / Edit Shop
-            </strong>
+            <span className="font-semibold text-[#ae520e]">Manage Shops</span>
           </div>
 
-          {/* TITLE */}
+          {/* Title row */}
           <section className="mb-7 flex items-start justify-between">
             <div>
-              <h1 className="text-xl font-semibold">
-                Create / Edit Shop
-              </h1>
-
-              <p className="mt-1 text-sm text-[#756a62]">
-                Register a new campus shop or update an existing shop's
-                information.
+              <div className="flex items-center gap-3">
+                <h2 className="text-[20px] font-medium text-[#3d332d]">Campus Shop Administration</h2>
+                <span className="rounded-full bg-orange-100 px-3 py-1 text-xs font-medium text-orange-500">{totalCount} Shops</span>
+              </div>
+              <p className="mt-2 max-w-[640px] text-sm leading-5 text-[#71665e]">
+                View, edit, open/close, feature, and disable campus shops. Disabling a shop preserves all historical order data.
               </p>
             </div>
-
-            <div className="flex gap-3">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
-                onClick={handleReset}
-                className="rounded-xl border border-[#9c7960] bg-white px-6 py-3 text-sm font-semibold"
+                onClick={() => fetchShops()}
+                disabled={loading}
+                className="flex items-center gap-2 rounded-xl border border-[#d1cbc5] px-4 py-3 text-xs font-semibold text-[#5c5049] hover:bg-slate-50 disabled:opacity-50"
               >
-                Reset
+                <RefreshCw size={14} className={loading ? "animate-spin" : ""} />
+                Refresh
               </button>
-
               <button
                 type="button"
-                className="rounded-xl border border-red-500 bg-white px-6 py-3 text-sm font-semibold text-red-600"
+                onClick={openCreateModal}
+                className="flex items-center gap-2 rounded-xl bg-[#ff7a18] px-4 py-3 text-xs font-semibold text-white hover:bg-orange-600 transition shadow-sm"
               >
-                Delete Shop
+                <Plus size={15} />
+                Create Shop
               </button>
             </div>
           </section>
 
-          <div className="grid grid-cols-[minmax(0,1fr)_290px] items-start gap-7">
-            {/* LEFT FORM */}
-            <div className="space-y-7">
-              {/* BRANDING */}
-              <Card>
-                <SectionTitle icon={Pencil} title="Shop Branding" />
+          {/* Filters */}
+          <div className="mb-5 flex flex-wrap items-center gap-3">
+            <select value={categoryFilter} onChange={handleFilterChange(setCategory)}
+              className="rounded-lg border border-[#e2dad2] bg-white px-4 py-2.5 text-xs font-medium outline-none">
+              <option value="">All Categories</option>
+              <option value="Food Court">Food Court</option>
+              <option value="Fast Food">Fast Food</option>
+              <option value="Cafe">Cafe</option>
+              <option value="Stationery">Stationery</option>
+              <option value="Medicine">Medicine</option>
+            </select>
+            <select value={statusFilter} onChange={handleFilterChange(setStatus)}
+              className="rounded-lg border border-[#e2dad2] bg-white px-4 py-2.5 text-xs font-medium outline-none">
+              <option value="">All Statuses</option>
+              <option value="open">Open</option>
+              <option value="closed">Closed</option>
+              <option value="featured">Featured</option>
+              <option value="approved">Approved</option>
+              <option value="unapproved">Disabled</option>
+              <option value="archived">Archived / Deleted</option>
+            </select>
+            <select value={sortOrder} onChange={handleFilterChange(setSort)}
+              className="rounded-lg border border-[#e2dad2] bg-white px-4 py-2.5 text-xs font-medium outline-none">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="name">Name A–Z</option>
+              <option value="rating">Top Rated</option>
+            </select>
+          </div>
 
-                <div className="mt-7 grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="mb-3 text-sm">Shop Logo</p>
-
-                    <input
-                      ref={logoInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg"
-                      className="hidden"
-                      onChange={(event) =>
-                        handleImage(event, setLogoPreview)
-                      }
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => logoInputRef.current?.click()}
-                      className="flex h-[190px] w-full flex-col items-center justify-center rounded-xl border-2 border-dashed border-orange-200 bg-[#fffdfb]"
-                    >
-                      {logoPreview ? (
-                        <img
-                          src={logoPreview}
-                          alt="Shop logo preview"
-                          className="h-24 w-24 rounded-full object-cover"
-                        />
-                      ) : (
-                        <>
-                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white shadow">
-                            <Camera
-                              size={28}
-                              className="text-[#917561]"
+          {/* Table */}
+          <div className="rounded-2xl border border-[#eee8e2] bg-white shadow-sm">
+            <div className="overflow-x-auto">
+              {loading ? (
+                <div className="flex items-center justify-center py-20 gap-3 text-[#9d8f86]">
+                  <Loader2 size={22} className="animate-spin" />
+                  <span className="text-sm font-medium">Loading shops...</span>
+                </div>
+              ) : error ? (
+                <div className="py-14 text-center">
+                  <p className="text-sm text-red-500 font-medium mb-3">{error}</p>
+                  <button onClick={() => fetchShops()} className="px-4 py-2 rounded-lg bg-orange-50 text-orange-600 text-xs font-bold hover:bg-orange-100">Retry</button>
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse min-w-[900px]">
+                  <thead>
+                    <tr className="bg-[#fcfaf8] text-[11px] font-semibold text-[#7c7169]">
+                      <th className="px-6 py-4">Shop</th>
+                      <th className="px-4 py-4">Category</th>
+                      <th className="px-4 py-4">Location</th>
+                      <th className="px-4 py-4">Owner</th>
+                      <th className="px-4 py-4">Status</th>
+                      <th className="px-4 py-4 text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shops.length > 0 ? shops.map((shop) => (
+                      <tr key={shop._id} className="border-t border-[#f1ece8] text-sm text-[#5d514a] hover:bg-slate-50 transition-colors">
+                        {/* Shop name + image */}
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={shop.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=80&q=80"}
+                              alt={shop.name}
+                              className="h-10 w-10 rounded-xl object-cover border border-[#e5ded8] flex-shrink-0"
                             />
+                            <div>
+                              <p className="font-bold text-[#4a403a]">{shop.name}</p>
+                              <p className="text-[11px] text-[#80756d]">⭐ {shop.rating?.toFixed(1) ?? "—"}</p>
+                            </div>
                           </div>
-
-                          <p className="mt-4 text-xs text-[#655950]">
-                            Drag & drop or{" "}
-                            <span className="text-[#a7520c]">
-                              Browse
-                            </span>
-                          </p>
-
-                          <p className="mt-1 text-[10px] text-[#867b73]">
-                            PNG, JPG up to 5MB
-                          </p>
-                        </>
-                      )}
-                    </button>
-                  </div>
-
-                  <div>
-                    <p className="mb-3 text-sm">Cover Banner</p>
-
-                    <input
-                      ref={bannerInputRef}
-                      type="file"
-                      accept="image/png,image/jpeg"
-                      className="hidden"
-                      onChange={(event) =>
-                        handleImage(event, setBannerPreview)
-                      }
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => bannerInputRef.current?.click()}
-                      className="flex h-[190px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-orange-200 bg-[#fffdfb]"
-                    >
-                      {bannerPreview ? (
-                        <img
-                          src={bannerPreview}
-                          alt="Cover preview"
-                          className="h-full w-full object-cover"
-                        />
-                      ) : (
-                        <>
-                          <div className="flex h-16 w-[190px] items-center justify-center rounded-lg bg-white shadow">
-                            <Image
-                              size={28}
-                              className="text-[#917561]"
-                            />
+                        </td>
+                        {/* Category */}
+                        <td className="px-4 py-4">
+                          <span className="inline-block rounded px-2.5 py-1 text-[10px] font-bold bg-blue-50 text-blue-600">{shop.category || "—"}</span>
+                        </td>
+                        {/* Location */}
+                        <td className="px-4 py-4">
+                          <span className="flex items-center gap-1 text-xs text-[#5d514a]">
+                            <MapPin size={12} className="text-orange-400" />{shop.location || "—"}
+                          </span>
+                        </td>
+                        {/* Owner */}
+                        <td className="px-4 py-4">
+                          <p className="font-semibold text-[#4a403a] text-xs">{shop.owner?.name || "—"}</p>
+                          <p className="text-[11px] text-[#80756d]">{shop.owner?.email || ""}</p>
+                        </td>
+                        {/* Status badges */}
+                        <td className="px-4 py-4">
+                          <div className="flex flex-col gap-1">
+                            {shop.isDeleted ? (
+                              <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-300">
+                                Archived
+                              </span>
+                            ) : (
+                              <>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${shop.isApproved ? "bg-emerald-50 text-emerald-600 border-emerald-200" : "bg-red-50 text-red-600 border-red-200"}`}>
+                                  {shop.isApproved ? "Active" : "Disabled"}
+                                </span>
+                                <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${shop.isOpen ? "bg-green-50 text-green-600 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
+                                  {shop.isOpen ? "Open" : "Closed"}
+                                </span>
+                                {shop.isFeatured && (
+                                  <span className="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                    ★ Featured
+                                  </span>
+                                )}
+                              </>
+                            )}
                           </div>
-
-                          <p className="mt-4 text-xs text-[#655950]">
-                            Drag & drop or{" "}
-                            <span className="text-[#a7520c]">
-                              Browse
-                            </span>
-                          </p>
-
-                          <p className="mt-1 text-[10px] text-[#867b73]">
-                            Recommended: 1200×400px
-                          </p>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </Card>
-
-              {/* BASIC INFO */}
-              <Card>
-                <SectionTitle icon={Info} title="Basic Information" />
-
-                <div className="mt-7 grid grid-cols-2 gap-6">
-                  <FormField label="Shop Name">
-                    <input
-                      value={shop.name}
-                      onChange={(e) =>
-                        updateShop("name", e.target.value)
-                      }
-                      placeholder="e.g. Campus Bites"
-                      className={inputStyle}
-                    />
-                  </FormField>
-
-                  <FormField label="Category">
-                    <select
-                      value={shop.category}
-                      onChange={(e) =>
-                        updateShop("category", e.target.value)
-                      }
-                      className={inputStyle}
-                    >
-                      <option value="">Select Category</option>
-                      <option>Fast Food & Snacks</option>
-                      <option>Food & Cafe</option>
-                      <option>Stationery</option>
-                      <option>Medicine</option>
-                    </select>
-                  </FormField>
-                </div>
-
-                <div className="mt-6">
-                  <FormField label="Description">
-                    <textarea
-                      value={shop.description}
-                      onChange={(e) =>
-                        updateShop("description", e.target.value)
-                      }
-                      placeholder="Describe the shop's offerings..."
-                      className={`${inputStyle} h-[110px] resize-none`}
-                    />
-                  </FormField>
-                </div>
-              </Card>
-
-              {/* OWNER */}
-              <Card>
-                <SectionTitle
-                  icon={UserRoundSearch}
-                  title="Shop Owner Assignment"
-                />
-
-                <div className="relative mt-7">
-                  <Search
-                    size={17}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-[#786d65]"
-                  />
-
-                  <input
-                    placeholder="Search approved vendors by name or email..."
-                    className={`${inputStyle} pl-11`}
-                  />
-                </div>
-
-                <div className="mt-4 flex items-center justify-between rounded-xl border border-orange-200 bg-[#f4efeb] p-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white font-semibold text-[#a8520c] shadow-sm">
-                      RK
-                    </div>
-
-                    <div>
-                      <p className="text-sm font-semibold">
-                        {owner.name}
-                      </p>
-
-                      <p className="mt-1 text-[10px] text-[#756a62]">
-                        {owner.email} • {owner.phone}
-                      </p>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="text-[#a9530c]"
-                  >
-                    <Pencil size={19} />
-                  </button>
-                </div>
-              </Card>
-
-              {/* CONTACT AND LOCATION */}
-              <div className="grid grid-cols-2 gap-7">
-                <Card>
-                  <SectionTitle icon={Contact} title="Contact Info" />
-
-                  <div className="mt-7 space-y-5">
-                    <FormField label="SHOP EMAIL" small>
-                      <input
-                        value={shop.email}
-                        onChange={(e) =>
-                          updateShop("email", e.target.value)
-                        }
-                        className={inputStyle}
-                      />
-                    </FormField>
-
-                    <FormField label="PHONE NUMBER" small>
-                      <input
-                        value={shop.phone}
-                        onChange={(e) =>
-                          updateShop("phone", e.target.value)
-                        }
-                        className={inputStyle}
-                      />
-                    </FormField>
-                  </div>
-                </Card>
-
-                <Card>
-                  <SectionTitle icon={MapPin} title="Location" />
-
-                  <div className="mt-7">
-                    <FormField label="BUILDING" small>
-                      <select
-                        value={shop.building}
-                        onChange={(e) =>
-                          updateShop("building", e.target.value)
-                        }
-                        className={inputStyle}
-                      >
-                        <option>100 feet</option>
-                        <option>Main Campus Building</option>
-                        <option>UIU Food Court</option>
-                      </select>
-                    </FormField>
-
-                    <div className="mt-5 grid grid-cols-2 gap-4">
-                      <FormField label="FLOOR" small>
-                        <input
-                          value={shop.floor}
-                          onChange={(e) =>
-                            updateShop("floor", e.target.value)
-                          }
-                          placeholder="e.g. 2nd"
-                          className={inputStyle}
-                        />
-                      </FormField>
-
-                      <FormField label="COUNTER NO." small>
-                        <input
-                          value={shop.counter}
-                          onChange={(e) =>
-                            updateShop("counter", e.target.value)
-                          }
-                          className={inputStyle}
-                        />
-                      </FormField>
-                    </div>
-                  </div>
-                </Card>
-              </div>
-
-              {/* OPERATING HOURS */}
-              <Card>
-                <div className="flex items-center justify-between">
-                  <SectionTitle icon={Clock3} title="Operating Hours" />
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setHours((current) => ({
-                        Monday: current.Monday,
-                        Tuesday: { ...current.Monday },
-                        Friday: { ...current.Monday },
-                      }));
-                    }}
-                    className="text-xs font-semibold text-[#a8520b]"
-                  >
-                    Apply to all days
-                  </button>
-                </div>
-
-                <div className="mt-7 space-y-4">
-                  {Object.entries(hours).map(([day, values]) => (
-                    <div
-                      key={day}
-                      className={`grid grid-cols-[110px_130px_25px_130px_90px] items-center gap-4 rounded-lg p-3 ${
-                        values.closed ? "bg-red-50" : ""
-                      }`}
-                    >
-                      <strong className="text-sm">{day}</strong>
-
-                      <input
-                        value={values.open}
-                        disabled={values.closed}
-                        onChange={(e) =>
-                          updateHours(day, "open", e.target.value)
-                        }
-                        className={smallInputStyle}
-                      />
-
-                      <span className="text-center text-sm text-[#756a62]">
-                        to
-                      </span>
-
-                      <input
-                        value={values.close}
-                        disabled={values.closed}
-                        onChange={(e) =>
-                          updateHours(day, "close", e.target.value)
-                        }
-                        className={smallInputStyle}
-                      />
-
-                      <label className="flex items-center gap-2 text-xs">
-                        <input
-                          type="checkbox"
-                          checked={values.closed}
-                          onChange={(e) =>
-                            updateHours(
-                              day,
-                              "closed",
-                              e.target.checked
-                            )
-                          }
-                          className="h-4 w-4 accent-red-600"
-                        />
-
-                        <span
-                          className={
-                            values.closed
-                              ? "font-semibold text-red-600"
-                              : ""
-                          }
-                        >
-                          Closed
-                        </span>
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              {/* DELIVERY */}
-              <Card>
-                <SectionTitle
-                  icon={Truck}
-                  title="Delivery & Performance"
-                />
-
-                <div className="mt-7 grid grid-cols-[160px_1fr_1fr] items-center gap-7">
-                  <div className="flex items-center justify-between rounded-xl bg-[#f3f0ed] p-4">
-                    <div>
-                      <p className="text-sm font-semibold">Delivery</p>
-                      <p className="mt-1 text-[10px] text-[#766b63]">
-                        Runner pickup enabled
-                      </p>
-                    </div>
-
-                    <Toggle
-                      enabled={deliveryEnabled}
-                      onClick={() =>
-                        setDeliveryEnabled(!deliveryEnabled)
-                      }
-                    />
-                  </div>
-
-                  <FormField label="AVG. PREP TIME (MIN)" small>
-                    <input
-                      value={shop.prepTime}
-                      onChange={(e) =>
-                        updateShop("prepTime", e.target.value)
-                      }
-                      className={inputStyle}
-                    />
-                  </FormField>
-
-                  <FormField label="MAX ORDERS / HOUR" small>
-                    <input
-                      value={shop.maxOrders}
-                      onChange={(e) =>
-                        updateShop("maxOrders", e.target.value)
-                      }
-                      className={inputStyle}
-                    />
-                  </FormField>
-                </div>
-              </Card>
-
-              {/* STATUS */}
-              <Card>
-                <SectionTitle
-                  icon={SlidersHorizontal}
-                  title="Shop Status"
-                />
-
-                <div className="mt-7 grid grid-cols-4 gap-4">
-                  <StatusButton
-                    icon={CheckCircle2}
-                    label="Active"
-                    active={shopStatus === "Active"}
-                    onClick={() => setShopStatus("Active")}
-                  />
-
-                  <StatusButton
-                    icon={PauseCircle}
-                    label="Temp. Closed"
-                    active={shopStatus === "Temp. Closed"}
-                    onClick={() => setShopStatus("Temp. Closed")}
-                  />
-
-                  <StatusButton
-                    icon={Wrench}
-                    label="Maintenance"
-                    active={shopStatus === "Maintenance"}
-                    onClick={() => setShopStatus("Maintenance")}
-                  />
-
-                  <StatusButton
-                    icon={Star}
-                    label="Featured"
-                    active={shopStatus === "Featured"}
-                    onClick={() => setShopStatus("Featured")}
-                  />
-                </div>
-              </Card>
+                        </td>
+                        {/* Actions */}
+                        <td className="px-4 py-4">
+                          <div className="flex items-center justify-center gap-1 flex-wrap">
+                            {/* Edit */}
+                            <button
+                              type="button"
+                              title="Edit"
+                              disabled={shop.isDeleted}
+                              onClick={() => openEdit(shop)}
+                              className="p-1.5 rounded-lg bg-orange-50 text-[#aa550f] hover:bg-orange-100 transition-colors disabled:opacity-30"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            {/* Toggle open/close */}
+                            <button
+                              type="button"
+                              title={shop.isOpen ? "Close Shop" : "Open Shop"}
+                              disabled={actionLoading === shop._id || !shop.isApproved || shop.isDeleted}
+                              onClick={() => quickAction(shop._id, "status", !shop.isOpen)}
+                              className="p-1.5 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-40"
+                            >
+                              {actionLoading === shop._id ? <Loader2 size={15} className="animate-spin" /> : shop.isOpen ? <ToggleRight size={15} className="text-green-600" /> : <ToggleLeft size={15} />}
+                            </button>
+                            {/* Feature toggle */}
+                            <button
+                              type="button"
+                              title={shop.isFeatured ? "Unfeature" : "Feature"}
+                              disabled={actionLoading === shop._id || shop.isDeleted}
+                              onClick={() => quickAction(shop._id, "featured")}
+                              className={`p-1.5 rounded-lg transition-colors disabled:opacity-40 ${shop.isFeatured ? "bg-amber-50 text-amber-600 hover:bg-amber-100" : "bg-slate-50 text-slate-400 hover:bg-slate-100"}`}
+                            >
+                              <Sparkles size={15} />
+                            </button>
+                            {/* Disable / Enable / Restore */}
+                            {shop.isDeleted ? (
+                              <button
+                                type="button"
+                                title="Restore / Re-enable Shop"
+                                disabled={actionLoading === shop._id}
+                                onClick={() => quickAction(shop._id, "enable")}
+                                className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-40"
+                              >
+                                <ShieldCheck size={15} />
+                              </button>
+                            ) : shop.isApproved ? (
+                              <button
+                                type="button"
+                                title="Disable Shop"
+                                disabled={actionLoading === shop._id}
+                                onClick={() => quickAction(shop._id, "disable")}
+                                className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-40"
+                              >
+                                <ShieldOff size={15} />
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                title="Re-enable Shop"
+                                disabled={actionLoading === shop._id}
+                                onClick={() => quickAction(shop._id, "enable")}
+                                className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors disabled:opacity-40"
+                              >
+                                <ShieldCheck size={15} />
+                              </button>
+                            )}
+                            {/* Delete / Archive */}
+                            {!shop.isDeleted && (
+                              <button
+                                type="button"
+                                title="Archive / Delete Shop"
+                                disabled={actionLoading === shop._id}
+                                onClick={() => setDeleteTarget(shop)}
+                                className="p-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors disabled:opacity-40"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan="6" className="py-12 text-center text-slate-400 font-medium">No shops match your filter criteria.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
             </div>
 
-            {/* RIGHT SIDEBAR */}
-            <div className="sticky top-[95px] space-y-6">
-              {/* LIVE PREVIEW */}
-              <section className="overflow-hidden rounded-2xl border border-orange-200 bg-white shadow-sm">
-                <div className="flex items-center justify-between border-b border-orange-200 bg-[#faf7f4] px-5 py-4">
-                  <strong className="text-xs tracking-wide text-[#75665c]">
-                    LIVE PREVIEW
-                  </strong>
-
-                  <div className="flex gap-1">
-                    <span className="h-3 w-3 rounded-full bg-red-300" />
-                    <span className="h-3 w-3 rounded-full bg-orange-300" />
-                    <span className="h-3 w-3 rounded-full bg-[#d7af7e]" />
-                  </div>
-                </div>
-
-                <div>
-                  <div className="h-[150px] overflow-hidden bg-[#fffdfb]">
-                    {bannerPreview && (
-                      <img
-                        src={bannerPreview}
-                        alt="Banner"
-                        className="h-full w-full object-cover"
-                      />
-                    )}
-                  </div>
-
-                  <div className="px-5 pb-5">
-                    {logoPreview && (
-                      <img
-                        src={logoPreview}
-                        alt="Logo"
-                        className="-mt-8 mb-3 h-16 w-16 rounded-full border-4 border-white object-cover shadow"
-                      />
-                    )}
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="font-bold">
-                          {shop.name || "Chef’s Table"}
-                        </h3>
-
-                        <p className="text-xs text-[#746a62]">
-                          {shop.category || "Fast Food & Snacks"}
-                        </p>
-                      </div>
-
-                      <span className="rounded bg-orange-50 px-2 py-1 text-[9px] font-semibold text-orange-600">
-                        {shopStatus === "Active"
-                          ? "OPEN"
-                          : shopStatus.toUpperCase()}
-                      </span>
-                    </div>
-
-                    <div className="mt-5 flex items-center gap-4 text-[10px]">
-                      <span>⭐ 4.8 (120+)</span>
-                      <span>◷ 15-20 min</span>
-                      <span>♧ Free</span>
-                    </div>
-
-                    <div className="mt-5 flex gap-3 rounded-xl bg-[#f5f2ef] p-4">
-                      <MapPin
-                        size={18}
-                        className="text-orange-600"
-                      />
-
-                      <div>
-                        <p className="text-xs font-semibold">
-                          {shop.building || "Main Campus Building"}
-                        </p>
-
-                        <p className="mt-1 text-[10px] text-[#776b63]">
-                          {shop.floor || "2nd Floor"}, Counter{" "}
-                          {shop.counter}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* SAVE CARD */}
-              <section className="rounded-2xl border border-orange-100 bg-white p-5 shadow-sm">
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#ff7a18] py-4 text-sm font-semibold text-white hover:bg-orange-600"
-                >
-                  <Save size={18} />
-                  Save Shop Changes
+            {/* Pagination */}
+            <div className="flex items-center justify-between border-t border-[#eee8e2] px-6 py-4 text-xs text-[#736860]">
+              <span>Showing {shops.length} of {totalCount} shops</span>
+              <div className="flex items-center gap-2">
+                <button disabled={page <= 1 || loading} onClick={() => setPage(p => p - 1)} className="p-1.5 rounded hover:bg-slate-100 disabled:opacity-40">
+                  <ChevronLeft size={16} />
                 </button>
-
-                <button
-                  type="button"
-                  className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-orange-500 py-4 text-sm font-semibold text-orange-600"
-                >
-                  <Eye size={18} />
-                  Preview Full Shop
+                <span className="font-bold px-2">Page {page} of {totalPages}</span>
+                <button disabled={page >= totalPages || loading} onClick={() => setPage(p => p + 1)} className="p-1.5 rounded hover:bg-slate-100 disabled:opacity-40">
+                  <ChevronRight size={16} />
                 </button>
-
-                {saved ? (
-                  <p className="mt-4 text-center text-[10px] font-medium text-green-600">
-                    ✓ Shop changes saved successfully
-                  </p>
-                ) : (
-                  <p className="mt-4 text-center text-[9px] text-[#867a71]">
-                    Last updated: Today at 09:42 AM by Admin
-                  </p>
-                )}
-              </section>
+              </div>
             </div>
           </div>
         </main>
       </div>
+
+      {/* EDIT DRAWER / MODAL */}
+      {editing && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <img
+                  src={editing.image || "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=80&q=80"}
+                  alt={editing.name}
+                  className="h-10 w-10 rounded-xl object-cover border"
+                />
+                <div>
+                  <h3 className="text-base font-bold text-slate-800">Edit Shop</h3>
+                  <p className="text-xs text-slate-500">ID: {String(editing._id).slice(-8).toUpperCase()}</p>
+                </div>
+              </div>
+              <button onClick={() => setEditing(null)} className="p-1.5 text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Form body */}
+            <div className="px-7 py-6 space-y-5">
+              {/* Name + Category */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Shop Name">
+                  <input value={editForm.name} onChange={e => handleEditChange("name", e.target.value)} className={inputCls} />
+                </Field>
+                <Field label="Category">
+                  <select value={editForm.category} onChange={e => handleEditChange("category", e.target.value)} className={inputCls}>
+                    <option value="">Select</option>
+                    <option>Food Court</option>
+                    <option>Fast Food & Snacks</option>
+                    <option>Food & Cafe</option>
+                    <option>Stationery</option>
+                    <option>Medicine</option>
+                  </select>
+                </Field>
+              </div>
+
+              {/* Location + Phone */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Location">
+                  <input value={editForm.location} onChange={e => handleEditChange("location", e.target.value)} className={inputCls} placeholder="e.g. UIU Food Court Counter #2" />
+                </Field>
+                <Field label="Phone">
+                  <input value={editForm.phone} onChange={e => handleEditChange("phone", e.target.value)} className={inputCls} />
+                </Field>
+              </div>
+
+              {/* Delivery time + Min order */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Delivery Time">
+                  <input value={editForm.deliveryTime} onChange={e => handleEditChange("deliveryTime", e.target.value)} className={inputCls} placeholder="e.g. 15-20 min" />
+                </Field>
+                <Field label="Min Order (৳)">
+                  <input type="number" value={editForm.minOrder} onChange={e => handleEditChange("minOrder", e.target.value)} className={inputCls} min={0} />
+                </Field>
+              </div>
+
+              {/* Opening hours */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Opening Time">
+                  <input value={editForm.openHour} onChange={e => handleEditChange("openHour", e.target.value)} className={inputCls} placeholder="08:30 AM" />
+                </Field>
+                <Field label="Closing Time">
+                  <input value={editForm.closeHour} onChange={e => handleEditChange("closeHour", e.target.value)} className={inputCls} placeholder="08:00 PM" />
+                </Field>
+              </div>
+
+              {/* Tags */}
+              <Field label="Tags (comma separated)">
+                <input value={editForm.tags} onChange={e => handleEditChange("tags", e.target.value)} className={inputCls} placeholder="e.g. halal, vegan, fast food" />
+              </Field>
+
+              {/* Info note */}
+              <div className="flex items-start gap-2 rounded-xl bg-slate-50 p-3.5 border border-slate-100 text-xs text-slate-500">
+                <Info size={14} className="text-orange-400 flex-shrink-0 mt-0.5" />
+                <span>Shop images must be updated by the Shop Owner. To change open/closed state or featured status, use the quick-action buttons on the list.</span>
+              </div>
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex gap-3 px-7 pb-7">
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={saving}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#ff7a18] py-3.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-60"
+              >
+                {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                Save Changes
+              </button>
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="flex-1 rounded-xl border-2 border-slate-200 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CREATE SHOP MODAL */}
+      {isCreateOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200">
+            {/* Header */}
+            <div className="flex items-center justify-between px-7 py-5 border-b border-slate-100">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-orange-600 font-bold">
+                  <Store size={20} />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-800">Create Campus Shop</h3>
+                  <p className="text-xs text-slate-500">Register and link a campus shop to a shop owner</p>
+                </div>
+              </div>
+              <button onClick={() => setIsCreateOpen(false)} className="p-1.5 text-slate-400 hover:text-slate-600">
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Form body */}
+            <div className="px-7 py-6 space-y-5">
+              {/* Owner selection */}
+              <Field label="Shop Owner (Required Linkage)">
+                {loadingOwners ? (
+                  <div className="flex items-center gap-2 h-11 px-4 text-xs text-slate-400 border rounded-lg bg-slate-50">
+                    <Loader2 size={16} className="animate-spin text-orange-500" />
+                    <span>Loading registered shop owners...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={createForm.owner}
+                    onChange={e => handleCreateChange("owner", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option value="">-- Select Registered Shop Owner --</option>
+                    {availableOwners.map(owner => (
+                      <option
+                        key={owner.userId}
+                        value={owner.userId}
+                        disabled={Boolean(owner.shop)}
+                      >
+                        {owner.name} ({owner.email}) {owner.shop ? `— [Already linked: ${owner.shop.name}]` : "— Available"}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </Field>
+
+              {/* Name + Category */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Shop Name *">
+                  <input
+                    value={createForm.name}
+                    onChange={e => handleCreateChange("name", e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. UIU Cafe & Bakery"
+                  />
+                </Field>
+                <Field label="Category">
+                  <select
+                    value={createForm.category}
+                    onChange={e => handleCreateChange("category", e.target.value)}
+                    className={inputCls}
+                  >
+                    <option>Food Court</option>
+                    <option>Fast Food & Snacks</option>
+                    <option>Food & Cafe</option>
+                    <option>Stationery</option>
+                    <option>Medicine</option>
+                  </select>
+                </Field>
+              </div>
+
+              {/* Location + Phone */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Campus Location">
+                  <input
+                    value={createForm.location}
+                    onChange={e => handleCreateChange("location", e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. UIU Food Court Counter #3"
+                  />
+                </Field>
+                <Field label="Contact Phone">
+                  <input
+                    value={createForm.phone}
+                    onChange={e => handleCreateChange("phone", e.target.value)}
+                    className={inputCls}
+                    placeholder="e.g. +880 1819-000000"
+                  />
+                </Field>
+              </div>
+
+              {/* Delivery time + Min order */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Est. Delivery Time">
+                  <input
+                    value={createForm.deliveryTime}
+                    onChange={e => handleCreateChange("deliveryTime", e.target.value)}
+                    className={inputCls}
+                    placeholder="15-20 min"
+                  />
+                </Field>
+                <Field label="Min Order (৳)">
+                  <input
+                    type="number"
+                    value={createForm.minOrder}
+                    onChange={e => handleCreateChange("minOrder", e.target.value)}
+                    className={inputCls}
+                    min={0}
+                  />
+                </Field>
+              </div>
+
+              {/* Opening hours */}
+              <div className="grid grid-cols-2 gap-5">
+                <Field label="Opening Time">
+                  <input
+                    value={createForm.openHour}
+                    onChange={e => handleCreateChange("openHour", e.target.value)}
+                    className={inputCls}
+                    placeholder="08:30 AM"
+                  />
+                </Field>
+                <Field label="Closing Time">
+                  <input
+                    value={createForm.closeHour}
+                    onChange={e => handleCreateChange("closeHour", e.target.value)}
+                    className={inputCls}
+                    placeholder="08:00 PM"
+                  />
+                </Field>
+              </div>
+
+              {/* Tags */}
+              <Field label="Tags (comma separated)">
+                <input
+                  value={createForm.tags}
+                  onChange={e => handleCreateChange("tags", e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. halal, coffee, breakfast, snacks"
+                />
+              </Field>
+
+              {/* Approval status check */}
+              <label className="flex items-center gap-2 cursor-pointer pt-1">
+                <input
+                  type="checkbox"
+                  checked={createForm.isApproved}
+                  onChange={e => handleCreateChange("isApproved", e.target.checked)}
+                  className="rounded text-orange-500 focus:ring-orange-400 h-4 w-4"
+                />
+                <span className="text-xs font-semibold text-slate-700">Set shop status as Approved & Active immediately</span>
+              </label>
+            </div>
+
+            {/* Footer actions */}
+            <div className="flex gap-3 px-7 pb-7">
+              <button
+                type="button"
+                onClick={handleCreateShop}
+                disabled={creating || loadingOwners}
+                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-[#ff7a18] py-3.5 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-60"
+              >
+                {creating ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />}
+                Create Shop
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+                className="flex-1 rounded-xl border-2 border-slate-200 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ARCHIVE / DELETE CONFIRMATION MODAL */}
+      {deleteTarget && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200">
+            <div className="flex items-center gap-3 text-rose-600 mb-3">
+              <div className="p-2.5 rounded-full bg-rose-50 border border-rose-100">
+                <Trash2 size={22} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Archive / Delete Shop</h3>
+                <p className="text-xs text-slate-500">Historical records protected (Option B)</p>
+              </div>
+            </div>
+            <p className="text-sm text-slate-600 mb-3">
+              Are you sure you want to archive <strong>{deleteTarget.name}</strong>?
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 text-xs text-amber-900 mb-5 leading-relaxed space-y-1">
+              <p className="font-bold text-amber-800 flex items-center gap-1.5">
+                <span>🛡️</span> Data Protection Policy Active
+              </p>
+              <p>• All past student orders, delivery logs, and platform financial transactions remain 100% intact.</p>
+              <p>• Active catalog items will be disabled and the shop will be hidden from customer ordering.</p>
+            </div>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setDeleteTarget(null)}
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 transition flex items-center gap-2 disabled:opacity-50"
+              >
+                {deleting && <Loader2 size={14} className="animate-spin" />}
+                Confirm Archive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-const inputStyle =
-  "h-12 w-full rounded-lg border border-orange-200 bg-white px-4 text-sm text-[#51473f] outline-none transition placeholder:text-[#a09892] focus:border-orange-400";
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+const inputCls = "h-11 w-full rounded-lg border border-orange-200 bg-white px-4 text-sm text-[#51473f] outline-none transition placeholder:text-[#a09892] focus:border-orange-400";
 
-const smallInputStyle =
-  "h-10 w-full rounded-lg border border-orange-200 bg-white px-3 text-sm outline-none disabled:bg-[#f8f5f2] disabled:text-[#bbb2ab]";
-
-function Card({ children }) {
-  return (
-    <section className="rounded-2xl border border-[#eee8e2] bg-white p-7 shadow-sm">
-      {children}
-    </section>
-  );
-}
-
-function SectionTitle({ icon: Icon, title }) {
-  return (
-    <div className="flex items-center gap-2">
-      <Icon size={18} className="text-[#a8520b]" />
-      <h2 className="text-sm font-medium">{title}</h2>
-    </div>
-  );
-}
-
-function FormField({ label, children, small = false }) {
+function Field({ label, children }) {
   return (
     <label className="block">
-      <span
-        className={`mb-2 block font-medium ${
-          small
-            ? "text-[10px] text-[#685d55]"
-            : "text-sm text-[#554b44]"
-        }`}
-      >
-        {label}
-      </span>
-
+      <span className="mb-1.5 block text-xs font-semibold text-[#685d55]">{label}</span>
       {children}
     </label>
-  );
-}
-
-function Toggle({ enabled, onClick }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`relative h-7 w-12 rounded-full transition ${
-        enabled ? "bg-[#a85308]" : "bg-[#d8d2cd]"
-      }`}
-    >
-      <span
-        className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${
-          enabled ? "left-6" : "left-1"
-        }`}
-      />
-    </button>
-  );
-}
-
-function StatusButton({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex min-h-[95px] flex-col items-center justify-center gap-2 rounded-xl border-2 text-xs font-semibold transition ${
-        active
-          ? "border-[#b45a0b] bg-orange-50 text-[#a6530b]"
-          : "border-[#e1d5ca] bg-white text-[#685e56] hover:border-orange-300"
-      }`}
-    >
-      <Icon size={19} />
-      {label}
-    </button>
   );
 }

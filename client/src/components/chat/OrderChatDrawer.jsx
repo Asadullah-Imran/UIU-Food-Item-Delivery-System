@@ -31,18 +31,76 @@ export default function OrderChatDrawer() {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
 
-  const activeOrder = getOrderById(activeOrderId) || orderChats[0];
+  const orderMatchesCurrentUser = (order) => {
+    if (!user) return true;
+    const currentUserId = String(user._id || user.id || '').trim();
+    const studentId = String(order?.student?.id || order?.student?._id || order?.student || '').trim();
+    const runnerId = String(order?.runner?.id || order?.runner?._id || order?.runner || '').trim();
+    const shopId = String(order?.shop?.id || order?.shop?._id || order?.shop || '').trim();
+
+    if (user.role === 'student') {
+      return !currentUserId || studentId === currentUserId || order?.student?.name === user.name;
+    }
+
+    if (user.role === 'runner') {
+      if (!order?.runner) return false;
+      const isAcceptedByRunner = ['READY_FOR_PICKUP', 'HANDED_OVER', 'ON_THE_WAY', 'DELIVERED'].includes(order?.status);
+      if (!isAcceptedByRunner) return false;
+      if (currentUserId) return runnerId === currentUserId;
+      return order?.runner?.name === user.name;
+    }
+
+    if (user.role === 'shop') {
+      return true;
+    }
+    return true;
+  };
+
+  const visibleOrder = orderChats.find(order => orderMatchesCurrentUser(order)) || orderChats[0];
+  const activeOrder = getOrderById(activeOrderId) || visibleOrder;
   const typingInfo = typingParticipants[activeOrder?.orderId];
+  const hasAssignedRunner = Boolean(activeOrder?.runner && activeOrder.runner.name && activeOrder.runner.name !== 'Not Assigned' && activeOrder.runner.name !== 'N/A');
+
+  useEffect(() => {
+    if (currentRole === 'student' && !hasAssignedRunner && activeTabFilter === 'runner') {
+      setActiveTabFilter('shop');
+    }
+  }, [currentRole, hasAssignedRunner, activeTabFilter, setActiveTabFilter]);
 
   // Role details mapping
   const currentUserName = user?.name || (currentRole === 'runner' ? 'Tanvir Ahmed' : currentRole === 'shop' ? "Chef's Table" : 'Rafiqul Haque');
   const currentUserAvatar = user?.avatar || (currentRole === 'runner' ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80' : currentRole === 'shop' ? "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=100&q=80" : 'https://i.pravatar.cc/150?u=student');
 
   // Filter messages if specific tab chosen
+  const activeViewRole = currentRole === 'runner' && activeTabFilter === 'runner' ? 'student' : activeTabFilter;
   const displayedMessages = (activeOrder?.messages || []).filter(msg => {
-    if (activeTabFilter === 'all') return true;
-    if (activeTabFilter === 'shop') return msg.senderRole === 'shop' || msg.target === 'shop';
-    if (activeTabFilter === 'runner') return msg.senderRole === 'runner' || msg.target === 'runner';
+    const sender = msg.senderRole;
+    const target = msg.target || 'all';
+
+    if (currentRole === 'shop') {
+      const isShopMessage = sender === 'shop' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'shop' || target === 'all');
+      return isShopMessage || isStudentMessage;
+    }
+
+    if (currentRole === 'runner') {
+      const isRunnerMessage = sender === 'runner' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'runner' || target === 'all');
+      return isRunnerMessage || isStudentMessage;
+    }
+
+    if (activeViewRole === 'shop') {
+      const isShopMessage = sender === 'shop' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'shop' || target === 'all');
+      return isShopMessage || isStudentMessage;
+    }
+
+    if (activeViewRole === 'runner') {
+      const isRunnerMessage = sender === 'runner' && (target === 'student' || target === 'all');
+      const isStudentMessage = sender === 'student' && (target === 'runner' || target === 'all');
+      return isRunnerMessage || isStudentMessage;
+    }
+
     return true;
   });
 
@@ -216,38 +274,46 @@ export default function OrderChatDrawer() {
 
         {/* Stakeholder Channel Filter Tabs */}
         <div className="px-4 py-2.5 bg-slate-100/90 border-b border-slate-200 flex items-center gap-2 overflow-x-auto no-scrollbar">
-          <button
-            onClick={() => setActiveTabFilter('all')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all whitespace-nowrap ${
-              activeTabFilter === 'all'
-                ? 'bg-[#9B5110] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            👥 All Order Activity
-          </button>
-          <button
-            onClick={() => setActiveTabFilter('shop')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              activeTabFilter === 'shop'
-                ? 'bg-[#9B5110] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            <Store className="w-3.5 h-3.5 text-orange-500" />
-            {activeOrder.shop.name}
-          </button>
-          <button
-            onClick={() => setActiveTabFilter('runner')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              activeTabFilter === 'runner'
-                ? 'bg-[#9B5110] text-white shadow-xs'
-                : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
-            }`}
-          >
-            <Bike className="w-3.5 h-3.5 text-green-600" />
-            Runner: {activeOrder.runner.name}
-          </button>
+          {currentRole === 'student' ? (
+            <>
+              <button
+                onClick={() => setActiveTabFilter('shop')}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                  activeTabFilter === 'shop'
+                    ? 'bg-[#9B5110] text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+                }`}
+              >
+                <Store className="w-3.5 h-3.5 text-orange-500" />
+                {activeOrder.shop.name}
+              </button>
+              {hasAssignedRunner && (
+                <button
+                  onClick={() => setActiveTabFilter('runner')}
+                  className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                    activeTabFilter === 'runner'
+                      ? 'bg-[#9B5110] text-white shadow-xs'
+                      : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+                  }`}
+                >
+                  <Bike className="w-3.5 h-3.5 text-green-600" />
+                  Runner: {activeOrder.runner.name}
+                </button>
+              )}
+            </>
+          ) : (
+            <button
+              onClick={() => setActiveTabFilter('student')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                activeTabFilter === 'student'
+                  ? 'bg-[#9B5110] text-white shadow-xs'
+                  : 'bg-white text-slate-600 hover:bg-slate-200 border border-slate-200'
+              }`}
+            >
+              <User className="w-3.5 h-3.5 text-blue-600" />
+              Ordering Student: {activeOrder.student.name}
+            </button>
+          )}
         </div>
 
         {/* Messages Stream */}
@@ -257,9 +323,9 @@ export default function OrderChatDrawer() {
           <div className="p-3 rounded-2xl bg-orange-50/80 border border-orange-200/80 flex items-start gap-2.5 text-xs text-[#9B5110]">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-orange-600" />
             <div>
-              <p className="font-bold">Order-Scoped Communication</p>
+              <p className="font-bold">Direct Order Chat</p>
               <p className="text-[11px] text-slate-600 mt-0.5">
-                Messages in this chat are visible to the student, kitchen shop, and delivery runner for Order <strong>{activeOrder.orderId}</strong>.
+                You are chatting directly with {currentRole === 'student' ? (activeViewRole === 'shop' ? activeOrder.shop.name : activeOrder.runner.name) : activeOrder.student.name} for Order <strong>{activeOrder.orderId}</strong>.
               </p>
             </div>
           </div>

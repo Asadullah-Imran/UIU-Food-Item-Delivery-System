@@ -68,12 +68,20 @@ const shopSchema = new mongoose.Schema(
     },
     isApproved: {
       type: Boolean,
-      default: true
+      default: false
     },
     tags: [String],
     openingHours: {
       open: { type: String, default: '08:30 AM' },
       close: { type: String, default: '08:00 PM' }
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false
+    },
+    deletedAt: {
+      type: Date,
+      default: null
     }
   },
   {

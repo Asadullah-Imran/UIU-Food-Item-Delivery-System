@@ -119,8 +119,29 @@ export default function ShopReadyForPickup() {
     return dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
-  const handleConfirmHandover = () => {
-    setIsHandedOver(true);
+  const handleConfirmHandover = async () => {
+    try {
+      if (!activeOrder || !activeOrder.runner) {
+        setError('Cannot handover without a runner assigned.');
+        return;
+      }
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch(`/api/shops/orders/${activeOrder._id}/handover`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to handover order');
+      }
+      setIsHandedOver(true);
+    } catch (err) {
+      console.error('Handover error:', err);
+      setError(err.message || 'Could not complete handover');
+    }
   };
 
   // ── LOADING STATE ───────────────────────────────────────────────────────────
@@ -376,8 +397,9 @@ export default function ShopReadyForPickup() {
                   <div className="w-full flex flex-wrap items-center gap-3">
                     <button
                       type="button"
+                      disabled={!activeOrder?.runner}
                       onClick={handleConfirmHandover}
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-6 rounded-2xl transition-all shadow-md shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-xs"
+                      className={`flex-1 font-bold py-3 px-6 rounded-2xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-95 text-xs ${activeOrder?.runner ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-emerald-600/20' : 'bg-slate-300 text-slate-500 cursor-not-allowed shadow-none'}`}
                     >
                       <CheckCircle2 className="w-4 h-4" />
                       Confirm Package Handover

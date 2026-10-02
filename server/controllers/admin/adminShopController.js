@@ -1,0 +1,459 @@
+import mongoose from 'mongoose';
+import Shop from '../../models/Shop.js';
+import User from '../../models/User.js';
+import MenuItem from '../../models/MenuItem.js';
+
+// ---------------------------------------------------------------------------
+// Allowed sort keys (prevent arbitrary MongoDB injection)
+// ---------------------------------------------------------------------------
+const ALLOWED_SORT = {
+  newest:  { createdAt: -1 },
+  oldest:  { createdAt:  1 },
+  name:    { name:       1 },
+  rating:  { rating:    -1 }
+};
+
+// ---------------------------------------------------------------------------
+// Allowed mutable fields for PUT (allowlist — never spread req.body)
+// ---------------------------------------------------------------------------
+const MUTABLE_FIELDS = [
+  'name', 'category', 'location', 'phone', 'image', 'banner',
+  'tags', 'openingHours', 'deliveryTime', 'minOrder', 'isOpen'
+];
+
+// ---------------------------------------------------------------------------
+// GET /api/admin/shops
+// Query: search, category, status (open|closed|featured|unapproved), sort, page, limit
+// ---------------------------------------------------------------------------
+export const listShops = async (req, res) => {
+  try {
+    const {
+      search,
+      category,
+      status,
+      sort  = 'newest',
+      page  = 1,
+      limit = 20
+    } = req.query;
+
+    const pageNum  = Math.max(1, parseInt(page,  10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+
+    const filter = {};
+
+    if (search && typeof search === 'string' && search.trim()) {
+      filter.$or = [
+        { name:     { $regex: search.trim(), $options: 'i' } },
+        { location: { $regex: search.trim(), $options: 'i' } }
+      ];
+    }
+
+    if (category && typeof category === 'string' && category.trim()) {
+      filter.category = { $regex: category.trim(), $options: 'i' };
+    }
+
+    if (status) {
+      if (status === 'open')       filter.isOpen     = true;
+      if (status === 'closed')     filter.isOpen     = false;
+      if (status === 'featured')   filter.isFeatured = true;
+      if (status === 'unapproved') filter.isApproved = false;
+      if (status === 'approved')   filter.isApproved = true;
+      if (status === 'archived' || status === 'deleted') filter.isDeleted = true;
+    }
+
+    // Default: hide soft-deleted/archived shops unless explicitly filtering for them
+    if (status !== 'archived' && status !== 'deleted') {
+      filter.isDeleted = { $ne: true };
+    }
+
+    const sortField = ALLOWED_SORT[sort] || ALLOWED_SORT.newest;
+
+    const total = await Shop.countDocuments(filter);
+    const shops = await Shop.find(filter)
+      .select('-walletBalance -totalEarnings')
+      .populate('owner', 'name email phone status isApproved')
+      .sort(sortField)
+      .skip((pageNum - 1) * limitNum)
+      .limit(limitNum)
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      data: shops,
+      pagination: {
+        total,
+        page:  pageNum,
+        limit: limitNum,
+        pages: Math.ceil(total / limitNum)
+      }
+    });
+  } catch (err) {
+    console.error('[listShops]', err);
+    return res.status(500).json({ success: false, message: 'Server error fetching shops.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// GET /api/admin/shops/:shopId
+// ---------------------------------------------------------------------------
+export const getShop = async (req, res) => {
+  try {
+    const shop = await Shop.findById(req.params.shopId)
+      .populate('owner', 'name email phone status isApproved universityId')
+      .lean();
+
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Shop not found.' });
+    }
+
+    return res.status(200).json({ success: true, data: shop });
+  } catch (err) {
+    console.error('[getShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error fetching shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/shops
+// Create shop with valid owner linkage
+// ---------------------------------------------------------------------------
+export const createShop = async (req, res) => {
+  try {
+    const {
+      owner,
+      ownerId,
+      name,
+      category,
+      location,
+      phone,
+      image,
+      banner,
+      deliveryTime,
+      minOrder,
+      tags,
+      openingHours,
+      isOpen,
+      isFeatured,
+      isApproved
+    } = req.body;
+
+    const targetOwnerId = owner || ownerId;
+
+    if (!targetOwnerId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Owner ID is required to link the shop to a registered Shop Owner.'
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(targetOwnerId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid owner ID format.'
+      });
+    }
+
+    if (!name || typeof name !== 'string' || !name.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shop name is required.'
+      });
+    }
+
+    // 1. Verify owner exists and has 'shop' role
+    const ownerUser = await User.findById(targetOwnerId);
+    if (!ownerUser) {
+      return res.status(404).json({
+        success: false,
+        message: 'Target owner user not found.'
+      });
+    }
+
+    if (ownerUser.role !== 'shop') {
+      return res.status(400).json({
+        success: false,
+        message: `User '${ownerUser.name}' has role '${ownerUser.role}', not 'shop'. Shops can only be owned by shop accounts.`
+      });
+    }
+
+    // 2. Verify owner does not already own an active shop (enforce 1:1 shop-owner relationship)
+    const existingShop = await Shop.findOne({ owner: targetOwnerId, isDeleted: { $ne: true } });
+    if (existingShop) {
+      return res.status(409).json({
+        success: false,
+        message: `Owner '${ownerUser.name}' is already linked to shop '${existingShop.name}'.`
+      });
+    }
+
+    // Determine initial approval status
+    const approvedState = typeof isApproved === 'boolean' ? isApproved : ownerUser.isApproved;
+
+    const shopData = {
+      owner: ownerUser._id,
+      name: name.trim(),
+      category: typeof category === 'string' && category.trim() ? category.trim() : 'Food Court',
+      location: typeof location === 'string' && location.trim() ? location.trim() : 'UIU Food Court Counter',
+      phone: typeof phone === 'string' && phone.trim() ? phone.trim() : (ownerUser.phone || '+880 1819-876543'),
+      deliveryTime: typeof deliveryTime === 'string' && deliveryTime.trim() ? deliveryTime.trim() : '15-20 min',
+      minOrder: typeof minOrder === 'number' ? Math.max(0, minOrder) : 50,
+      isOpen: typeof isOpen === 'boolean' ? isOpen : true,
+      isFeatured: typeof isFeatured === 'boolean' ? isFeatured : false,
+      isApproved: approvedState
+    };
+
+    if (image && typeof image === 'string' && image.trim()) {
+      shopData.image = image.trim();
+    }
+    if (banner && typeof banner === 'string' && banner.trim()) {
+      shopData.banner = banner.trim();
+    }
+    if (Array.isArray(tags)) {
+      shopData.tags = tags.map(t => String(t).trim()).filter(Boolean);
+    }
+    if (openingHours && typeof openingHours === 'object') {
+      shopData.openingHours = {
+        open: openingHours.open || '08:30 AM',
+        close: openingHours.close || '08:00 PM'
+      };
+    }
+
+    const shop = await Shop.create(shopData);
+
+    // Sync owner's shopDetails
+    ownerUser.shopDetails = {
+      shopName: shop.name,
+      campusLocation: shop.location,
+      tradeLicense: ownerUser.shopDetails?.tradeLicense || ''
+    };
+    await ownerUser.save();
+
+    const populatedShop = await Shop.findById(shop._id)
+      .populate('owner', 'name email phone status isApproved')
+      .lean();
+
+    return res.status(201).json({
+      success: true,
+      message: `Shop '${shop.name}' created and linked to owner '${ownerUser.name}' successfully.`,
+      data: populatedShop
+    });
+  } catch (err) {
+    console.error('[createShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error creating shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PUT /api/admin/shops/:shopId
+// Edit shop profile / operational data
+// ---------------------------------------------------------------------------
+export const updateShop = async (req, res) => {
+  try {
+    const shop = await Shop.findById(req.params.shopId);
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Shop not found.' });
+    }
+
+    // Apply only allowed fields
+    MUTABLE_FIELDS.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        shop[field] = req.body[field];
+      }
+    });
+
+    await shop.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' has been updated.`,
+      data: shop
+    });
+  } catch (err) {
+    console.error('[updateShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error updating shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PATCH /api/admin/shops/:shopId/status
+// Set isOpen: true|false
+// ---------------------------------------------------------------------------
+export const setShopOpenStatus = async (req, res) => {
+  try {
+    const { isOpen } = req.body;
+    if (typeof isOpen !== 'boolean') {
+      return res.status(400).json({ success: false, message: '`isOpen` must be a boolean.' });
+    }
+
+    const shop = await Shop.findById(req.params.shopId);
+    if (!shop) return res.status(404).json({ success: false, message: 'Shop not found.' });
+
+    shop.isOpen = isOpen;
+    await shop.save();
+
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' is now ${isOpen ? 'open' : 'closed'}.`,
+      data: { shopId: shop._id, isOpen: shop.isOpen }
+    });
+  } catch (err) {
+    console.error('[setShopOpenStatus]', err);
+    return res.status(500).json({ success: false, message: 'Server error updating shop status.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PATCH /api/admin/shops/:shopId/featured
+// Toggle isFeatured
+// ---------------------------------------------------------------------------
+export const toggleFeatured = async (req, res) => {
+  try {
+    const shop = await Shop.findById(req.params.shopId);
+    if (!shop) return res.status(404).json({ success: false, message: 'Shop not found.' });
+
+    shop.isFeatured = !shop.isFeatured;
+    await shop.save();
+
+    const action = shop.isFeatured ? 'featured' : 'unfeatured';
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' has been ${action}.`,
+      data: { shopId: shop._id, isFeatured: shop.isFeatured }
+    });
+  } catch (err) {
+    console.error('[toggleFeatured]', err);
+    return res.status(500).json({ success: false, message: 'Server error updating featured state.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PATCH /api/admin/shops/:shopId/disable
+// Soft-disable: sets isApproved=false, isOpen=false
+// Preserves all historical order/transaction data.
+// ---------------------------------------------------------------------------
+export const disableShop = async (req, res) => {
+  try {
+    const shop = await Shop.findById(req.params.shopId);
+    if (!shop) return res.status(404).json({ success: false, message: 'Shop not found.' });
+
+    if (!shop.isApproved) {
+      return res.status(409).json({ success: false, message: 'Shop is already disabled.' });
+    }
+
+    shop.isApproved = false;
+    shop.isOpen     = false;
+    await shop.save();
+
+    // Also reflect on owner account
+    await User.updateOne(
+      { _id: shop.owner },
+      { $set: { isApproved: false, status: 'suspended' } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' has been disabled. Historical data preserved.`,
+      data: { shopId: shop._id, isApproved: false, isOpen: false }
+    });
+  } catch (err) {
+    console.error('[disableShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error disabling shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// PATCH /api/admin/shops/:shopId/enable
+// Re-enable a disabled/archived shop: sets isApproved=true, isDeleted=false, syncs owner status
+// ---------------------------------------------------------------------------
+export const enableShop = async (req, res) => {
+  try {
+    const shop = await Shop.findById(req.params.shopId);
+    if (!shop) return res.status(404).json({ success: false, message: 'Shop not found.' });
+
+    if (shop.isApproved && !shop.isDeleted) {
+      return res.status(409).json({ success: false, message: 'Shop is already active.' });
+    }
+
+    shop.isApproved = true;
+    shop.isDeleted  = false;
+    shop.deletedAt  = null;
+    await shop.save();
+
+    await User.updateOne(
+      { _id: shop.owner },
+      { $set: { isApproved: true, status: 'active' } }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' has been re-enabled and restored.`,
+      data: { shopId: shop._id, isApproved: true, isDeleted: false }
+    });
+  } catch (err) {
+    console.error('[enableShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error enabling shop.' });
+  }
+};
+
+// ---------------------------------------------------------------------------
+// DELETE /api/admin/shops/:shopId
+// Option B: Soft-Archive / isDeleted Data Policy.
+// Protects all historical orders, transactions, reviews, and analytics.
+// Sets isDeleted=true, deletedAt=now, isOpen=false, isApproved=false.
+// Soft-disables menu items and suspends the owner's active operations.
+// ---------------------------------------------------------------------------
+export const deleteShop = async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(shopId)) {
+      return res.status(400).json({ success: false, message: 'Invalid shop ID format.' });
+    }
+
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return res.status(404).json({ success: false, message: 'Shop not found.' });
+    }
+
+    if (shop.isDeleted) {
+      return res.status(409).json({
+        success: false,
+        message: `Shop '${shop.name}' is already archived / deleted.`
+      });
+    }
+
+    // Apply soft-delete & archive
+    shop.isDeleted = true;
+    shop.deletedAt = new Date();
+    shop.isOpen = false;
+    shop.isApproved = false;
+    await shop.save();
+
+    // Mark menu items as unavailable
+    await MenuItem.updateMany(
+      { shop: shop._id },
+      { $set: { isAvailable: false } }
+    );
+
+    // Suspend owner
+    if (shop.owner) {
+      await User.updateOne(
+        { _id: shop.owner },
+        { $set: { isApproved: false, status: 'suspended' } }
+      );
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Shop '${shop.name}' archived successfully. Historical orders and financial records are preserved.`,
+      data: {
+        shopId: shop._id,
+        name: shop.name,
+        isDeleted: true,
+        deletedAt: shop.deletedAt
+      }
+    });
+  } catch (err) {
+    console.error('[deleteShop]', err);
+    return res.status(500).json({ success: false, message: 'Server error archiving shop.' });
+  }
+};

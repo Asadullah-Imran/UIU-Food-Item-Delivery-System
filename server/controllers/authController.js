@@ -44,10 +44,14 @@ export const register = async (req, res) => {
     let isApproved = true;
     let status = 'active';
 
-    if (role === 'runner' || role === 'shop') {
-      // In production or demo, shops and runners can be active or pending approval
-      isApproved = true; // Set active for seamless demo/testing or configurable
-      status = 'active';
+    if (role === 'shop') {
+      // Shop Owner applications require Admin review & approval
+      isApproved = false;
+      status = 'pending';
+    } else if (role === 'runner') {
+      // Runner applications require Admin review & approval
+      isApproved = false;
+      status = 'pending';
     }
 
     const userData = {
@@ -82,7 +86,7 @@ export const register = async (req, res) => {
 
     const user = await User.create(userData);
 
-    // If shop owner, also create a linked Shop record
+    // If shop owner, also create a linked Shop record in pending approval state
     if (role === 'shop') {
       try {
         await Shop.create({
@@ -91,7 +95,7 @@ export const register = async (req, res) => {
           category: 'Food Court',
           location: campusLocation?.trim() || 'UIU Food Court Counter',
           phone: phone?.trim() || '',
-          isApproved: true
+          isApproved: false
         });
       } catch (shopErr) {
         await User.findByIdAndDelete(user._id);
@@ -103,7 +107,9 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: role === 'shop'
+        ? 'Shop application submitted successfully and is pending admin approval'
+        : 'User registered successfully',
       token,
       user: {
         id: user._id,
@@ -222,7 +228,8 @@ export const getMe = async (req, res) => {
 // @access  Private
 export const updateProfile = async (req, res) => {
   try {
-    const { name, phone, avatar, deliveryRoom, runnerDetails } = req.body;
+    const { name, phone, deliveryRoom, runnerDetails } = req.body;
+    let avatar = req.body.avatar;
 
     const user = await User.findById(req.user.id);
 
@@ -233,13 +240,19 @@ export const updateProfile = async (req, res) => {
       });
     }
 
+    if (req.file) {
+      const uploadResult = await uploadImageToCloudinary(req.file.buffer);
+      avatar = uploadResult.secure_url;
+    }
+
     if (name) user.name = name;
     if (phone) user.phone = phone;
     if (avatar) user.avatar = avatar;
     if (deliveryRoom) user.deliveryRoom = deliveryRoom;
     if (req.body.department) user.department = req.body.department;
     if (runnerDetails) {
-      user.runnerDetails = { ...user.runnerDetails, ...runnerDetails };
+      const parsedRunnerDetails = typeof runnerDetails === 'string' ? JSON.parse(runnerDetails) : runnerDetails;
+      user.runnerDetails = { ...user.runnerDetails, ...parsedRunnerDetails };
     }
 
     await user.save();
@@ -310,26 +323,29 @@ export const becomeRunner = async (req, res) => {
       });
     }
 
+    // Runner applications require Admin review — set to pending, not auto-activated
     user.isRunner = true;
+    user.status = 'pending';
+    user.isApproved = false;
     user.runnerDetails = {
       vehicleType: vehicleType || 'Walking/Bicycle',
       rating: user.runnerDetails?.rating || 5.0,
       totalTrips: user.runnerDetails?.totalTrips || 0,
       walletBalance: user.runnerDetails?.walletBalance || 0,
-      isAvailable: true
+      isAvailable: false
     };
 
     await user.save();
 
     res.status(200).json({
       success: true,
-      message: 'Congratulations! You are now a registered UIU Delivery Runner.',
+      message: 'Runner application submitted successfully and is pending admin approval.',
       user
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to activate runner mode'
+      message: error.message || 'Failed to submit runner application'
     });
   }
 };

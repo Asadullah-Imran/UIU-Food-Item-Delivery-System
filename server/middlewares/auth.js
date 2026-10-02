@@ -52,13 +52,23 @@ export const protect = async (req, res, next) => {
 // Grant access to specific roles
 export const authorize = (...roles) => {
   return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
+    const userRole = req.user?.role;
+    const isRunner = req.user?.isRunner || userRole === 'runner';
+
+    const hasAccess = 
+      roles.includes(userRole) || 
+      (roles.includes('runner') && isRunner) ||
+      (roles.includes('student') && (userRole === 'runner' || isRunner));
+
+    if (!req.user || !hasAccess) {
       return res.status(403).json({
         success: false,
-        message: `User role ${req.user?.role || 'unknown'} is not authorized to access this route`
+        message: `User role ${userRole || 'unknown'} is not authorized to access this route`
       });
     }
     next();
   };
 };
+
+export const authorizeRoles = authorize;
 

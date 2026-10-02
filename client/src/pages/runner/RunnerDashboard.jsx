@@ -1,16 +1,143 @@
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Sun, Clock, CheckCircle2, ChevronDown, ListOrdered, Truck,
   CheckCircle, Banknote, MapPin, Phone, MessageSquare,
   Navigation, Star, Send, Store
 } from 'lucide-react';
-import runnerData from '../../data/runner.json';
+import { useAuth } from '../../context/AuthContext';
 
 export default function RunnerDashboard() {
   const navigate = useNavigate();
-  const { profile, metrics, activeDelivery, nearbyRequests, earnings, performance } = runnerData;
+  const { token, user } = useAuth();
   const [isAcceptingOrders, setIsAcceptingOrders] = useState(true);
+  const [profile, setProfile] = useState({ name: user?.name || 'Runner', onlineDuration: '4h 20m' });
+  const [metrics, setMetrics] = useState({
+    nearbyRequests: 0,
+    activeDeliveries: 0,
+    completedToday: 0,
+    todaysEarnings: 0,
+    totalTrips: 0,
+    rating: 5.0
+  });
+  const [activeDelivery, setActiveDelivery] = useState(null);
+  const [nearbyRequests, setNearbyRequests] = useState([]);
+  const [earnings, setEarnings] = useState({
+    today: 0,
+    thisWeek: 0,
+    thisMonth: 0,
+    availableToWithdraw: 0
+  });
+  const [performance, setPerformance] = useState({
+    rating: 5,
+    deliveries: 0,
+    onTimePercent: 0,
+    acceptancePercent: 0
+  });
+
+  useEffect(() => {
+    const fetchRunnerDashboardData = async () => {
+      if (!token) return;
+
+      try {
+        const [metricsRes, historyRes, earningsRes, performanceRes] = await Promise.all([
+          fetch('/api/runner/dashboard-metrics', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('/api/runner/history', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('/api/runner/earnings', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          fetch('/api/runner/performance', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        const metricsData = metricsRes.ok ? await metricsRes.json() : null;
+        const historyData = historyRes.ok ? await historyRes.json() : null;
+        const earningsData = earningsRes.ok ? await earningsRes.json() : null;
+        const performanceData = performanceRes.ok ? await performanceRes.json() : null;
+
+        if (metricsData?.success) {
+          setMetrics({
+            nearbyRequests: metricsData.metrics?.nearbyRequests || 0,
+            activeDeliveries: metricsData.metrics?.activeDeliveries || 0,
+            completedToday: metricsData.metrics?.completedToday || 0,
+            todaysEarnings: metricsData.metrics?.todayEarnings || 0,
+            totalTrips: metricsData.metrics?.totalTrips || 0,
+            rating: metricsData.metrics?.rating || 5.0
+          });
+
+          if (metricsData.activeDelivery) {
+            const order = metricsData.activeDelivery;
+            setActiveDelivery({
+              orderId: order.orderNumber,
+              shopName: order.shop?.name || 'Campus Shop',
+              itemsCount: order.items?.length || 0,
+              eta: order.eta || '15-20 mins',
+              distance: '1.2 km',
+              image: order.shop?.image || 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=240&h=240&fit=crop',
+              customer: {
+                name: order.student?.name || 'Student',
+                phone: order.student?.phone || 'N/A',
+                initials: (order.student?.name || 'Student').split(' ').map(part => part[0]).join('').slice(0, 2).toUpperCase()
+              },
+              timeline: {
+                pickup: order.shop?.location || 'Shop counter',
+                dropoff: order.deliveryAddress?.room || 'Room 412'
+              },
+              progress: {
+                status: order.status || 'READY_FOR_PICKUP',
+                percentage: 40
+              }
+            });
+          } else {
+            setActiveDelivery(null);
+          }
+        }
+
+        if (historyData?.success) {
+          const mappedRequests = (historyData.history || []).map((order) => ({
+            id: order._id,
+            shopName: order.shop?.name || 'Campus Shop',
+            rating: order.ratings?.shopRating || 5,
+            location: order.shop?.location || order.deliveryAddress?.room || 'Campus',
+            distance: '1.2 km',
+            time: order.eta || '15-20 mins'
+          }));
+          setNearbyRequests(mappedRequests.slice(0, 4));
+        }
+
+        if (earningsData?.success) {
+          setEarnings({
+            today: earningsData.earnings?.today || 0,
+            thisWeek: earningsData.earnings?.thisWeek || 0,
+            thisMonth: earningsData.earnings?.thisMonth || 0,
+            availableToWithdraw: earningsData.earnings?.currentBalance || 0
+          });
+        }
+
+        if (performanceData?.success) {
+          setPerformance({
+            rating: Number(performanceData.performance?.rating || 5),
+            deliveries: performanceData.performance?.totalDeliveries || 0,
+            onTimePercent: Number((performanceData.performance?.onTimeRate || '0%').replace('%', '')) || 0,
+            acceptancePercent: Number((performanceData.performance?.acceptanceRate || '0%').replace('%', '')) || 0
+          });
+        }
+
+        if (user?.name) {
+          setProfile((prev) => ({ ...prev, name: user.name }));
+        }
+      } catch (error) {
+        console.warn('Could not fetch runner dashboard data:', error.message);
+      }
+    };
+
+    fetchRunnerDashboardData();
+  }, [token, user?.name]);
 
   useLayoutEffect(() => {
     const dashboardLink = document.querySelector('nav a:first-child');
@@ -58,10 +185,10 @@ export default function RunnerDashboard() {
             </div>
             
             <h1 className="text-3xl md:text-5xl font-extrabold text-orange-500 mb-2 tracking-tight">
-              Good Afternoon, {profile.name.split(' ')[0]} <span className="text-4xl">👋</span>
+              Good Afternoon, {String(profile.name || 'Runner').split(' ')[0]} <span className="text-4xl">👋</span>
             </h1>
             <p className="text-slate-500 text-lg md:text-xl font-medium max-w-2xl">
-              You have {metrics.nearbyRequests} nearby delivery requests and {metrics.activeDeliveries} active delivery. Estimated earnings today: {metrics.todaysEarnings} tk
+              You have {metrics.nearbyRequests} nearby delivery requests and {metrics.activeDeliveries} active delivery. Estimated earnings today: ৳{metrics.todaysEarnings}
             </p>
           </div>
 
@@ -120,12 +247,12 @@ export default function RunnerDashboard() {
               <p className="text-slate-500 text-sm font-bold mb-2">Completed Today</p>
               <div className="flex items-end justify-between">
                 <h3 className="text-4xl font-light text-slate-800 leading-none">
-                  {metrics.completedToday.current}<span className="text-xl text-slate-400">/{metrics.completedToday.target}</span>
+                  {metrics.completedToday}
                 </h3>
                 <div className="w-1/2 h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div 
                     className="h-full bg-orange-500 rounded-full" 
-                    style={{width: `${(metrics.completedToday.current / metrics.completedToday.target) * 100}%`}}
+                    style={{ width: `${Math.min((metrics.completedToday / Math.max(metrics.completedToday || 1, 5)) * 100, 100)}%` }}
                   ></div>
                 </div>
               </div>
@@ -150,96 +277,98 @@ export default function RunnerDashboard() {
           <div className="flex-1 space-y-6 min-w-0">
             
             {/* Current Active Delivery */}
-            <div>
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold text-slate-800">Current Active Delivery</h2>
-                <span className="bg-orange-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-sm flex items-center tracking-wider">
-                  <Truck className="w-3 h-3 mr-1.5" /> LIVE UPDATE
-                </span>
-              </div>
-              
-              <div className="bg-white rounded-[2rem] border border-orange-200 shadow-sm shadow-orange-500/10 overflow-hidden relative">
-                <div className="absolute left-0 top-0 bottom-0 w-2 bg-orange-500"></div>
+            {activeDelivery ? (
+              <div>
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-xl font-bold text-slate-800">Current Active Delivery</h2>
+                  <span className="bg-orange-500 text-white text-[10px] font-extrabold px-3 py-1.5 rounded-full shadow-sm flex items-center tracking-wider">
+                    <Truck className="w-3 h-3 mr-1.5" /> LIVE UPDATE
+                  </span>
+                </div>
                 
-                <div className="p-8">
-                  {/* Shop Info & ETA */}
-                  <div className="flex justify-between items-start mb-8">
-                    <div className="flex items-center">
-                      <img src={activeDelivery.image} alt={activeDelivery.shopName} className="w-16 h-16 rounded-2xl object-cover shadow-sm mr-4" />
-                      <div>
-                        <h3 className="text-2xl font-bold text-slate-800">{activeDelivery.shopName}</h3>
-                        <p className="text-sm font-medium text-slate-500">Order {activeDelivery.orderId} • {activeDelivery.itemsCount} items</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <h4 className="text-2xl font-extrabold text-orange-500">{activeDelivery.eta}</h4>
-                      <p className="text-xs font-bold text-slate-400">Distance: {activeDelivery.distance}</p>
-                    </div>
-                  </div>
+                <div className="bg-white rounded-[2rem] border border-orange-200 shadow-sm shadow-orange-500/10 overflow-hidden relative">
+                  <div className="absolute left-0 top-0 bottom-0 w-2 bg-orange-500"></div>
                   
-                  {/* Customer Card */}
-                  <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between mb-8 border border-slate-100">
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-lg shadow-inner mr-4">
-                        {activeDelivery.customer.initials}
+                  <div className="p-8">
+                    <div className="flex justify-between items-start mb-8">
+                      <div className="flex items-center">
+                        <img src={activeDelivery.image} alt={activeDelivery.shopName} className="w-16 h-16 rounded-2xl object-cover shadow-sm mr-4" />
+                        <div>
+                          <h3 className="text-2xl font-bold text-slate-800">{activeDelivery.shopName}</h3>
+                          <p className="text-sm font-medium text-slate-500">Order {activeDelivery.orderId} • {activeDelivery.itemsCount} items</p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-slate-800">{activeDelivery.customer.name}</h4>
-                        <p className="text-xs font-semibold text-slate-500">{activeDelivery.customer.phone}</p>
+                      <div className="text-right">
+                        <h4 className="text-2xl font-extrabold text-orange-500">{activeDelivery.eta}</h4>
+                        <p className="text-xs font-bold text-slate-400">Distance: {activeDelivery.distance}</p>
                       </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button 
-                        onClick={() => navigate('/dashboard/runner/chat')}
-                        className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors"
-                        title="Call Customer"
-                      >
-                        <Phone className="w-4 h-4" />
-                      </button>
-                      <button 
-                        onClick={() => navigate('/dashboard/runner/chat')}
-                        className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors"
-                        title="Chat with Customer"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Timeline & Progress */}
-                  <div className="relative pl-4 mb-8">
-                    <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200"></div>
-                    
-                    <div className="relative flex items-center mb-6">
-                      <div className="w-5 h-5 rounded-full bg-orange-500 border-4 border-white shadow-sm z-10 mr-4"></div>
-                      <span className="font-bold text-slate-800 text-sm">Pickup: <span className="font-extrabold">{activeDelivery.timeline.pickup}</span></span>
                     </div>
                     
-                    <div className="relative flex items-center">
-                      <div className="w-5 h-5 rounded-full bg-slate-200 border-4 border-white shadow-sm z-10 mr-4"></div>
-                      <span className="font-bold text-slate-500 text-sm">Dropoff: {activeDelivery.timeline.dropoff}</span>
+                    <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between mb-8 border border-slate-100">
+                      <div className="flex items-center">
+                        <div className="w-12 h-12 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-lg shadow-inner mr-4">
+                          {activeDelivery.customer.initials}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-800">{activeDelivery.customer.name}</h4>
+                          <p className="text-xs font-semibold text-slate-500">{activeDelivery.customer.phone}</p>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button 
+                          onClick={() => navigate('/dashboard/runner/chat')}
+                          className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors"
+                          title="Call Customer"
+                        >
+                          <Phone className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => navigate('/dashboard/runner/chat')}
+                          className="w-10 h-10 rounded-xl border-2 border-orange-100 text-orange-500 flex items-center justify-center hover:bg-orange-50 transition-colors"
+                          title="Chat with Customer"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                  
-                  <div className="mb-8">
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
-                      <span className="text-orange-500">Status: {activeDelivery.progress.status}</span>
-                      <span className="text-slate-400">{activeDelivery.progress.percentage}% Complete</span>
+                    
+                    <div className="relative pl-4 mb-8">
+                      <div className="absolute left-6 top-2 bottom-2 w-0.5 bg-slate-200"></div>
+                      
+                      <div className="relative flex items-center mb-6">
+                        <div className="w-5 h-5 rounded-full bg-orange-500 border-4 border-white shadow-sm z-10 mr-4"></div>
+                        <span className="font-bold text-slate-800 text-sm">Pickup: <span className="font-extrabold">{activeDelivery.timeline.pickup}</span></span>
+                      </div>
+                      
+                      <div className="relative flex items-center">
+                        <div className="w-5 h-5 rounded-full bg-slate-200 border-4 border-white shadow-sm z-10 mr-4"></div>
+                        <span className="font-bold text-slate-500 text-sm">Dropoff: {activeDelivery.timeline.dropoff}</span>
+                      </div>
                     </div>
-                    <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-orange-500 rounded-full" style={{width: `${activeDelivery.progress.percentage}%`}}></div>
+                    
+                    <div className="mb-8">
+                      <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider mb-2">
+                        <span className="text-orange-500">Status: {activeDelivery.progress.status}</span>
+                        <span className="text-slate-400">{activeDelivery.progress.percentage}% Complete</span>
+                      </div>
+                      <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-orange-500 rounded-full" style={{ width: `${activeDelivery.progress.percentage}%` }}></div>
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="w-full">
-                    <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-orange-500/20 flex items-center justify-center">
-                      <CheckCircle2 className="w-5 h-5 mr-2" /> Update Status
-                    </button>
+                    
+                    <div className="w-full">
+                      <button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-orange-500/20 flex items-center justify-center">
+                        <CheckCircle2 className="w-5 h-5 mr-2" /> Update Status
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-[2rem] border border-slate-200 shadow-sm p-8 text-slate-500 text-sm">
+                No active delivery right now. Accept a live order from the available deliveries list.
+              </div>
+            )}
 
             {/* Nearby Delivery Requests */}
             <div className="pt-4">

@@ -875,7 +875,8 @@ export {
   rejectShopOrder,
   rejectOrder,
   startPreparingOrder,
-  markOrderReady
+  markOrderReady,
+  handoverOrder
 } from './shopOrderController.js';
 
 // Shop Dashboard Controller exports

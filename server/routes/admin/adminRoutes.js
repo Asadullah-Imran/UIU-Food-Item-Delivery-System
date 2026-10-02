@@ -1,0 +1,106 @@
+import express from 'express';
+import { protect } from '../../middlewares/auth.js';
+import { authorizeRoles } from '../../middlewares/role.js';
+import {
+  getAdminProfile,
+  updateAdminProfile
+} from '../../controllers/admin/adminProfileController.js';
+import {
+  listShopOwners,
+  getShopOwner,
+  approveShopOwner,
+  rejectShopOwner,
+  suspendShopOwner
+} from '../../controllers/admin/adminShopOwnerController.js';
+import {
+  listRunners,
+  getRunner,
+  approveRunner,
+  rejectRunner,
+  suspendRunner
+} from '../../controllers/admin/adminRunnerController.js';
+import {
+  listShops,
+  getShop,
+  createShop,
+  updateShop,
+  setShopOpenStatus,
+  toggleFeatured,
+  disableShop,
+  enableShop,
+  deleteShop
+} from '../../controllers/admin/adminShopController.js';
+import {
+  listComplaints,
+  getComplaint,
+  updateComplaintStatus,
+  updateComplaintPriority,
+  resolveComplaint,
+  escalateComplaint
+} from '../../controllers/admin/adminComplaintController.js';
+import {
+  getDashboardOverview
+} from '../../controllers/admin/adminDashboardController.js';
+import {
+  getOverviewReports,
+  getOrderedItemsReport,
+  exportReport
+} from '../../controllers/admin/adminReportController.js';
+
+const router = express.Router();
+
+/**
+ * MANDATORY SECURITY GUARD
+ * Every /api/admin/* endpoint strictly requires:
+ * 1. Valid JWT authentication via protect
+ * 2. Strict Admin role authorization via authorizeRoles('admin')
+ */
+router.use(protect);
+router.use(authorizeRoles('admin'));
+
+// --- Admin Profile Routes (Phase 1) ---
+router.get('/profile', getAdminProfile);
+router.put('/profile', updateAdminProfile);
+
+// --- Shop Owner Approval Routes (Phase 2) ---
+router.get('/shop-owners',                        listShopOwners);
+router.get('/shop-owners/:userId',                getShopOwner);
+router.patch('/shop-owners/:userId/approve',      approveShopOwner);
+router.patch('/shop-owners/:userId/reject',       rejectShopOwner);
+router.patch('/shop-owners/:userId/suspend',      suspendShopOwner);
+
+// --- Runner Approval Routes (Phase 3) ---
+router.get('/runners',                        listRunners);
+router.get('/runners/:userId',                getRunner);
+router.patch('/runners/:userId/approve',      approveRunner);
+router.patch('/runners/:userId/reject',       rejectRunner);
+router.patch('/runners/:userId/suspend',      suspendRunner);
+
+// --- Shop Administration Routes (Phase 4) ---
+router.get('/shops',                      listShops);
+router.get('/shops/:shopId',              getShop);
+router.post('/shops',                     createShop);
+router.put('/shops/:shopId',              updateShop);
+router.patch('/shops/:shopId/status',     setShopOpenStatus);
+router.patch('/shops/:shopId/featured',   toggleFeatured);
+router.patch('/shops/:shopId/disable',    disableShop);
+router.patch('/shops/:shopId/enable',     enableShop);
+router.delete('/shops/:shopId',            deleteShop);
+
+// --- Complaint & Dispute Administration Routes (Phase 5) ---
+router.get('/complaints',                         listComplaints);
+router.get('/complaints/:complaintId',             getComplaint);
+router.patch('/complaints/:complaintId/status',    updateComplaintStatus);
+router.patch('/complaints/:complaintId/priority',  updateComplaintPriority);
+router.patch('/complaints/:complaintId/resolve',   resolveComplaint);
+router.patch('/complaints/:complaintId/escalate',  escalateComplaint);
+
+// --- Admin Dashboard & Operations Routes (Phase 6) ---
+router.get('/dashboard',                          getDashboardOverview);
+
+// --- Admin Reports & Cross-System Analytics Routes (Phase 7) ---
+router.get('/reports/overview',                   getOverviewReports);
+router.get('/reports/items',                      getOrderedItemsReport);
+router.get('/reports/export',                     exportReport);
+
+export default router;
