@@ -33,18 +33,19 @@ export const requireApprovedShop = async (req, res, next) => {
       return res.status(403).json({
         success: false,
         isPendingApproval: true,
-        message: 'Your shop application is currently pending admin approval. You cannot perform shop operations until approved.'
+        message: 'Your shop owner account is pending admin approval. Please wait for an administrator to approve your application.'
       });
     }
 
     if (req.user.status === 'rejected') {
       return res.status(403).json({
         success: false,
+        accountStatus: 'rejected',
         message: 'Your shop application was rejected by campus administration.'
       });
     }
 
-    const shop = await Shop.findOne({ owner: req.user._id });
+    const shop = await Shop.findOne({ owner: req.user._id || req.user.id });
     if (!shop) {
       return res.status(404).json({
         success: false,

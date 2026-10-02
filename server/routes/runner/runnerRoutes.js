@@ -1,5 +1,6 @@
 import express from 'express';
 import { protect, authorizeRoles } from '../../middlewares/auth.js';
+import { requireApprovedRunner } from '../../middlewares/runnerAuth.js';
 import {
   getRunnerProfile,
   updateRunnerProfile,
@@ -32,6 +33,7 @@ const router = express.Router();
 // Runner protection middleware (allow runner or student with active runner capability)
 router.use(protect);
 router.use(authorizeRoles('runner', 'student', 'admin'));
+router.use(requireApprovedRunner);
 
 // 1. Profile, Availability & Dashboard Metrics
 router.get('/profile', getRunnerProfile);

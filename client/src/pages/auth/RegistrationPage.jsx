@@ -71,12 +71,11 @@ export default function RegistrationPage() {
     setIsLoading(false);
 
     if (res && res.success) {
-      if (res.isPendingApproval || (res.user?.role === 'shop' && !res.user?.isApproved)) {
-        // Shop owners go to waiting room page
-        setSuccessMessage('Application submitted! Redirecting to your application status page...');
+      if (res.isPendingApproval || role === 'shop' || role === 'runner') {
+        setSuccessMessage('Application submitted successfully! Redirecting to approval status...');
         setTimeout(() => {
-          navigate('/shop/pending-approval');
-        }, 1200);
+          navigate(`/pending-approval?role=${role}&email=${encodeURIComponent(payload.email)}&name=${encodeURIComponent(payload.name)}`);
+        }, 1000);
       } else {
         setSuccessMessage('Account created successfully! Redirecting to dashboard...');
         setTimeout(() => {
@@ -175,6 +174,14 @@ export default function RegistrationPage() {
                 <option value="runner">🛵 Student Runner</option>
                 <option value="shop">🏪 Shop Owner</option>
               </select>
+              {(role === 'runner' || role === 'shop') && (
+                <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                  <span>
+                    <strong>Admin Verification Required:</strong> New {role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} accounts must wait for campus administrator approval after submitting this form before logging in.
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Shop Owner approval notice */}

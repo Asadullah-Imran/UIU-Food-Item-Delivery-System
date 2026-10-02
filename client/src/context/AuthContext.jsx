@@ -80,7 +80,7 @@ export function AuthProvider({ children }) {
       }
 
       if (!res.ok) {
-        if (res.status === 403 && data?.isPendingApproval) {
+        if (data?.isPendingApproval) {
           if (data.token) {
             localStorage.setItem('uiu_auth_token', data.token);
             localStorage.setItem(USER_CACHE_KEY, JSON.stringify(data.user));
@@ -92,7 +92,11 @@ export function AuthProvider({ children }) {
             isPendingApproval: true,
             user: data.user,
             token: data.token,
-            error: data.message
+            message: data.message || 'Account is pending admin approval',
+            error: data.message,
+            role: data.role || data.accountRole,
+            name: data.name,
+            email: data.email || email
           };
         }
         throw new Error(data?.message || 'Login failed');
@@ -135,6 +139,20 @@ export function AuthProvider({ children }) {
         throw new Error(data?.message || 'Registration failed');
       }
 
+      // If registration requires admin approval (Shop Owner or Delivery Runner)
+      if (data?.isPendingApproval || data?.requiresApproval || !data?.token) {
+        return {
+          success: true,
+          isPendingApproval: true,
+          message: data?.message || 'Account registered and pending admin approval',
+          user: data?.user,
+          role: data?.user?.role || userData.role,
+          email: data?.user?.email || userData.email,
+          name: data?.user?.name || userData.name
+        };
+      }
+
+      // If immediately active (e.g. Student)
       localStorage.removeItem('uiu_order_chats_v1');
       localStorage.removeItem('uiu_active_delivery');
       localStorage.removeItem('uiu_mock_user');
