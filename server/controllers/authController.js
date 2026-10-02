@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Shop from '../models/Shop.js';
+import { uploadImageToCloudinary } from '../utils/cloudinaryUpload.js';
 
 // @desc    Register a new user (Student, Runner, Shop Owner)
 // @route   POST /api/auth/register
@@ -253,6 +254,44 @@ export const updateProfile = async (req, res) => {
       success: false,
       message: error.message
     });
+  }
+};
+
+// @desc    Upload / update user avatar
+// @route   PUT /api/auth/avatar
+// @access  Private
+export const uploadAvatar = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'Please select an image file to upload' });
+    }
+
+    let avatarUrl = '';
+    try {
+      const uploadResult = await uploadImageToCloudinary(req.file.buffer, 'uiu-delivery/avatars');
+      avatarUrl = uploadResult.secure_url;
+    } catch (cloudErr) {
+      console.warn('Cloudinary upload fallback to data URI:', cloudErr.message);
+      avatarUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    }
+
+    user.avatar = avatarUrl;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Profile photo updated successfully',
+      avatar: user.avatar,
+      user
+    });
+  } catch (error) {
+    console.error('Upload Avatar Error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error updating avatar' });
   }
 };
 

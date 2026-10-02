@@ -97,7 +97,10 @@ const userSchema = new mongoose.Schema(
       isAvailable: {
         type: Boolean,
         default: true
-      }
+      },
+      emergencyContact: String,
+      preferredZone: String,
+      currentSemester: String
     },
     // Shop owner specific details
     shopDetails: {

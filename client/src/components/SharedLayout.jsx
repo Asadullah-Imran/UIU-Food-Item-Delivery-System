@@ -42,10 +42,10 @@ export default function SharedLayout({
 
   // Default user if not provided fully
   const displayUser = {
-    name: user.name || 'User',
-    idLabel: user.idLabel || 'ID',
-    idNumber: user.idNumber || '#0000',
-    avatar: user.avatar || 'https://i.pravatar.cc/150'
+    name: currentUser?.name || user.name || 'User',
+    idLabel: currentUser ? (currentUser.role === 'runner' ? 'Runner ID' : 'ID') : (user.idLabel || 'ID'),
+    idNumber: currentUser?.universityId || user.idNumber || '#0000',
+    avatar: currentUser?.avatar || user.avatar || 'https://i.pravatar.cc/150'
   };
 
   return (
