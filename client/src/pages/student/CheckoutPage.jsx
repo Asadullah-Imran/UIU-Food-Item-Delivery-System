@@ -85,7 +85,7 @@ export default function CheckoutPage() {
         specialInstructions: instructions
       };
 
-      const res = await fetch('/api/orders', {
+      const res = await fetch('/api/student/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

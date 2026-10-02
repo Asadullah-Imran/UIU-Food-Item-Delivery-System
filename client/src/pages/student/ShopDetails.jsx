@@ -26,7 +26,7 @@ export default function ShopDetails() {
       try {
         setIsLoading(true);
         setFetchError(null);
-        const res = await fetch(`/api/shops/${shopId}`);
+        const res = await fetch(`/api/student/shops/${shopId}`);
         const data = await res.json();
         if (res.ok && data.shop) {
           setShop({
