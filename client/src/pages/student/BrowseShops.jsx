@@ -18,7 +18,7 @@ export default function BrowseShops() {
     const fetchShops = async () => {
       try {
         setIsLoading(true);
-        const res = await fetch('/api/shops');
+        const res = await fetch('/api/student/shops');
         const data = await res.json();
         if (res.ok && data.shops && data.shops.length > 0) {
           setShops(data.shops);

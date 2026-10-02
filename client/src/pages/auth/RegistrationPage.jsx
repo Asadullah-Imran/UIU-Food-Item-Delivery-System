@@ -184,6 +184,19 @@ export default function RegistrationPage() {
               )}
             </div>
 
+            {/* Shop Owner approval notice */}
+            {role === 'shop' && (
+              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-3">
+                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-bold text-amber-800 mb-0.5">Admin Approval Required</p>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Shop registrations must be reviewed and approved by campus administration before your store goes live. After submitting, you will be taken to an application status page. You will gain full shop access once approved.
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">

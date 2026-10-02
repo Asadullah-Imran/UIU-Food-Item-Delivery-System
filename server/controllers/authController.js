@@ -18,7 +18,8 @@ export const register = async (req, res) => {
       department,
       vehicleType,
       shopName,
-      campusLocation
+      campusLocation,
+      category
     } = req.body;
 
     // Check if user already exists
@@ -81,7 +82,8 @@ export const register = async (req, res) => {
     if (role === 'shop') {
       userData.shopDetails = {
         shopName: shopName.trim(),
-        campusLocation: campusLocation?.trim() || 'UIU Food Court Counter'
+        campusLocation: campusLocation?.trim() || 'UIU Food Court Counter',
+        category: category?.trim() || 'Food Court'
       };
     }
 
@@ -93,7 +95,7 @@ export const register = async (req, res) => {
         await Shop.create({
           owner: user._id,
           name: shopName.trim(),
-          category: 'Food Court',
+          category: category?.trim() || 'Food Court',
           location: campusLocation?.trim() || 'UIU Food Court Counter',
           phone: phone?.trim() || '',
           isApproved: false,
@@ -185,6 +187,7 @@ export const login = async (req, res) => {
     if (user.status === 'rejected') {
       return res.status(403).json({
         success: false,
+        accountStatus: 'rejected',
         message: `Your ${user.role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} application has been rejected by campus administration.`
       });
     }
@@ -194,6 +197,7 @@ export const login = async (req, res) => {
       return res.status(403).json({
         success: false,
         isPendingApproval: true,
+        accountStatus: 'pending',
         role: user.role,
         name: user.name,
         email: user.email,
@@ -237,9 +241,17 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    let shop = null;
+    if (user.role === 'shop') {
+      shop = await Shop.findOne({ owner: user._id });
+    }
     res.status(200).json({
       success: true,
-      user
+      user,
+      shop
     });
   } catch (error) {
     res.status(500).json({

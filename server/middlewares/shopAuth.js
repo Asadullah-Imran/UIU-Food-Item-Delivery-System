@@ -1,44 +1,35 @@
-/**
- * requireApprovedShop middleware
- *
- * Blocks access to all shop-specific private routes if the user's shop
- * account has not yet been approved by an admin.
- *
- * Admins bypass this check entirely.
- */
-import User from '../models/User.js';
 import Shop from '../models/Shop.js';
 
+/**
+ * Middleware: requireApprovedShop
+ * Enforces that:
+ * 1. The user is an authenticated Shop Owner (or Admin).
+ * 2. The user account status is 'active' and isApproved is true.
+ * 3. The linked Shop record exists and has isApproved: true.
+ * Attaches the verified shop to req.shop.
+ */
 export const requireApprovedShop = async (req, res, next) => {
   try {
-    // Admins are always allowed through
-    if (req.user.role === 'admin') return next();
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required.'
+      });
+    }
 
-    // Verify shop role
+    // Admins have access to shop management
+    if (req.user.role === 'admin') {
+      return next();
+    }
+
     if (req.user.role !== 'shop') {
       return res.status(403).json({
         success: false,
-        message: 'Access restricted to approved Shop Owners only.'
+        message: `Role '${req.user.role}' is not authorized to perform shop operations.`
       });
     }
 
-    // Fetch fresh user record
-    const user = await User.findById(req.user.id);
-    if (!user) {
-      return res.status(401).json({ success: false, message: 'User not found.' });
-    }
-
-    // Rejected accounts — hard block
-    if (user.status === 'rejected') {
-      return res.status(403).json({
-        success: false,
-        accountStatus: 'rejected',
-        message: 'Your shop application has been rejected by campus administration.'
-      });
-    }
-
-    // Pending / unapproved accounts — block
-    if (!user.isApproved || user.status === 'pending') {
+    if (req.user.status === 'pending' || !req.user.isApproved) {
       return res.status(403).json({
         success: false,
         isPendingApproval: true,
@@ -46,19 +37,37 @@ export const requireApprovedShop = async (req, res, next) => {
       });
     }
 
-    // Check linked shop record
-    const shop = await Shop.findOne({ owner: req.user.id });
-    if (shop && !shop.isApproved) {
+    if (req.user.status === 'rejected') {
       return res.status(403).json({
         success: false,
-        isPendingApproval: true,
-        message: 'Your shop is pending admin approval.'
+        accountStatus: 'rejected',
+        message: 'Your shop application was rejected by campus administration.'
       });
     }
 
+    const shop = await Shop.findOne({ owner: req.user._id || req.user.id });
+    if (!shop) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    if (!shop.isApproved) {
+      return res.status(403).json({
+        success: false,
+        isPendingApproval: true,
+        message: 'Your shop is currently pending admin approval.'
+      });
+    }
+
+    req.shop = shop;
     next();
   } catch (error) {
-    console.error('requireApprovedShop error:', error);
-    res.status(500).json({ success: false, message: 'Authorization check failed.' });
+    console.error('requireApprovedShop Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error verifying shop approval status.'
+    });
   }
 };

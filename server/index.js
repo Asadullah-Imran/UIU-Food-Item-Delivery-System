@@ -5,7 +5,7 @@ import { connectDB } from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import shopRoutes from './routes/shopRoutes.js';
 import walletRoutes from './routes/walletRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
+
 import studentRoutes from './routes/student/studentRoutes.js';
 import runnerRoutes from './routes/runner/runnerRoutes.js';
 import adminRoutes from './routes/admin/adminRoutes.js';
@@ -17,7 +17,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Middleware
 app.use(cors());
@@ -38,9 +38,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/runner', runnerRoutes);
 app.use('/api/shops', shopRoutes);
-app.use('/api/shop', shopRoutes);
 app.use('/api/wallet', walletRoutes);
-app.use('/api/orders', orderRoutes);
 
 
 // 404 handler
