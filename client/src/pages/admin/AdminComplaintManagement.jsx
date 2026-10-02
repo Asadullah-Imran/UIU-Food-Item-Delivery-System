@@ -35,7 +35,7 @@ import {
 // ---------------------------------------------------------------------------
 const authHeaders = () => ({
   "Content-Type": "application/json",
-  Authorization: `Bearer ${localStorage.getItem("token")}`,
+  Authorization: `Bearer ${localStorage.getItem("uiu_auth_token")}`,
 });
 
 // ---------------------------------------------------------------------------
