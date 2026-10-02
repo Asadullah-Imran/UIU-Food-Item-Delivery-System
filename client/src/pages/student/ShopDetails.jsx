@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRight, Check, Star, Loader2 } from 'lucide-react';
-
-// Mock Data fallbacks
-import shopsData from '../../data/shops.json';
-import menuData from '../../data/menu.json';
-import reviewsData from '../../data/reviews.json';
+import { Heart, Clock, Truck, Plus, Minus, ChevronRight, ShoppingCart, ArrowRight, Check, Star, Loader2, AlertCircle } from 'lucide-react';
 import StudentSidebarFix from './StudentSidebarFix';
 import { useFavorites } from '../../context/FavoritesContext';
 import { useCart } from '../../context/CartContext';
@@ -14,11 +9,12 @@ export default function ShopDetails() {
   const { shopId } = useParams();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { cart, addToCart, cartTotal, setIsCartVisible } = useCart();
-  
-  const [shop, setShop] = useState(() => shopsData.find(s => s.id === shopId) || shopsData[0]);
+
+  const [shop, setShop] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
-  const [categories, setCategories] = useState(["All", "Fast Food", "Meals", "Drinks", "Desserts"]);
+  const [categories, setCategories] = useState(["All"]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
 
   const [activeCategory, setActiveCategory] = useState("All");
   const [itemQuantities, setItemQuantities] = useState({});
@@ -29,6 +25,7 @@ export default function ShopDetails() {
     const fetchShopDetails = async () => {
       try {
         setIsLoading(true);
+        setFetchError(null);
         const res = await fetch(`/api/shops/${shopId}`);
         const data = await res.json();
         if (res.ok && data.shop) {
@@ -37,21 +34,22 @@ export default function ShopDetails() {
             id: data.shop._id,
             deliveryFee: data.shop.deliveryFee || 30
           });
-          if (data.menuItems && data.menuItems.length > 0) {
-            const normalized = data.menuItems.map(item => ({
-              ...item,
-              id: item._id,
-              shopId: data.shop._id,
-              shopName: data.shop.name
-            }));
-            setMenuItems(normalized);
-            if (data.categories && data.categories.length > 0) {
-              setCategories(data.categories);
-            }
+          const normalized = (data.menuItems || []).map(item => ({
+            ...item,
+            id: item._id,
+            shopId: data.shop._id,
+            shopName: data.shop.name
+          }));
+          setMenuItems(normalized);
+          if (data.categories && data.categories.length > 0) {
+            setCategories(data.categories);
           }
+        } else {
+          setFetchError(data.message || 'Shop not found.');
         }
       } catch (err) {
-        console.warn('API error, using fallback:', err);
+        console.error('Failed to fetch shop details:', err);
+        setFetchError('Unable to load shop. Please check your connection.');
       } finally {
         setIsLoading(false);
       }
@@ -60,19 +58,14 @@ export default function ShopDetails() {
     fetchShopDetails();
   }, [shopId]);
 
-  // Filtered menu items
-  const allShopItems = menuItems.length > 0 ? menuItems : menuData;
-  const itemsToDisplay = allShopItems.filter(item => {
+  // Filtered menu items — live data only
+  const itemsToDisplay = menuItems.filter(item => {
     if (activeCategory === "All") return true;
-    return item.category?.toLowerCase() === activeCategory.toLowerCase() || 
+    return item.category?.toLowerCase() === activeCategory.toLowerCase() ||
            (activeCategory === "Popular" && (item.isPopular || item.isBestSeller));
   });
 
-  const popularItems = allShopItems.filter(item => item.isPopular || item.isBestSeller || item.badge === "BEST SELLER");
-  const snacksItems = allShopItems.filter(item => item.category?.toLowerCase().includes('snack') || item.category?.toLowerCase().includes('fast'));
-  const reviews = reviewsData.filter(r => r.shopId === shop._id || r.shopId === shop.id || !r.shopId);
-
-  const deliveryFee = shop.deliveryFee || 30;
+  const deliveryFee = shop?.deliveryFee || 30;
   const totalWithDelivery = cart.length > 0 ? cartTotal + deliveryFee : 0;
 
   const handleQuantityChange = (itemId, change) => {
@@ -91,13 +84,53 @@ export default function ShopDetails() {
         ...item,
         id: targetId,
         _id: targetId,
-        shopId: shop._id || shop.id,
-        shopName: shop.name
+        shopId: shop?._id || shop?.id,
+        shopName: shop?.name
       });
     }
     setAddedAnimation(targetId);
     setTimeout(() => setAddedAnimation(null), 1500);
   };
+
+  // --- Loading skeleton ---
+  if (isLoading) {
+    return (
+      <>
+        <StudentSidebarFix isShops />
+        <div className="max-w-4xl mx-auto py-12 px-4">
+          <div className="animate-pulse space-y-6">
+            <div className="h-64 bg-slate-200 rounded-3xl" />
+            <div className="h-8 bg-slate-200 rounded w-1/3" />
+            <div className="grid grid-cols-2 gap-4">
+              {[1,2,3,4].map(i => <div key={i} className="h-48 bg-slate-100 rounded-2xl" />)}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // --- Error / not found state ---
+  if (fetchError || !shop) {
+    return (
+      <>
+        <StudentSidebarFix isShops />
+        <div className="flex flex-col items-center justify-center min-h-[50vh] text-center px-4">
+          <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-800 mb-2">Shop Not Found</h2>
+          <p className="text-slate-500 text-sm mb-6">{fetchError || 'This shop could not be loaded.'}</p>
+          <Link
+            to="/dashboard/student/shops"
+            className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition-colors"
+          >
+            Browse All Shops
+          </Link>
+        </div>
+      </>
+    );
+  }
 
 
   return (
@@ -300,27 +333,9 @@ export default function ShopDetails() {
             )}
 
             <div className="space-y-4">
-              {reviews.map(review => (
-                <div key={review.id} className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center text-sm mr-3">
-                        {review.initials}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-800 text-sm leading-none mb-1">{review.studentName}</h4>
-                        <div className="flex text-orange-400 text-xs">
-                          {"★".repeat(review.rating)}{"☆".repeat(5-review.rating)}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-medium text-slate-400">{review.date}</span>
-                  </div>
-                  <p className="text-sm text-slate-600 italic leading-relaxed">
-                    "{review.comment}"
-                  </p>
-                </div>
-              ))}
+              <div className="bg-white p-6 rounded-2xl border border-slate-100 text-center text-slate-400 text-sm">
+                No reviews yet for this shop. Be the first!
+              </div>
             </div>
           </div>
 

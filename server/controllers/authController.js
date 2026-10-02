@@ -18,7 +18,8 @@ export const register = async (req, res) => {
       department,
       vehicleType,
       shopName,
-      campusLocation
+      campusLocation,
+      category
     } = req.body;
 
     // Check if user already exists
@@ -80,7 +81,8 @@ export const register = async (req, res) => {
     if (role === 'shop') {
       userData.shopDetails = {
         shopName: shopName.trim(),
-        campusLocation: campusLocation?.trim() || 'UIU Food Court Counter'
+        campusLocation: campusLocation?.trim() || 'UIU Food Court Counter',
+        category: category?.trim() || 'Food Court'
       };
     }
 
@@ -92,7 +94,7 @@ export const register = async (req, res) => {
         await Shop.create({
           owner: user._id,
           name: shopName.trim(),
-          category: 'Food Court',
+          category: category?.trim() || 'Food Court',
           location: campusLocation?.trim() || 'UIU Food Court Counter',
           phone: phone?.trim() || '',
           isApproved: false
@@ -108,9 +110,11 @@ export const register = async (req, res) => {
     res.status(201).json({
       success: true,
       message: role === 'shop'
-        ? 'Shop application submitted successfully and is pending admin approval'
+        ? 'Shop application submitted successfully and is pending administrator approval.'
         : 'User registered successfully',
       token,
+      isPendingApproval: role === 'shop' && !isApproved,
+      requiresApproval: role === 'shop' || role === 'runner',
       user: {
         id: user._id,
         name: user.name,
@@ -175,6 +179,37 @@ export const login = async (req, res) => {
       });
     }
 
+    if (user.role === 'shop' && (user.status === 'pending' || !user.isApproved)) {
+      const token = user.generateAuthToken();
+      return res.status(403).json({
+        success: false,
+        isPendingApproval: true,
+        accountStatus: 'pending',
+        message: 'Your shop application is currently pending admin approval. You will receive access once approved by campus administration.',
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          universityId: user.universityId,
+          phone: user.phone,
+          avatar: user.avatar,
+          status: user.status,
+          isApproved: user.isApproved,
+          shopDetails: user.shopDetails
+        }
+      });
+    }
+
+    if (user.role === 'shop' && user.status === 'rejected') {
+      return res.status(403).json({
+        success: false,
+        accountStatus: 'rejected',
+        message: 'Your shop application was not approved by campus administration. Please contact the campus admin office for more details.'
+      });
+    }
+
     const token = user.generateAuthToken();
 
     res.status(200).json({
@@ -211,9 +246,17 @@ export const login = async (req, res) => {
 export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+    let shop = null;
+    if (user.role === 'shop') {
+      shop = await Shop.findOne({ owner: user._id });
+    }
     res.status(200).json({
       success: true,
-      user
+      user,
+      shop
     });
   } catch (error) {
     res.status(500).json({

@@ -22,6 +22,17 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // If shop user is pending approval, always redirect to the pending page
+  // (unless they are already on the pending page itself)
+  if (
+    user.role === 'shop' &&
+    (user.status === 'pending' || !user.isApproved) &&
+    user.status !== 'active' &&
+    location.pathname !== '/shop/pending-approval'
+  ) {
+    return <Navigate to="/shop/pending-approval" replace />;
+  }
+
   const hasPermission = () => {
     if (!allowedRoles || allowedRoles.length === 0) return true;
     if (allowedRoles.includes(user.role)) return true;

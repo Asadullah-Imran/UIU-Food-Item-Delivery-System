@@ -6,6 +6,7 @@ import {
   MapPin, Zap, Package, X, Check, Camera, Upload, Loader2, Image as ImageIcon
 } from 'lucide-react';
 import RunnerSidebarFix from './RunnerSidebarFix';
+
 import { useAuth } from '../../context/AuthContext';
 import { compressImage } from '../../utils/imageCompressor';
 
@@ -210,38 +211,38 @@ export default function RunnerProfile() {
 
   const achievements = [
     {
-      id: 'runner-status',
-      name: 'Runner Status',
-      progressText: user?.runnerDetails?.isAvailable ? 'Available' : 'Offline',
-      percentage: user?.runnerDetails?.isAvailable ? 100 : 35,
+      id: 'fast-delivery',
+      name: 'Fast Delivery',
+      progressText: '12/15',
+      percentage: 80,
       icon: Zap,
       iconBg: 'bg-orange-100 text-orange-600',
       barColor: 'bg-orange-500'
     },
     {
-      id: 'delivery-count',
-      name: 'Delivery Count',
-      progressText: `${user?.runnerDetails?.totalTrips || 0} trips`,
-      percentage: Math.min((user?.runnerDetails?.totalTrips || 0) * 10, 100),
+      id: '100-deliveries',
+      name: '100 Deliveries',
+      progressText: '100/100',
+      percentage: 100,
       icon: Package,
       iconBg: 'bg-blue-100 text-blue-600',
       barColor: 'bg-emerald-500'
     },
     {
-      id: 'rating',
-      name: 'Rating',
-      progressText: `${Number(user?.runnerDetails?.rating || 5).toFixed(1)}/5.0`,
-      percentage: Math.min((Number(user?.runnerDetails?.rating || 5) / 5) * 100, 100),
+      id: 'top-rated',
+      name: 'Top Rated',
+      progressText: '4.9/5.0',
+      percentage: 98,
       icon: Star,
       iconBg: 'bg-amber-100 text-amber-600',
       barColor: 'bg-amber-500'
     },
     {
-      id: 'balance',
-      name: 'Wallet Balance',
-      progressText: `৳${Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0).toLocaleString()}`,
-      percentage: Math.min((Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0) / 1000) * 100, 100),
-      icon: Wallet,
+      id: 'perfect-attendance',
+      name: 'Perfect Attendance',
+      progressText: '28/30 days',
+      percentage: 93,
+      icon: Calendar,
       iconBg: 'bg-purple-100 text-purple-600',
       barColor: 'bg-purple-600'
     }
@@ -310,7 +311,7 @@ export default function RunnerProfile() {
                   </h2>
                   <span className="inline-flex items-center gap-1.5 bg-[#FFF4EB] text-[#EA6D17] border border-[#FCD8BE] text-xs font-extrabold px-3 py-1 rounded-full shadow-2xs">
                     <Award className="w-3.5 h-3.5 fill-[#EA6D17]" />
-                    Registered Runner
+                    Gold Runner
                   </span>
                 </div>
 
@@ -372,9 +373,9 @@ export default function RunnerProfile() {
               TOTAL DELIVERIES
             </span>
             <div className="mt-2">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{user?.runnerDetails?.totalTrips || 0}</div>
+              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">156</div>
               <div className="text-xs font-bold text-emerald-600 mt-1 flex items-center gap-1">
-                {user?.runnerDetails?.totalTrips ? 'Active runner' : 'No trips yet'}
+                +12 this week
               </div>
             </div>
           </div>
@@ -386,10 +387,10 @@ export default function RunnerProfile() {
             </span>
             <div className="mt-2">
               <div className="text-3xl font-extrabold text-slate-800 tracking-tight flex items-center gap-1">
-                {Number(user?.runnerDetails?.rating || 5).toFixed(1)} <Star className="w-5 h-5 text-amber-400 fill-amber-400 inline" />
+                4.9 <Star className="w-5 h-5 text-amber-400 fill-amber-400 inline" />
               </div>
               <div className="text-xs font-semibold text-slate-400 mt-1">
-                Based on registered account
+                98 reviews
               </div>
             </div>
           </div>
@@ -400,9 +401,9 @@ export default function RunnerProfile() {
               ON-TIME RATE
             </span>
             <div className="mt-2">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">{user?.runnerDetails?.isAvailable ? 'Online' : 'Offline'}</div>
+              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">98%</div>
               <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden mt-2">
-                <div className="h-full bg-[#F37623] rounded-full w-[100%]" />
+                <div className="h-full bg-[#F37623] rounded-full w-[98%]" />
               </div>
             </div>
           </div>
@@ -413,9 +414,9 @@ export default function RunnerProfile() {
               LIFETIME EARNINGS
             </span>
             <div className="mt-2">
-              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">৳{Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0).toLocaleString()}</div>
+              <div className="text-3xl font-extrabold text-slate-800 tracking-tight">৳15,420</div>
               <div className="text-xs font-semibold text-slate-400 mt-1">
-                Wallet balance on account
+                Joined Jan 2024
               </div>
             </div>
           </div>
@@ -427,9 +428,9 @@ export default function RunnerProfile() {
                 <span>Current Balance</span>
                 <Wallet className="w-4 h-4 text-slate-400" />
               </div>
-              <div className="text-3xl font-extrabold tracking-tight">৳{Number(user?.runnerDetails?.walletBalance || user?.walletBalance || 0).toLocaleString()}</div>
+              <div className="text-3xl font-extrabold tracking-tight">৳1,250</div>
               <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-                Current registered balance
+                Monthly Earnings: ৳4,800
               </p>
             </div>
             
@@ -480,9 +481,9 @@ export default function RunnerProfile() {
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-slate-400">Role</p>
+                <p className="text-xs font-semibold text-slate-400">Current Semester</p>
                 <p className="text-sm font-bold text-slate-800 mt-1">
-                  {user?.role || 'Runner'}
+                  {personalInfo.currentSemester}
                 </p>
               </div>
 
