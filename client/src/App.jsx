@@ -30,6 +30,7 @@ import ShopAddMenuItem from './pages/shop/ShopAddMenuItem';
 import ShopSalesReports from './pages/shop/ShopSalesReports';
 import ShopCustomerReviews from './pages/shop/ShopCustomerReviews';
 import ShopProfile from './pages/shop/ShopProfile';
+import PendingApprovalPage from './pages/auth/PendingApprovalPage';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/" element={<SelectionPage />} />
           <Route path="/register" element={<RegistrationPage />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/pending-approval" element={<PendingApprovalPage />} />
           
           {/* Student Routes */}
           <Route path="/dashboard/student" element={

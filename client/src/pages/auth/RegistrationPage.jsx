@@ -71,10 +71,17 @@ export default function RegistrationPage() {
     setIsLoading(false);
 
     if (res && res.success) {
-      setSuccessMessage('Account created successfully! Redirecting to dashboard...');
-      setTimeout(() => {
-        navigate(`/dashboard/${res.user?.role || role}`);
-      }, 1000);
+      if (res.isPendingApproval || role === 'shop' || role === 'runner') {
+        setSuccessMessage('Application submitted successfully! Redirecting to approval status...');
+        setTimeout(() => {
+          navigate(`/pending-approval?role=${role}&email=${encodeURIComponent(payload.email)}&name=${encodeURIComponent(payload.name)}`);
+        }, 1000);
+      } else {
+        setSuccessMessage('Account created successfully! Redirecting to dashboard...');
+        setTimeout(() => {
+          navigate(`/dashboard/${res.user?.role || role}`);
+        }, 1000);
+      }
     } else {
       setErrorMessage(res?.error || 'Registration failed. Please try again.');
     }
@@ -167,6 +174,14 @@ export default function RegistrationPage() {
                 <option value="runner">🛵 Student Runner</option>
                 <option value="shop">🏪 Shop Owner</option>
               </select>
+              {(role === 'runner' || role === 'shop') && (
+                <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
+                  <span>
+                    <strong>Admin Verification Required:</strong> New {role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} accounts must wait for campus administrator approval after submitting this form before logging in.
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

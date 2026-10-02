@@ -15,6 +15,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [pendingInfo, setPendingInfo] = useState(null);
 
   const demoAccounts = [
     { role: 'student', label: '🎓 Student', email: 'student@uiu.ac.bd', pass: 'password123', path: '/dashboard/student' },
@@ -26,6 +27,7 @@ export default function LoginPage() {
   const handleDemoLogin = async (demo) => {
     setIsLoading(true);
     setErrorMessage('');
+    setPendingInfo(null);
     setEmail(demo.email);
     setPassword(demo.pass);
     setRole(demo.role);
@@ -35,6 +37,8 @@ export default function LoginPage() {
 
     if (result && result.success) {
       navigate(`/dashboard/${result.user.role || demo.role}`);
+    } else if (result?.isPendingApproval) {
+      setPendingInfo(result);
     } else {
       setErrorMessage(result?.error || 'Unable to sign in with demo account. Please check server connection.');
     }
@@ -43,6 +47,7 @@ export default function LoginPage() {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     setErrorMessage('');
+    setPendingInfo(null);
 
     if (!email.trim()) {
       setErrorMessage('Please enter your university email');
@@ -61,6 +66,8 @@ export default function LoginPage() {
 
     if (result && result.success) {
       navigate(`/dashboard/${result.user.role || role}`);
+    } else if (result?.isPendingApproval) {
+      setPendingInfo(result);
     } else {
       setErrorMessage(result?.error || 'Invalid email or password');
     }
@@ -137,6 +144,26 @@ export default function LoginPage() {
             </h3>
             <p className="text-slate-500 text-xs">Enter your campus credentials to continue.</p>
           </div>
+
+          {pendingInfo && (
+            <div className="mb-4 p-4 bg-amber-50 border border-amber-200 text-amber-900 text-xs rounded-2xl flex flex-col gap-2">
+              <div className="flex items-center gap-2 font-bold text-amber-800">
+                <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
+                <span>Account Pending Admin Approval</span>
+              </div>
+              <p className="text-amber-700 leading-relaxed">
+                {pendingInfo.message || 'Your account is pending admin approval. You will need to wait for campus administration to review and approve your registration.'}
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate(`/pending-approval?email=${encodeURIComponent(pendingInfo.email || email)}&role=${encodeURIComponent(pendingInfo.role || role)}&name=${encodeURIComponent(pendingInfo.name || '')}`)}
+                className="mt-1 self-start px-3.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition-all shadow-sm"
+              >
+                Track Approval Status
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
 
           {errorMessage && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-xl flex items-center gap-2">
