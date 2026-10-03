@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import {
   ChevronRight,
   CloudUpload,
-  Image as ImageIcon,
   AlertCircle,
   CheckCircle2,
   Loader2
@@ -460,14 +459,6 @@ export default function ShopAddMenuItem() {
               className="rounded-xl border border-slate-300 bg-white px-7 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
             >
               Cancel
-            </button>
-
-            <button
-              type="button"
-              className="flex items-center gap-2 rounded-xl border border-orange-500 bg-white px-7 py-3 text-sm font-bold text-orange-600 transition hover:bg-orange-50"
-            >
-              <ImageIcon className="h-4 w-4" />
-              Preview
             </button>
 
             <button
