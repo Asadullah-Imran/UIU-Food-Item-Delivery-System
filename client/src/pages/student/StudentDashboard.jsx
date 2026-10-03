@@ -39,7 +39,7 @@ export default function StudentDashboard() {
   React.useEffect(() => {
     const fetchShops = async () => {
       try {
-        const res = await fetch('/api/shops');
+        const res = await fetch('/api/student/shops');
         const data = await res.json();
         if (res.ok && data.shops && data.shops.length > 0) {
           setShops(data.shops);
@@ -50,24 +50,9 @@ export default function StudentDashboard() {
     };
     fetchShops();
   }, []);
-
-
-  React.useLayoutEffect(() => {
-    const dashboardLink = document.querySelector('nav a:first-child');
-    if (dashboardLink) {
-      dashboardLink.classList.add('bg-orange-500', 'text-white', 'shadow-md', 'shadow-orange-500/20');
-      dashboardLink.classList.remove('text-slate-600', 'hover:bg-slate-100', 'hover:text-orange-500');
-    }
-  }, []);
-
   return (
     <>
       <style>{`
-        body:not(:has([data-student-subpage="true"])) nav a:first-child {
-          background-color: #f97316 !important;
-          color: #ffffff !important;
-          box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.2), 0 2px 4px -2px rgba(249, 115, 22, 0.2) !important;
-        }
         @keyframes bounce-in {
           0% { transform: translate(-50%, 100%); opacity: 0; }
           60% { transform: translate(-50%, -10%); opacity: 1; }

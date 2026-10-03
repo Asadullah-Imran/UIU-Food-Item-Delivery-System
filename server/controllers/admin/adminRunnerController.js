@@ -28,8 +28,8 @@ export const listRunners = async (req, res) => {
     const pageNum  = Math.max(1, parseInt(page,  10) || 1);
     const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
 
-    // Build filter — canonical runner model uses role: 'runner'
-    const filter = { role: 'runner' };
+    // Build filter — canonical runner model uses role: 'runner' or isRunner flag
+    const filter = { $or: [{ role: 'runner' }, { isRunner: true }] };
 
     const ALLOWED_STATUSES = ['active', 'pending', 'suspended', 'rejected'];
     if (status && ALLOWED_STATUSES.includes(status.toLowerCase())) {
@@ -138,7 +138,7 @@ export const approveRunner = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
-    if (user.role !== 'runner') return res.status(400).json({ success: false, message: 'Target user is not a Runner.' });
+    if (user.role !== 'runner' && !user.isRunner) return res.status(400).json({ success: false, message: 'Target user is not a Runner applicant.' });
 
     const { from } = VALID_TRANSITIONS.approve;
     if (!from.includes(user.status)) {
@@ -150,6 +150,8 @@ export const approveRunner = async (req, res) => {
 
     user.status     = 'active';
     user.isApproved = true;
+    user.isRunner   = true;
+    user.role       = 'runner';
     // Mark runner as available once approved
     if (user.runnerDetails) {
       user.runnerDetails.isAvailable = true;
@@ -177,7 +179,7 @@ export const rejectRunner = async (req, res) => {
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ success: false, message: 'User not found.' });
-    if (user.role !== 'runner') return res.status(400).json({ success: false, message: 'Target user is not a Runner.' });
+    if (user.role !== 'runner' && !user.isRunner) return res.status(400).json({ success: false, message: 'Target user is not a Runner applicant.' });
 
     const { from } = VALID_TRANSITIONS.reject;
     if (!from.includes(user.status)) {

@@ -100,8 +100,17 @@ export default function SharedLayout({
         <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
           {navigation.map((link) => {
             const Icon = link.icon;
-            // Precise active state matching
-            const isActive = currentPath === link.path || (link.path !== '/dashboard/shop' && currentPath.startsWith(link.path));
+            const ROOT_DASHBOARDS = ['/dashboard/student', '/dashboard/runner', '/dashboard/shop'];
+            const isRootDashboard = ROOT_DASHBOARDS.includes(link.path);
+
+            let isActive = false;
+            if (isRootDashboard) {
+              isActive = currentPath === link.path || currentPath === `${link.path}/`;
+            } else if (link.path === '/dashboard/runner/active/accepted') {
+              isActive = currentPath.startsWith('/dashboard/runner/active');
+            } else {
+              isActive = currentPath === link.path || currentPath.startsWith(`${link.path}/`);
+            }
             
             return (
               <Link 

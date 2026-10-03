@@ -69,12 +69,13 @@ export const register = async (req, res) => {
     };
 
     if (role === 'runner') {
+      userData.isRunner = true;
       userData.runnerDetails = {
         vehicleType: vehicleType || 'Bicycle',
         rating: 5.0,
         totalTrips: 0,
         walletBalance: 0,
-        isAvailable: true
+        isAvailable: false
       };
     }
 
@@ -97,7 +98,8 @@ export const register = async (req, res) => {
           category: category?.trim() || 'Food Court',
           location: campusLocation?.trim() || 'UIU Food Court Counter',
           phone: phone?.trim() || '',
-          isApproved: false
+          isApproved: false,
+          isOpen: false
         });
       } catch (shopErr) {
         await User.findByIdAndDelete(user._id);
@@ -105,16 +107,19 @@ export const register = async (req, res) => {
       }
     }
 
-    const token = user.generateAuthToken();
+    const isPendingApproval = role === 'shop' || role === 'runner';
+
+    // Only issue active token for immediately active roles (student)
+    const token = isPendingApproval ? null : user.generateAuthToken();
 
     res.status(201).json({
       success: true,
-      message: role === 'shop'
-        ? 'Shop application submitted successfully and is pending administrator approval.'
+      requiresApproval: isPendingApproval,
+      isPendingApproval,
+      message: isPendingApproval
+        ? `Your ${role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} application has been submitted and is pending admin approval. You can log in once an administrator approves your account.`
         : 'User registered successfully',
       token,
-      isPendingApproval: role === 'shop' && !isApproved,
-      requiresApproval: role === 'shop' || role === 'runner',
       user: {
         id: user._id,
         name: user.name,
@@ -179,34 +184,24 @@ export const login = async (req, res) => {
       });
     }
 
-    if (user.role === 'shop' && (user.status === 'pending' || !user.isApproved)) {
-      const token = user.generateAuthToken();
+    if (user.status === 'rejected') {
+      return res.status(403).json({
+        success: false,
+        accountStatus: 'rejected',
+        message: `Your ${user.role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} application has been rejected by campus administration.`
+      });
+    }
+
+    // Unapproved or pending shop / runner accounts must wait for admin approval
+    if ((user.role === 'shop' || user.role === 'runner') && (user.status === 'pending' || !user.isApproved)) {
       return res.status(403).json({
         success: false,
         isPendingApproval: true,
         accountStatus: 'pending',
-        message: 'Your shop application is currently pending admin approval. You will receive access once approved by campus administration.',
-        token,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          universityId: user.universityId,
-          phone: user.phone,
-          avatar: user.avatar,
-          status: user.status,
-          isApproved: user.isApproved,
-          shopDetails: user.shopDetails
-        }
-      });
-    }
-
-    if (user.role === 'shop' && user.status === 'rejected') {
-      return res.status(403).json({
-        success: false,
-        accountStatus: 'rejected',
-        message: 'Your shop application was not approved by campus administration. Please contact the campus admin office for more details.'
+        role: user.role,
+        name: user.name,
+        email: user.email,
+        message: `Your ${user.role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} account is currently pending admin approval. Please wait for an administrator to approve your application before accessing the portal.`
       });
     }
 
@@ -482,6 +477,44 @@ export const changePassword = async (req, res) => {
       success: false,
       message: error.message || 'Failed to change password. Please try again later.'
     });
+  }
+};
+
+// @desc    Check account approval status by email (for pending approval page)
+// @route   GET /api/auth/check-status
+// @access  Public
+export const checkApprovalStatus = async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email query parameter is required' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User account not found' });
+    }
+
+    let shopApproved = true;
+    if (user.role === 'shop') {
+      const shop = await Shop.findOne({ owner: user._id });
+      shopApproved = shop ? shop.isApproved : false;
+    }
+
+    const isFullyApproved = user.isApproved && user.status === 'active' && shopApproved;
+
+    return res.status(200).json({
+      success: true,
+      role: user.role,
+      status: user.status,
+      isApproved: user.isApproved,
+      isFullyApproved,
+      name: user.name,
+      email: user.email
+    });
+  } catch (error) {
+    console.error('Check Approval Status Error:', error);
+    res.status(500).json({ success: false, message: error.message || 'Server error checking approval status' });
   }
 };
 
