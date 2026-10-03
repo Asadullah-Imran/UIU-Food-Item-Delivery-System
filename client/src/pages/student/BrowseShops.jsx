@@ -41,7 +41,12 @@ export default function BrowseShops() {
     }
   }, [location.state]);
 
-  const { isFavorite, toggleFavorite, favoriteCount } = useFavorites();
+  const { isFavorite, toggleFavorite } = useFavorites();
+  
+  // Only count favorites that actually exist in the current shops list
+  // This prevents legacy local storage IDs (e.g., from dummy JSON) from bloating the count
+  const validFavoriteCount = shops.filter(shop => isFavorite(shop._id || shop.id)).length;
+
   const filters = ["All", "Favorites", "Food Court", "Café", "Snacks", "Stationery", "Grocery"];
 
   const filteredShops = shops.filter(shop => {
@@ -69,7 +74,7 @@ export default function BrowseShops() {
           </div>
           <div className="bg-white p-4 py-3 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-start min-w-[120px]">
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Favorites</p>
-            <p className="text-2xl font-bold text-red-500 leading-none">{favoriteCount}</p>
+            <p className="text-2xl font-bold text-red-500 leading-none">{validFavoriteCount}</p>
           </div>
           <div className="bg-white p-4 py-3 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-start min-w-[140px]">
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Avg. Delivery</p>
@@ -121,9 +126,9 @@ export default function BrowseShops() {
               >
                 {isFavTab && <Heart className={`w-3.5 h-3.5 ${isSelected ? 'fill-white text-white' : 'text-red-500'}`} />}
                 {filter}
-                {isFavTab && favoriteCount > 0 && (
+                {isFavTab && validFavoriteCount > 0 && (
                   <span className={`text-xs ml-1 px-1.5 py-0.2 rounded-full font-bold ${isSelected ? 'bg-white text-red-500' : 'bg-red-100 text-red-600'}`}>
-                    {favoriteCount}
+                    {validFavoriteCount}
                   </span>
                 )}
               </button>

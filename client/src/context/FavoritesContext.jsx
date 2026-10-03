@@ -14,8 +14,8 @@ export function FavoritesProvider({ children }) {
     } catch (e) {
       console.error('Failed to load favorites from localStorage', e);
     }
-    // Fallback: shops in shopsData where isFavorite is true
-    return shopsData.filter(s => s.isFavorite).map(s => s.id);
+    // Fallback: empty array to avoid legacy JSON IDs clashing with MongoDB IDs
+    return [];
   });
 
   useEffect(() => {
