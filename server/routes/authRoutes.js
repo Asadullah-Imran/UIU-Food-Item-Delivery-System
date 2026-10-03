@@ -24,6 +24,6 @@ router.put('/profile', protect, upload.single('avatar'), updateProfile);
 router.put('/avatar', protect, upload.single('avatar'), uploadAvatar);
 router.post('/become-runner', protect, becomeRunner);
 router.put('/change-password', protect, changePassword);
-router.put('/password', protect, changePassword);
+
 
 export default router;
