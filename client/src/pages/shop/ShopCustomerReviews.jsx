@@ -14,6 +14,7 @@ const ShopCustomerReviews = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [lastRefreshed, setLastRefreshed] = useState(null);
 
   const fetchReviews = async (ratingFilter) => {
     try {
@@ -45,6 +46,7 @@ const ShopCustomerReviews = () => {
       if (data.averageRating !== undefined) setAverageRating(data.averageRating);
       if (data.totalReviews !== undefined) setTotalReviews(data.totalReviews);
       if (data.distribution) setDistribution(data.distribution);
+      setLastRefreshed(new Date());
     } catch (err) {
       console.error('getShopReviews Error:', err);
       setError(err.message || 'Failed to fetch reviews');
@@ -55,6 +57,14 @@ const ShopCustomerReviews = () => {
 
   useEffect(() => {
     fetchReviews(selectedRating);
+  }, [selectedRating]);
+
+  // Auto-poll every 30 seconds to pick up new student reviews in real time
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchReviews(selectedRating);
+    }, 30000);
+    return () => clearInterval(interval);
   }, [selectedRating]);
 
   // Search Bar inside Header
@@ -130,9 +140,20 @@ const ShopCustomerReviews = () => {
         {/* Page Header */}
         <div className="mb-6 mt-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-slate-700 mb-1">Customer Reviews</h1>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-xl font-bold text-slate-700">Customer Reviews</h1>
+              <span className="flex items-center gap-1.5 px-2.5 py-0.5 bg-green-50 border border-green-200 text-green-700 text-[10px] font-extrabold rounded-full uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                Live
+              </span>
+            </div>
             <p className="text-sm font-semibold text-slate-500">
               Real-time student ratings and feedback verified from completed deliveries.
+              {lastRefreshed && (
+                <span className="ml-2 text-slate-400 font-medium">
+                  · Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+              )}
             </p>
           </div>
           <button 
@@ -141,7 +162,7 @@ const ShopCustomerReviews = () => {
             className="self-start md:self-auto inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:border-orange-300 text-slate-700 font-bold rounded-full text-xs shadow-sm transition"
           >
             <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin text-orange-500' : 'text-slate-400'}`} />
-            Refresh Reviews
+            Refresh Now
           </button>
         </div>
 

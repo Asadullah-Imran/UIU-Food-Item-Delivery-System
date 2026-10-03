@@ -19,7 +19,11 @@ import {
   getStudentTransactions
 } from '../../controllers/student/studentWalletController.js';
 
-import { rateOrderAndRunner } from '../../controllers/student/studentReviewController.js';
+import { 
+  rateOrderAndRunner, 
+  getStudentShopReviews, 
+  submitStudentShopReview 
+} from '../../controllers/student/studentReviewController.js';
 import {
   createStudentComplaint,
   getStudentComplaints
@@ -35,9 +39,11 @@ const router = express.Router();
 // Public / Protected Browsing
 router.get('/shops', getStudentShops);
 router.get('/shops/:shopId', getStudentShopDetails);
+router.get('/shops/:shopId/reviews', getStudentShopReviews);
 
 // Protected Student Routes
 router.use(protect);
+router.post('/shops/:shopId/review', submitStudentShopReview);
 
 // Wallet & In-App Purchase
 router.get('/wallet/balance', getStudentWalletBalance);

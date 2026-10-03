@@ -19,12 +19,29 @@ export default function ShopDetails() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [itemQuantities, setItemQuantities] = useState({});
   const [addedAnimation, setAddedAnimation] = useState(null);
+  const [reviews, setReviews] = useState([]);
   const [reviewSuccess, setReviewSuccess] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewHover, setReviewHover] = useState(0);
   const [reviewComment, setReviewComment] = useState('');
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewError, setReviewError] = useState(null);
+
+  const fetchReviews = async () => {
+    try {
+      const res = await fetch(`/api/student/shops/${shopId}/reviews`);
+      const data = await res.json();
+      if (res.ok && data.reviews) {
+        setReviews(data.reviews);
+        if (data.averageRating !== undefined) {
+          setShop(prev => prev ? { ...prev, rating: data.averageRating, reviewsCount: data.reviewsCount } : prev);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch reviews:', err);
+    }
+  };
 
   useEffect(() => {
     const fetchShopDetails = async () => {
@@ -48,6 +65,9 @@ export default function ShopDetails() {
           setMenuItems(normalized);
           if (data.categories && data.categories.length > 0) {
             setCategories(data.categories);
+          }
+          if (data.reviews) {
+            setReviews(data.reviews);
           }
         } else {
           setFetchError(data.message || 'Shop not found.');
@@ -204,7 +224,7 @@ export default function ShopDetails() {
             
             <div className="flex items-center space-x-6 text-sm font-bold text-slate-700">
               <div className="flex items-center">
-                <span className="text-orange-500 mr-1.5 text-lg">★</span> {shop.rating} <span className="text-slate-400 font-medium ml-1">(500+ reviews)</span>
+                <span className="text-orange-500 mr-1.5 text-lg">★</span> {shop.rating} <span className="text-slate-400 font-medium ml-1">({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})</span>
               </div>
               <div className="flex items-center">
                 <Clock className="w-4 h-4 mr-1.5 text-slate-400" /> {shop.deliveryTime}
@@ -338,12 +358,18 @@ export default function ShopDetails() {
           {/* Reviews Section */}
           <div className="mb-10">
             <div className="flex justify-between items-end mb-6 border-b border-slate-200 pb-2">
-              <h3 className="text-lg font-bold text-slate-800">Student Reviews</h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-800">Student Reviews</h3>
+                <span className="text-xs font-bold px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full">
+                  {reviews.length}
+                </span>
+              </div>
               <button
                 onClick={() => {
                   setShowReviewModal(true);
                   setReviewRating(0);
                   setReviewComment('');
+                  setReviewError(null);
                   setReviewSuccess(false);
                 }}
                 className="text-sm font-bold text-orange-600 hover:underline cursor-pointer"
@@ -353,16 +379,63 @@ export default function ShopDetails() {
             </div>
 
             {reviewSuccess && (
-              <div className="p-4 mb-4 bg-green-50 border border-green-200 rounded-2xl text-green-800 text-sm font-semibold flex items-center gap-2">
+              <div className="p-4 mb-4 bg-green-50 border border-green-200 rounded-2xl text-green-800 text-sm font-semibold flex items-center gap-2 animate-in fade-in">
                 <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
                 Thank you! Your review has been submitted successfully.
               </div>
             )}
 
             <div className="space-y-4">
-              <div className="bg-white p-6 rounded-2xl border border-slate-100 text-center text-slate-400 text-sm">
-                No reviews yet for this shop. Be the first!
-              </div>
+              {reviews.length === 0 ? (
+                <div className="bg-white p-8 rounded-2xl border border-slate-100 text-center text-slate-400 text-sm">
+                  <Star className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                  No reviews yet for this shop. Be the first student to review!
+                </div>
+              ) : (
+                reviews.map((rev) => (
+                  <div
+                    key={rev.id || rev._id || rev.orderId}
+                    className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={rev.avatar}
+                          alt={rev.user}
+                          className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                          onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(rev.user || 'Student')}&background=F37623&color=fff&bold=true`;
+                          }}
+                        />
+                        <div>
+                          <h4 className="font-bold text-sm text-slate-800">{rev.user}</h4>
+                          <span className="text-[11px] font-medium text-slate-400">
+                            {rev.createdAt ? new Date(rev.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Verified Student'}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <Star
+                            key={star}
+                            className={`w-3.5 h-3.5 ${
+                              star <= (Number(rev.rating) || 5)
+                                ? 'fill-orange-400 text-orange-400'
+                                : 'text-slate-200 fill-slate-200'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    {rev.comment && (
+                      <p className="text-sm text-slate-600 pl-13 mt-1 leading-relaxed">
+                        {rev.comment}
+                      </p>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
@@ -387,6 +460,13 @@ export default function ShopDetails() {
                 </div>
 
                 <div className="p-6 space-y-5">
+                  {reviewError && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs font-semibold text-red-700 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                      <span>{reviewError}</span>
+                    </div>
+                  )}
+
                   {/* Star Rating Picker */}
                   <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Your Rating</p>
@@ -446,11 +526,47 @@ export default function ShopDetails() {
                       onClick={async () => {
                         if (reviewRating === 0) return;
                         setReviewSubmitting(true);
-                        await new Promise((r) => setTimeout(r, 800));
-                        setReviewSubmitting(false);
-                        setShowReviewModal(false);
-                        setReviewSuccess(true);
-                        setTimeout(() => setReviewSuccess(false), 4000);
+                        setReviewError(null);
+
+                        try {
+                          const token = localStorage.getItem('uiu_auth_token');
+                          if (!token) {
+                            setReviewError('Please log in as a student to write a review.');
+                            setReviewSubmitting(false);
+                            return;
+                          }
+
+                          const res = await fetch(`/api/student/shops/${shop._id || shop.id || shopId}/review`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              Authorization: `Bearer ${token}`
+                            },
+                            body: JSON.stringify({
+                              rating: reviewRating,
+                              comment: reviewComment
+                            })
+                          });
+
+                          const data = await res.json();
+                          if (!res.ok) {
+                            throw new Error(data.message || 'Failed to submit review');
+                          }
+
+                          setShowReviewModal(false);
+                          setReviewSuccess(true);
+                          setReviewRating(0);
+                          setReviewComment('');
+                          setTimeout(() => setReviewSuccess(false), 4000);
+
+                          // Fetch reviews immediately so newly posted review shows up
+                          await fetchReviews();
+                        } catch (err) {
+                          console.error('Submit review error:', err);
+                          setReviewError(err.message || 'Failed to submit review. Please try again.');
+                        } finally {
+                          setReviewSubmitting(false);
+                        }
                       }}
                       className="flex-1 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-md shadow-orange-500/20"
                     >
