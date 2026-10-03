@@ -168,7 +168,11 @@ export default function BrowseShops() {
                   <img 
                     src={shop.image} 
                     alt={shop.name} 
-                    className={`w-full h-full object-cover transition-transform duration-700 ${shop.isOpen ? 'group-hover:scale-110' : 'grayscale'}`} 
+                    className={`w-full h-full object-cover transition-transform duration-700 ${shop.isOpen ? 'group-hover:scale-110' : 'grayscale'}`}
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(shop.name)}&background=F37623&color=fff&size=400&bold=true`;
+                    }}
                   />
                   
                   {/* Status Badge */}
