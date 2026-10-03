@@ -79,16 +79,30 @@ export default function RunnerEarnings() {
   }, [token]);
 
   const chartData = Array.from({ length: 7 }, (_, index) => {
-    const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const daysAgo = 6 - index;
+    const dateObj = new Date();
+    dateObj.setDate(dateObj.getDate() - daysAgo);
+    
+    const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+    
     const base = transactions.filter((txn) => {
       if (!txn?.createdAt) return false;
-      const day = new Date(txn.createdAt);
-      const now = new Date();
-      const diff = Math.floor((now - day) / (1000 * 60 * 60 * 24));
-      return diff >= index && diff < index + 1;
+      const txnDate = new Date(txn.createdAt);
+      return (
+        txnDate.getDate() === dateObj.getDate() &&
+        txnDate.getMonth() === dateObj.getMonth() &&
+        txnDate.getFullYear() === dateObj.getFullYear()
+      );
     });
+    
     const sum = base.reduce((acc, txn) => acc + (Number(txn.amount) || 0), 0);
-    return { day: dayNames[index], height: sum ? Math.min((sum / Math.max(summary.thisWeek || 1, 1)) * 100, 100) : 8, active: index === 6 };
+    const maxRef = Math.max(summary.thisWeek || 1, 1);
+    
+    return { 
+      day: dayName, 
+      height: sum > 0 ? Math.min((sum / maxRef) * 100, 100) : 8, 
+      active: index === 6 
+    };
   });
 
   return (
@@ -352,7 +366,7 @@ export default function RunnerEarnings() {
             <button className="text-sm font-bold text-[#F37623] hover:text-[#d9671b] transition-colors">
               View All Transactions
             </button>
-            <button className="bg-[#F37623] hover:bg-[#d9671b] text-white px-8 py-3.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-sm">
+            <button onClick={() => alert('Withdraw Cash functionality is coming soon!')} className="bg-[#F37623] hover:bg-[#d9671b] text-white px-8 py-3.5 rounded-xl text-sm font-bold flex items-center transition-colors shadow-sm cursor-pointer">
               <Wallet className="w-4 h-4 mr-2" /> Withdraw Cash
             </button>
           </div>
