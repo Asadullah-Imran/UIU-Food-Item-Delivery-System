@@ -154,8 +154,14 @@ const ShopCustomerReviews = () => {
             <div>
               <p className="text-slate-500 text-xs font-semibold mb-1">Overall Rating</p>
               <h3 className="text-2xl font-extrabold text-slate-800">
-                {averageRating ? Number(averageRating).toFixed(1) : '5.0'} <span className="text-sm text-slate-400 font-semibold">/ 5.0</span>
+                {totalReviews > 0
+                  ? <>{Number(averageRating).toFixed(1)} <span className="text-sm text-slate-400 font-semibold">/ 5.0</span></>
+                  : <span className="text-slate-400">—</span>
+                }
               </h3>
+              {totalReviews === 0 && (
+                <p className="text-[10px] text-slate-400 font-semibold mt-0.5">No reviews yet</p>
+              )}
             </div>
           </div>
           
