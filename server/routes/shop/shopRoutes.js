@@ -25,6 +25,7 @@ import {
   getShopOrderChat,
   sendShopChatMessage
 } from '../../controllers/shop/shopChatController.js';
+import { changePassword } from '../../controllers/authController.js';
 import { protect } from '../../middlewares/auth.js';
 import { authorizeRoles } from '../../middlewares/role.js';
 import { requireApprovedShop } from '../../middlewares/shopAuth.js';
@@ -56,6 +57,7 @@ router.post('/menu', protect, authorizeRoles('shop', 'admin'), requireApprovedSh
 router.put('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), requireApprovedShop, upload.single('image'), updateMenuItem);
 router.patch('/menu/:itemId/availability', protect, authorizeRoles('shop', 'admin'), requireApprovedShop, toggleItemAvailability);
 router.delete('/menu/:itemId', protect, authorizeRoles('shop', 'admin'), requireApprovedShop, deleteMenuItem);
+router.put('/change-password', protect, authorizeRoles('shop', 'admin'), changePassword);
 
 // Public single shop view
 router.get('/:shopId', getShopById);

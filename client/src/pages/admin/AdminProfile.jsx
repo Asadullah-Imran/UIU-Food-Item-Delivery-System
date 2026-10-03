@@ -22,6 +22,7 @@ import {
   AlertCircle,
   Loader2,
 } from "lucide-react";
+import ChangePasswordModal from "../../components/ChangePasswordModal";
 
 export default function AdminProfile() {
   const navigate = useNavigate();
@@ -37,6 +38,7 @@ export default function AdminProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const [profile, setProfile] = useState({
     name: user?.name || "Campus Super Admin",
@@ -442,8 +444,8 @@ export default function AdminProfile() {
 
                 <button
                   type="button"
-                  onClick={() => alert("Password reset link will be sent to your official UIU email.")}
-                  className="flex items-center gap-2 rounded-lg border border-orange-400 px-4 py-2 text-xs font-medium text-[#a4510d] hover:bg-orange-50 transition"
+                  onClick={() => setIsPasswordModalOpen(true)}
+                  className="flex items-center gap-2 rounded-lg border border-orange-400 px-4 py-2 text-xs font-medium text-[#a4510d] hover:bg-orange-50 transition cursor-pointer"
                 >
                   <LockKeyhole size={14} />
                   Change Password
@@ -637,6 +639,15 @@ export default function AdminProfile() {
           </div>
         </main>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSuccess={() => {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 3000);
+        }}
+      />
     </div>
   );
 }

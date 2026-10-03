@@ -410,3 +410,78 @@ export const logout = async (req, res) => {
   }
 };
 
+// @desc    Change password for authenticated user (All roles: Student, Runner, Shop Owner, Admin)
+// @route   PUT /api/auth/change-password
+// @access  Private
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword, confirmPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide both your current password and new password'
+      });
+    }
+
+    if (confirmPassword && newPassword !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password and confirmation password do not match'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be at least 6 characters long'
+      });
+    }
+
+    if (currentPassword === newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'New password must be different from your current password'
+      });
+    }
+
+    // Retrieve user including the hashed password
+    const user = await User.findById(req.user._id || req.user.id).select('+password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User account not found'
+      });
+    }
+
+    // Verify current password
+    const isMatch = await user.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(400).json({
+        success: false,
+        message: 'The current password you entered is incorrect'
+      });
+    }
+
+    // Update password (pre-save hook will hash it)
+    user.password = newPassword;
+    await user.save();
+
+    // Generate a fresh authentication token
+    const token = user.generateAuthToken();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password changed successfully',
+      token
+    });
+  } catch (error) {
+    console.error('Change Password Error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to change password. Please try again later.'
+    });
+  }
+};
+
