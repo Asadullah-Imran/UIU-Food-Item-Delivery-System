@@ -165,8 +165,18 @@ export const getShopDashboard = async (req, res) => {
 
     const lowStockCount = lowStockItems.length;
 
-    const averageRating = shop.rating || 0;
-    const reviewsCount = shop.reviewsCount || 0;
+    // Compute live average rating from DELIVERED orders (same source as getShopReviews)
+    const ratedOrders = await Order.find({
+      shop: shop._id,
+      status: 'DELIVERED',
+      'ratings.shopRating': { $exists: true, $ne: null }
+    }).select('ratings');
+
+    const reviewsCount = ratedOrders.length;
+    const averageRating = reviewsCount > 0
+      ? Number((ratedOrders.reduce((sum, o) => sum + Number(o.ratings.shopRating), 0) / reviewsCount).toFixed(1))
+      : 0;
+
     const bestSellingItem = popularItems && popularItems.length > 0 ? popularItems[0] : null;
 
     return res.status(200).json({

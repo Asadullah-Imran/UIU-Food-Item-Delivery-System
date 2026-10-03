@@ -13,7 +13,8 @@ export default function SharedLayout({
   navigation = [], 
   user = {}, 
   switchRoleText, 
-  switchRolePath
+  switchRolePath,
+  isShopRole = false
 }) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -40,12 +41,18 @@ export default function SharedLayout({
     navigate('/login');
   };
 
-  // Default user if not provided fully
+  // Default user if not provided fully.
+  // For the shop role we always use the explicitly passed user prop (shop name + shop image)
+  // so the header shows the shop brand, not the individual owner account.
   const displayUser = {
-    name: currentUser?.name || user.name || 'User',
+    name: isShopRole
+      ? (user.name || currentUser?.name || 'UIU Shop')
+      : (currentUser?.name || user.name || 'User'),
     idLabel: currentUser ? (currentUser.role === 'runner' ? 'Runner ID' : 'ID') : (user.idLabel || 'ID'),
     idNumber: currentUser?.universityId || user.idNumber || '#0000',
-    avatar: currentUser?.avatar || user.avatar || 'https://i.pravatar.cc/150'
+    avatar: isShopRole
+      ? (user.avatar || currentUser?.avatar || 'https://i.pravatar.cc/150')
+      : (currentUser?.avatar || user.avatar || 'https://i.pravatar.cc/150')
   };
 
   const getProfilePath = () => {
@@ -192,7 +199,11 @@ export default function SharedLayout({
                 <p className="text-sm font-bold text-slate-800 leading-none">{displayUser.name}</p>
                 <p className="text-[10px] text-slate-500 mt-1 font-semibold">{displayUser.idLabel}: {displayUser.idNumber}</p>
               </div>
-              <img src={displayUser.avatar} alt="Profile" className="w-10 h-10 rounded-full object-cover shadow-sm" />
+              <img
+                src={displayUser.avatar}
+                alt="Profile"
+                className={`w-10 h-10 object-cover shadow-sm ${isShopRole ? 'rounded-xl' : 'rounded-full'}`}
+              />
             </Link>
           </div>
         </header>

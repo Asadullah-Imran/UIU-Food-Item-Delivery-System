@@ -4,10 +4,11 @@ import {
   User, Mail, Phone, GraduationCap, MapPin, Wallet, 
   Award, Star, Zap, Package, CheckCircle2, ShieldCheck, 
   Pencil, Sparkles, ArrowRight, ArrowLeftRight, Bike, 
-  AlertCircle, X, Check, Clock, TrendingUp, DollarSign
+  AlertCircle, X, Check, Clock, TrendingUp, DollarSign, Lock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import TopUpModal from '../../components/wallet/TopUpModal';
+import ChangePasswordModal from '../../components/ChangePasswordModal';
 
 export default function StudentProfile() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function StudentProfile() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isRunnerModalOpen, setIsRunnerModalOpen] = useState(false);
   const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   // Profile fields state
   const [profileData, setProfileData] = useState({
@@ -241,10 +243,19 @@ export default function StudentProfile() {
                 setFormData({ ...profileData });
                 setIsEditModalOpen(true);
               }}
-              className="flex items-center gap-2 bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-2.5 px-5 rounded-xl shadow-md shadow-orange-500/20 text-sm transition-all"
+              className="flex items-center gap-2 bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-2.5 px-5 rounded-xl shadow-md shadow-orange-500/20 text-sm transition-all cursor-pointer"
             >
               <Pencil className="w-4 h-4" />
               Edit Profile
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-4 rounded-xl shadow-xs text-sm transition-all cursor-pointer"
+            >
+              <Lock className="w-4 h-4 text-slate-500" />
+              Change Password
             </button>
           </div>
 
@@ -632,6 +643,13 @@ export default function StudentProfile() {
       <TopUpModal
         isOpen={isTopUpOpen}
         onClose={() => setIsTopUpOpen(false)}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSuccess={() => setSuccessToast('Password changed successfully!')}
       />
 
     </div>

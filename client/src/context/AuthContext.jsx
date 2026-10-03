@@ -226,8 +226,40 @@ export function AuthProvider({ children }) {
     localStorage.setItem(USER_CACHE_KEY, JSON.stringify(updated));
   };
 
+  const changePasswordApi = async (currentPassword, newPassword, confirmPassword) => {
+    try {
+      const activeToken = token || localStorage.getItem('uiu_auth_token');
+      if (!activeToken) {
+        throw new Error('You must be logged in to change your password');
+      }
+
+      const res = await fetch('/api/auth/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${activeToken}`
+        },
+        body: JSON.stringify({ currentPassword, newPassword, confirmPassword })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to change password');
+      }
+
+      if (data.token) {
+        localStorage.setItem('uiu_auth_token', data.token);
+        setToken(data.token);
+      }
+
+      return { success: true, message: data.message || 'Password changed successfully' };
+    } catch (err) {
+      return { success: false, error: err.message || 'Error changing password' };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loginApi, registerApi, logout, refreshUser, updateUserWallet, updateUserData, isLoading }}>
+    <AuthContext.Provider value={{ user, token, loginApi, registerApi, logout, refreshUser, updateUserWallet, updateUserData, changePasswordApi, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

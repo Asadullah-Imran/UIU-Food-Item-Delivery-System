@@ -6,9 +6,10 @@ import {
 import { useLayout } from '../../context/LayoutContext';
 import { useAuth } from '../../context/AuthContext';
 import { compressImage } from '../../utils/imageCompressor';
+import ChangePasswordModal from '../../components/ChangePasswordModal';
 
 const ShopProfile = () => {
-  const { token } = useAuth();
+  const { token, logout } = useAuth();
   const fileInputRef = useRef(null);
   const bannerInputRef = useRef(null);
 
@@ -28,6 +29,13 @@ const ShopProfile = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isUploadingBanner, setIsUploadingBanner] = useState(false);
   const [toast, setToast] = useState(null);
+
+  // Dynamic profile-page metrics
+  const [metrics, setMetrics] = useState(null);
+  const [metricsLoading, setMetricsLoading] = useState(true);
+
+  // Security modals
+  const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
   // State for toggles
   const [liveStatus, setLiveStatus] = useState(true);
@@ -60,8 +68,27 @@ const ShopProfile = () => {
     }
   };
 
+  const fetchMetrics = async () => {
+    try {
+      setMetricsLoading(true);
+      const authToken = token || localStorage.getItem('uiu_auth_token');
+      const res = await fetch('/api/shops/dashboard', {
+        headers: { Authorization: `Bearer ${authToken}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.dashboard) {
+        setMetrics(data.dashboard);
+      }
+    } catch (e) {
+      console.warn('Failed to load shop metrics:', e);
+    } finally {
+      setMetricsLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchShopProfile();
+    fetchMetrics();
   }, [token]);
 
   const showToast = (message, type = 'success') => {
@@ -301,17 +328,33 @@ const ShopProfile = () => {
 
         {/* Metrics Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6 mb-6">
+          {/* Avg Rating */}
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
             <div className="flex justify-between items-start mb-2">
               <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
                 <Star className="w-4 h-4 text-orange-500 fill-orange-500" />
               </div>
-              <span className="text-[10px] font-bold bg-green-50 text-green-600 px-2 py-0.5 rounded-full">+12%</span>
+              {!metricsLoading && metrics && (
+                <span className="text-[10px] font-bold bg-orange-50 text-orange-500 px-2 py-0.5 rounded-full">
+                  {metrics.reviewsCount} {metrics.reviewsCount === 1 ? 'review' : 'reviews'}
+                </span>
+              )}
             </div>
             <p className="text-[10px] font-extrabold text-slate-400 tracking-wider mb-1">AVG RATING</p>
-            <h3 className="text-xl font-extrabold text-slate-800">4.8 <span className="text-sm font-semibold text-slate-400">/ 5.0</span></h3>
+            {metricsLoading ? (
+              <div className="h-7 w-20 bg-slate-100 rounded-lg animate-pulse mt-1" />
+            ) : (
+              <h3 className="text-xl font-extrabold text-slate-800">
+                {metrics?.reviewsCount > 0 ? (
+                  <>{metrics.averageRating.toFixed(1)} <span className="text-sm font-semibold text-slate-400">/ 5.0</span></>
+                ) : (
+                  <span className="text-slate-400 text-base font-semibold">No ratings yet</span>
+                )}
+              </h3>
+            )}
           </div>
 
+          {/* Total Orders */}
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
             <div className="flex justify-between items-start mb-2">
               <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center">
@@ -319,9 +362,18 @@ const ShopProfile = () => {
               </div>
             </div>
             <p className="text-[10px] font-extrabold text-slate-400 tracking-wider mb-1">TOTAL ORDERS</p>
-            <h3 className="text-xl font-extrabold text-slate-800">1,248</h3>
+            {metricsLoading ? (
+              <div className="h-7 w-16 bg-slate-100 rounded-lg animate-pulse mt-1" />
+            ) : (
+              <h3 className="text-xl font-extrabold text-slate-800">
+                {metrics?.completedOrders !== undefined
+                  ? metrics.completedOrders.toLocaleString()
+                  : '—'}
+              </h3>
+            )}
           </div>
 
+          {/* Total Revenue */}
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
             <div className="flex justify-between items-start mb-2">
               <div className="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center">
@@ -329,9 +381,18 @@ const ShopProfile = () => {
               </div>
             </div>
             <p className="text-[10px] font-extrabold text-slate-400 tracking-wider mb-1">TOTAL REVENUE</p>
-            <h3 className="text-xl font-extrabold text-slate-800">৳380,500</h3>
+            {metricsLoading ? (
+              <div className="h-7 w-24 bg-slate-100 rounded-lg animate-pulse mt-1" />
+            ) : (
+              <h3 className="text-xl font-extrabold text-slate-800">
+                {metrics?.totalRevenue !== undefined
+                  ? `৳${metrics.totalRevenue.toLocaleString()}`
+                  : '—'}
+              </h3>
+            )}
           </div>
 
+          {/* Best Seller */}
           <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
             <div className="flex justify-between items-start mb-2">
               <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
@@ -339,7 +400,15 @@ const ShopProfile = () => {
               </div>
             </div>
             <p className="text-[10px] font-extrabold text-slate-400 tracking-wider mb-1">BEST SELLER</p>
-            <h3 className="text-lg font-extrabold text-slate-800">Beef Burger</h3>
+            {metricsLoading ? (
+              <div className="h-7 w-28 bg-slate-100 rounded-lg animate-pulse mt-1" />
+            ) : (
+              <h3 className="text-lg font-extrabold text-slate-800 leading-tight">
+                {metrics?.bestSellingItem?.name || (
+                  <span className="text-slate-400 text-sm font-semibold">No orders yet</span>
+                )}
+              </h3>
+            )}
           </div>
         </div>
 
@@ -644,12 +713,16 @@ const ShopProfile = () => {
               <h3 className="text-sm font-semibold text-slate-700 p-2 mb-2">Security & Access</h3>
 
               <div className="space-y-1">
-                <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
+                <button
+                  type="button"
+                  onClick={() => setIsChangePasswordOpen(true)}
+                  className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group cursor-pointer"
+                >
                   <div className="flex items-center">
-                    <Lock className="w-5 h-5 text-slate-400 mr-3" />
-                    <span className="text-sm font-semibold text-slate-700">Change Password</span>
+                    <Lock className="w-5 h-5 text-slate-400 group-hover:text-orange-500 transition-colors mr-3" />
+                    <span className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors">Change Password</span>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
+                  <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                 </button>
 
                 <button className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors group">
@@ -670,7 +743,11 @@ const ShopProfile = () => {
                   <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600" />
                 </button>
 
-                <button className="w-full flex items-center p-3 rounded-xl hover:bg-red-50 transition-colors group mt-2">
+                <button 
+                  type="button" 
+                  onClick={logout}
+                  className="w-full flex items-center p-3 rounded-xl hover:bg-red-50 transition-colors group mt-2 cursor-pointer"
+                >
                   <LogOut className="w-5 h-5 text-red-500 mr-3" />
                   <span className="text-sm font-semibold text-red-500 group-hover:text-red-600">Logout Session</span>
                 </button>
@@ -681,6 +758,13 @@ const ShopProfile = () => {
         </div>
 
       </div>
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isChangePasswordOpen}
+        onClose={() => setIsChangePasswordOpen(false)}
+        onSuccess={() => showToast('Password changed successfully!', 'success')}
+      />
     </>
   );
 };

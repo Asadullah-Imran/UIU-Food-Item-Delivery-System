@@ -35,23 +35,23 @@ import {
 
 /** Map API status (lowercase) → display label */
 const STATUS_LABEL = {
-  pending:   "Pending",
-  active:    "Approved",
-  rejected:  "Rejected",
+  pending: "Pending",
+  active: "Approved",
+  rejected: "Rejected",
   suspended: "Suspended"
 };
 
 /** Map API category string → badge style */
 function categoryStyle(cat = "") {
   const c = cat.toLowerCase();
-  if (c.includes("cafe") || c.includes("food"))  return "bg-blue-50 text-blue-500";
-  if (c.includes("fast"))                         return "bg-red-50 text-red-500";
-  if (c.includes("stationery"))                   return "bg-purple-50 text-purple-600";
+  if (c.includes("cafe") || c.includes("food")) return "bg-blue-50 text-blue-500";
+  if (c.includes("fast")) return "bg-red-50 text-red-500";
+  if (c.includes("stationery")) return "bg-purple-50 text-purple-600";
   return "bg-gray-100 text-gray-600";
 }
 
 /** Pick a deterministic emoji for a shop name */
-const EMOJIS = ["🍜","🍕","☕","🍔","🥗","🍱","🧋","🍩","🥙","🍣","📦","🖊️"];
+const EMOJIS = ["🍜", "🍕", "☕", "🍔", "🥗", "🍱", "🧋", "🍩", "🥙", "🍣", "📦", "🖊️"];
 function shopEmoji(name = "") {
   let n = 0;
   for (let i = 0; i < name.length; i++) n += name.charCodeAt(i);
@@ -61,28 +61,28 @@ function shopEmoji(name = "") {
 /** Transform a single API record into the shape the UI consumes */
 function mapRecord(r) {
   const shopName = r.shop?.name || r.shopDetails?.shopName || "—";
-  const cat      = r.shop?.category || "—";
-  const loc      = r.shop?.location || r.shopDetails?.campusLocation || "—";
-  const license  = r.shopDetails?.tradeLicense || "N/A";
+  const cat = r.shop?.category || "—";
+  const loc = r.shop?.location || r.shopDetails?.campusLocation || "—";
+  const license = r.shopDetails?.tradeLicense || "N/A";
 
   return {
     // identity
-    userId:       String(r.userId),
-    id:           `#SO-${String(r.userId).slice(-4).toUpperCase()}`,
+    userId: String(r.userId),
+    id: `#SO-${String(r.userId).slice(-4).toUpperCase()}`,
     // display
-    shop:         shopName,
-    owner:        r.name,
-    email:        r.email,
-    phone:        r.phone || "—",
-    category:     cat,
+    shop: shopName,
+    owner: r.name,
+    email: r.email,
+    phone: r.phone || "—",
+    category: cat,
     categoryStyle: categoryStyle(cat),
-    location:     loc,
+    location: loc,
     tradeLicense: license,
-    emoji:        shopEmoji(shopName),
+    emoji: shopEmoji(shopName),
     // status (always derived from API)
-    status:       STATUS_LABEL[r.status] ?? r.status,
-    _rawStatus:   r.status,     // lowercase DB value for API calls
-    date:         r.appliedAt,
+    status: STATUS_LABEL[r.status] ?? r.status,
+    _rawStatus: r.status,     // lowercase DB value for API calls
+    date: r.appliedAt,
   };
 }
 
@@ -115,32 +115,32 @@ export default function AdminShopOwnerApproval() {
 
   // --- Data state ---
   const [applications, setApplications] = useState([]);
-  const [loading, setLoading]           = useState(true);
-  const [error, setError]               = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [actionLoading, setActionLoading] = useState(null); // userId being actioned
 
   // --- Filter / sort state ---
-  const [statusFilter, setStatusFilter]     = useState("All Statuses");
+  const [statusFilter, setStatusFilter] = useState("All Statuses");
   const [categoryFilter, setCategoryFilter] = useState("All Categories");
-  const [sortOrder, setSortOrder]           = useState("newest");
-  const [search, setSearch]                 = useState("");
-  const [page, setPage]                     = useState(1);
-  const [totalPages, setTotalPages]         = useState(1);
-  const [totalCount, setTotalCount]         = useState(0);
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
   const LIMIT = 20;
 
   // --- UI state ---
   const [reviewModal, setReviewModal] = useState(null);
-  const [toast, setToast]             = useState(null);
+  const [toast, setToast] = useState(null);
 
   const menuItems = [
-    { label: "Dashboard",                icon: LayoutDashboard,   path: "/dashboard/admin" },
-    { label: "Approve Shop Owners",      icon: UserCheck,         path: "/dashboard/admin/shop-owners", active: true },
-    { label: "Approve Delivery Runners", icon: Bike,              path: "/dashboard/admin/runners" },
-    { label: "Manage Shops",             icon: Store,             path: "/dashboard/admin/shops" },
-    { label: "Complaint Management",     icon: TriangleAlert,     path: "/dashboard/admin/complaints" },
-    { label: "Reports & Analytics",      icon: ChartNoAxesColumn, path: "/dashboard/admin/reports" },
-    { label: "Admin Profile",            icon: CircleUserRound,   path: "/dashboard/admin/profile" },
+    { label: "Dashboard", icon: LayoutDashboard, path: "/dashboard/admin" },
+    { label: "Approve Shop Owners", icon: UserCheck, path: "/dashboard/admin/shop-owners", active: true },
+    { label: "Approve Delivery Runners", icon: Bike, path: "/dashboard/admin/runners" },
+    { label: "Manage Shops", icon: Store, path: "/dashboard/admin/shops" },
+    { label: "Complaint Management", icon: TriangleAlert, path: "/dashboard/admin/complaints" },
+    { label: "Reports & Analytics", icon: ChartNoAxesColumn, path: "/dashboard/admin/reports" },
+    { label: "Admin Profile", icon: CircleUserRound, path: "/dashboard/admin/profile" },
   ];
 
   // ---------------------------------------------------------------------------
@@ -151,26 +151,26 @@ export default function AdminShopOwnerApproval() {
     setError(null);
     try {
       const apiStatus = {
-        "Pending":   "pending",
-        "Approved":  "active",
-        "Rejected":  "rejected",
+        "Pending": "pending",
+        "Approved": "active",
+        "Rejected": "rejected",
         "Suspended": "suspended"
       }[statusFilter] ?? "";
 
       const result = await API.list({
-        status:   apiStatus,
+        status: apiStatus,
         category: categoryFilter === "All Categories" ? "" : categoryFilter,
-        search:   search.trim(),
-        sort:     sortOrder,
-        page:     pageOverride ?? page,
-        limit:    LIMIT
+        search: search.trim(),
+        sort: sortOrder,
+        page: pageOverride ?? page,
+        limit: LIMIT
       });
 
       if (!result.success) throw new Error(result.message || "Failed to load.");
 
       setApplications((result.data || []).map(mapRecord));
-      setTotalPages(result.pagination?.pages  ?? 1);
-      setTotalCount(result.pagination?.total  ?? 0);
+      setTotalPages(result.pagination?.pages ?? 1);
+      setTotalCount(result.pagination?.total ?? 0);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -217,7 +217,7 @@ export default function AdminShopOwnerApproval() {
   // ---------------------------------------------------------------------------
   // Derived counts (from current page — for quick UI stats)
   // ---------------------------------------------------------------------------
-  const pendingCount  = applications.filter((a) => a.status === "Pending").length;
+  const pendingCount = applications.filter((a) => a.status === "Pending").length;
   const approvedCount = applications.filter((a) => a.status === "Approved").length;
   const rejectedCount = applications.filter((a) => a._rawStatus === "rejected" || a._rawStatus === "suspended").length;
 
@@ -241,13 +241,12 @@ export default function AdminShopOwnerApproval() {
       {toast && (
         <div className="fixed top-20 right-8 z-50 animate-in fade-in slide-in-from-top-4 duration-200">
           <div
-            className={`px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-3 text-sm font-bold text-white ${
-              toast.type === "success"
-                ? "bg-emerald-600 border-emerald-500"
-                : toast.type === "error"
+            className={`px-5 py-3.5 rounded-2xl shadow-xl border flex items-center gap-3 text-sm font-bold text-white ${toast.type === "success"
+              ? "bg-emerald-600 border-emerald-500"
+              : toast.type === "error"
                 ? "bg-red-600 border-red-500"
                 : "bg-amber-600 border-amber-500"
-            }`}
+              }`}
           >
             <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
             <span>{toast.message}</span>
@@ -267,9 +266,8 @@ export default function AdminShopOwnerApproval() {
               key={label}
               type="button"
               onClick={() => path && navigate(path)}
-              className={`mb-2 flex min-h-[50px] w-full items-center gap-4 rounded-lg px-4 py-3 text-left text-[15px] transition ${
-                active ? "bg-[#ff7a18] font-semibold text-white" : "text-[#51463f] hover:bg-orange-50"
-              } ${path ? "cursor-pointer" : "cursor-default"}`}
+              className={`mb-2 flex min-h-[50px] w-full items-center gap-4 rounded-lg px-4 py-3 text-left text-[15px] transition ${active ? "bg-[#ff7a18] font-semibold text-white" : "text-[#51463f] hover:bg-orange-50"
+                } ${path ? "cursor-pointer" : "cursor-default"}`}
             >
               <Icon size={20} strokeWidth={1.8} />
               <span className="max-w-[155px]">{label}</span>
@@ -355,9 +353,9 @@ export default function AdminShopOwnerApproval() {
 
           {/* STATS */}
           <section className="mb-8 grid grid-cols-3 gap-5">
-            <StatCard icon={ClipboardList} label="Pending Review"    value={pendingCount  < 10 ? `0${pendingCount}`  : pendingCount}  style="bg-orange-50 text-orange-600" />
-            <StatCard icon={BadgeCheck}   label="Approved Shops"    value={approvedCount < 10 ? `0${approvedCount}` : approvedCount} style="bg-green-50 text-green-600" />
-            <StatCard icon={Ban}          label="Rejected/Suspended" value={rejectedCount < 10 ? `0${rejectedCount}` : rejectedCount} style="bg-red-50 text-red-600" />
+            <StatCard icon={ClipboardList} label="Pending Review" value={pendingCount < 10 ? `0${pendingCount}` : pendingCount} style="bg-orange-50 text-orange-600" />
+            <StatCard icon={BadgeCheck} label="Approved Shops" value={approvedCount < 10 ? `0${approvedCount}` : approvedCount} style="bg-green-50 text-green-600" />
+            <StatCard icon={Ban} label="Rejected/Suspended" value={rejectedCount < 10 ? `0${rejectedCount}` : rejectedCount} style="bg-red-50 text-red-600" />
           </section>
 
           {/* TABLE CONTAINER */}
@@ -607,11 +605,10 @@ export default function AdminShopOwnerApproval() {
                 type="button"
                 onClick={() => handleAction(reviewModal.userId, "approve")}
                 disabled={reviewModal._rawStatus === "active" || actionLoading === reviewModal.userId}
-                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${
-                  reviewModal._rawStatus === "active"
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
-                }`}
+                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${reviewModal._rawStatus === "active"
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20"
+                  }`}
               >
                 {actionLoading === reviewModal.userId ? <Loader2 size={15} className="animate-spin" /> : <Check size={15} />}
                 Approve Shop Owner
@@ -622,11 +619,10 @@ export default function AdminShopOwnerApproval() {
                 type="button"
                 onClick={() => handleAction(reviewModal.userId, "reject")}
                 disabled={reviewModal._rawStatus === "rejected" || actionLoading === reviewModal.userId}
-                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${
-                  reviewModal._rawStatus === "rejected"
-                    ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                    : "bg-rose-50 hover:bg-rose-100 text-rose-600"
-                }`}
+                className={`flex-1 py-3 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${reviewModal._rawStatus === "rejected"
+                  ? "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  : "bg-rose-50 hover:bg-rose-100 text-rose-600"
+                  }`}
               >
                 <X size={15} /> Reject Application
               </button>
@@ -638,11 +634,10 @@ export default function AdminShopOwnerApproval() {
                 type="button"
                 onClick={() => handleAction(reviewModal.userId, "suspend")}
                 disabled={actionLoading === reviewModal.userId}
-                className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${
-                  reviewModal._rawStatus === "active"
-                    ? "bg-amber-50 hover:bg-amber-100 text-amber-700"
-                    : "bg-green-50 hover:bg-green-100 text-green-700"
-                }`}
+                className={`mt-3 w-full py-2.5 rounded-xl font-bold text-xs transition-colors flex items-center justify-center gap-2 ${reviewModal._rawStatus === "active"
+                  ? "bg-amber-50 hover:bg-amber-100 text-amber-700"
+                  : "bg-green-50 hover:bg-green-100 text-green-700"
+                  }`}
               >
                 {reviewModal._rawStatus === "active"
                   ? <><PauseCircle size={14} /> Suspend Account</>
@@ -678,10 +673,10 @@ function StatCard({ icon: Icon, label, value, style }) {
 
 function StatusBadge({ status }) {
   const map = {
-    Approved:  "bg-emerald-50 text-emerald-600 border-emerald-200",
-    Rejected:  "bg-rose-50 text-rose-600 border-rose-200",
+    Approved: "bg-emerald-50 text-emerald-600 border-emerald-200",
+    Rejected: "bg-rose-50 text-rose-600 border-rose-200",
     Suspended: "bg-amber-50 text-amber-700 border-amber-200",
-    Pending:   "bg-amber-50 text-amber-700 border-amber-200"
+    Pending: "bg-amber-50 text-amber-700 border-amber-200"
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold border ${map[status] ?? "bg-gray-50 text-gray-600 border-gray-200"}`}>

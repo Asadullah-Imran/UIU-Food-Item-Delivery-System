@@ -1,5 +1,15 @@
 import express from 'express';
-import { register, login, logout, getMe, updateProfile, becomeRunner, uploadAvatar, checkApprovalStatus } from '../controllers/authController.js';
+import { 
+  register, 
+  login, 
+  logout, 
+  getMe, 
+  updateProfile, 
+  becomeRunner, 
+  uploadAvatar, 
+  changePassword, 
+  checkApprovalStatus 
+} from '../controllers/authController.js';
 import { protect } from '../middlewares/auth.js';
 import upload from '../middlewares/upload.js';
 
@@ -13,6 +23,7 @@ router.get('/me', protect, getMe);
 router.put('/profile', protect, upload.single('avatar'), updateProfile);
 router.put('/avatar', protect, upload.single('avatar'), uploadAvatar);
 router.post('/become-runner', protect, becomeRunner);
+router.put('/change-password', protect, changePassword);
+router.put('/password', protect, changePassword);
 
 export default router;
-

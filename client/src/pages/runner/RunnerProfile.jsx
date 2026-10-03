@@ -3,17 +3,19 @@ import { Link } from 'react-router-dom';
 import { 
   Pencil, Star, Wallet, Award, CheckCircle2,
   Phone, Mail, GraduationCap, Calendar, AlertCircle,
-  MapPin, Zap, Package, X, Check, Camera, Upload, Loader2, Image as ImageIcon
+  MapPin, Zap, Package, X, Check, Camera, Upload, Loader2, Image as ImageIcon, Lock
 } from 'lucide-react';
 import RunnerSidebarFix from './RunnerSidebarFix';
 
 import { useAuth } from '../../context/AuthContext';
 import { compressImage } from '../../utils/imageCompressor';
+import ChangePasswordModal from '../../components/ChangePasswordModal';
 
 export default function RunnerProfile() {
   const { user, token, updateUserData, refreshUser } = useAuth();
   const [isOnline, setIsOnline] = useState(user?.runnerDetails?.isAvailable ?? true);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   const buildProfileInfo = (currentUser) => ({
     name: currentUser?.name || 'Runner',
@@ -351,10 +353,19 @@ export default function RunnerProfile() {
                   setPhotoError('');
                   setIsEditModalOpen(true);
                 }}
-                className="flex items-center justify-center gap-2 bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-2.5 px-6 rounded-xl shadow-md shadow-orange-500/20 text-sm transition-all"
+                className="flex items-center justify-center gap-2 bg-[#F37623] hover:bg-[#d9671b] text-white font-bold py-2.5 px-6 rounded-xl shadow-md shadow-orange-500/20 text-sm transition-all cursor-pointer"
               >
                 <Pencil className="w-4 h-4" />
                 Edit Profile
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="flex items-center justify-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold py-2.5 px-5 rounded-xl shadow-xs text-sm transition-all cursor-pointer"
+              >
+                <Lock className="w-4 h-4 text-slate-500" />
+                Change Password
               </button>
             </div>
 
@@ -715,6 +726,12 @@ export default function RunnerProfile() {
           </div>
         </div>
       )}
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+      />
     </>
   );
 }
