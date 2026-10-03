@@ -20,6 +20,7 @@ export default function PendingApprovalPage() {
   const roleParam = searchParams.get('role') || 'runner';
   const emailParam = searchParams.get('email') || '';
   const nameParam = searchParams.get('name') || '';
+  const shopParam = searchParams.get('shop') || '';
 
   const [checking, setChecking] = useState(false);
   const [statusResult, setStatusResult] = useState(null);
@@ -87,8 +88,14 @@ export default function PendingApprovalPage() {
 
         {/* Application Summary Card */}
         <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 mb-8 space-y-3">
+          {isShop && shopParam && (
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <span className="text-slate-500">Shop / Stall Name</span>
+              <span className="font-bold text-slate-800">{shopParam}</span>
+            </div>
+          )}
           <div className="flex items-center justify-between text-xs sm:text-sm">
-            <span className="text-slate-500">Applicant Name</span>
+            <span className="text-slate-500">{isShop ? 'Owner / Manager Name' : 'Applicant Name'}</span>
             <span className="font-semibold text-slate-800">{nameParam || 'Registered User'}</span>
           </div>
           {emailParam && (

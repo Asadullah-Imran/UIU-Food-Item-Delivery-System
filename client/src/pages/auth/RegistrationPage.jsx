@@ -25,13 +25,13 @@ export default function RegistrationPage() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!fullName.trim()) {
-      setErrorMessage(role === 'shop' ? 'Please enter the shop owner / manager name' : 'Please enter your full name');
+    if (role === 'shop' && !shopName.trim()) {
+      setErrorMessage('Please enter the shop / stall name');
       return;
     }
 
-    if (role === 'shop' && !shopName.trim()) {
-      setErrorMessage('Please enter the shop / stall name');
+    if (!fullName.trim()) {
+      setErrorMessage(role === 'shop' ? 'Please enter the shop owner / manager name' : 'Please enter your full name');
       return;
     }
 
@@ -73,8 +73,9 @@ export default function RegistrationPage() {
     if (res && res.success) {
       if (res.isPendingApproval || role === 'shop' || role === 'runner') {
         setSuccessMessage('Application submitted successfully! Redirecting to approval status...');
+        const shopQuery = role === 'shop' && payload.shopName ? `&shop=${encodeURIComponent(payload.shopName)}` : '';
         setTimeout(() => {
-          navigate(`/pending-approval?role=${role}&email=${encodeURIComponent(payload.email)}&name=${encodeURIComponent(payload.name)}`);
+          navigate(`/pending-approval?role=${role}&email=${encodeURIComponent(payload.email)}&name=${encodeURIComponent(payload.name)}${shopQuery}`);
         }, 1000);
       } else {
         setSuccessMessage('Account created successfully! Redirecting to dashboard...');
@@ -198,48 +199,62 @@ export default function RegistrationPage() {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">
-                  {role === 'shop' ? 'Owner / Manager Name' : 'Full Name'}
-                </label>
-                <input
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder={role === 'shop' ? 'e.g., Mohammad Ali' : 'Rafiqul Haque'}
-                  required
-                  className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
-                />
-              </div>
-
               {role === 'shop' ? (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">
-                    Shop / Stall Name
-                  </label>
-                  <input
-                    type="text"
-                    value={shopName}
-                    onChange={(e) => setShopName(e.target.value)}
-                    placeholder="e.g., Khan's Kitchen, Olympic Cafe"
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
-                  />
-                </div>
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">
+                      Shop / Stall Name
+                    </label>
+                    <input
+                      type="text"
+                      value={shopName}
+                      onChange={(e) => setShopName(e.target.value)}
+                      placeholder="e.g., Khan's Kitchen, Olympic Cafe"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">
+                      Owner / Manager Name
+                    </label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="e.g., Mohammad Ali"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
+                    />
+                  </div>
+                </>
               ) : (
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">
-                    {role === 'runner' ? 'Runner / Student ID' : 'University ID'}
-                  </label>
-                  <input
-                    type="text"
-                    value={universityId}
-                    onChange={(e) => setUniversityId(e.target.value)}
-                    placeholder="011 213 086"
-                    required
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
-                  />
-                </div>
+                <>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">Full Name</label>
+                    <input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Rafiqul Haque"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-bold text-slate-700">
+                      {role === 'runner' ? 'Runner / Student ID' : 'University ID'}
+                    </label>
+                    <input
+                      type="text"
+                      value={universityId}
+                      onChange={(e) => setUniversityId(e.target.value)}
+                      placeholder="011 213 086"
+                      required
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-colors text-slate-800 placeholder-slate-400 text-sm font-medium"
+                    />
+                  </div>
+                </>
               )}
             </div>
 
