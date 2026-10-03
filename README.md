@@ -69,7 +69,6 @@ UIU-Food-Item-Delivery-System/
 ```bash
 cd server
 npm install
-npm run seed     # Seeds demo accounts for all 4 roles with realistic wallet balances
 npm run dev      # Starts Express server at http://localhost:5001
 ```
 
