@@ -175,11 +175,11 @@ export default function RegistrationPage() {
                 <option value="runner">🛵 Student Runner</option>
                 <option value="shop">🏪 Shop Owner</option>
               </select>
-              {(role === 'runner' || role === 'shop') && (
+              {role === 'runner' && (
                 <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600" />
                   <span>
-                    <strong>Admin Verification Required:</strong> New {role === 'shop' ? 'Shop Owner' : 'Delivery Runner'} accounts must wait for campus administrator approval after submitting this form before logging in.
+                    <strong>Admin Verification Required:</strong> New Delivery Runner accounts must wait for campus administrator approval after submitting this form before logging in.
                   </span>
                 </div>
               )}
