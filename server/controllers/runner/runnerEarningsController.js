@@ -23,7 +23,15 @@ export const getRunnerEarnings = async (req, res) => {
       type: 'RUNNER_EARNING',
       status: 'COMPLETED'
     })
-      .populate('order', 'orderNumber deliveryAddress billing items')
+      .populate({
+        path: 'order',
+        select: 'orderNumber deliveryAddress billing items shop',
+        populate: {
+          path: 'shop',
+          select: 'name'
+        }
+      })
+      .populate('shop', 'name')
       .sort({ createdAt: -1 });
 
     let todayEarnings = 0;
