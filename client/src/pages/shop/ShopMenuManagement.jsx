@@ -734,37 +734,35 @@ export default function ShopMenuManagement() {
 
             {/* ALERTS LIST */}
             <div className="space-y-3">
-              <div className="p-4 rounded-2xl bg-rose-50 border border-rose-100">
-                <h4 className="text-xs font-bold text-rose-700 mb-1">
-                  Item Out of Stock
-                </h4>
-                <p className="text-[11px] font-semibold text-rose-600 mb-2">
-                  Cold Coffee is currently marked unavailable to students.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => toggleAvailability('item4')}
-                  className="text-xs font-extrabold text-rose-800 hover:underline"
-                >
-                  Restock Item →
-                </button>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-orange-50 border border-orange-100">
-                <h4 className="text-xs font-bold text-[#9B5110] mb-1">
-                  Low Stock Warning
-                </h4>
-                <p className="text-[11px] font-semibold text-orange-700 mb-2">
-                  Crispy Fried Chicken stock predicted to end during peak lunch hours.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => showToast("Stock alert updated. Supplier notified.", "success")}
-                  className="text-xs font-extrabold text-[#9B5110] hover:underline"
-                >
-                  Confirm Inventory →
-                </button>
-              </div>
+              {unavailableCount === 0 ? (
+                <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 text-center">
+                  <CheckCircle2 className="w-6 h-6 text-emerald-500 mx-auto mb-1" />
+                  <p className="text-xs font-bold text-emerald-700">All Clear!</p>
+                  <p className="text-[11px] font-semibold text-emerald-600 mt-0.5">
+                    All menu items are currently available to students.
+                  </p>
+                </div>
+              ) : (
+                items
+                  .filter((item) => !item.available)
+                  .map((item) => (
+                    <div key={item.id || item._id} className="p-4 rounded-2xl bg-rose-50 border border-rose-100">
+                      <h4 className="text-xs font-bold text-rose-700 mb-1">
+                        Item Out of Stock
+                      </h4>
+                      <p className="text-[11px] font-semibold text-rose-600 mb-2 truncate" title={item.name}>
+                        <span className="font-extrabold">{item.name}</span> is currently marked unavailable to students.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => toggleAvailability(item.id || item._id)}
+                        className="text-xs font-extrabold text-rose-800 hover:underline"
+                      >
+                        Restock Item →
+                      </button>
+                    </div>
+                  ))
+              )}
             </div>
 
             {/* PREVIEW STORE BUTTON */}
