@@ -103,10 +103,64 @@ export const getMyShop = async (req, res) => {
 
     const menuItems = await MenuItem.find({ shop: shop._id }).sort({ createdAt: -1 });
 
+    // Calculate best selling item strictly for this relevant shop
+    const shopOrders = await Order.find({
+      shop: shop._id,
+      status: { $nin: ['CANCELLED', 'REJECTED', 'cancelled', 'rejected'] }
+    }).select('items');
+
+    const itemSalesMap = {};
+    for (const ord of (shopOrders || [])) {
+      if (ord.items && Array.isArray(ord.items)) {
+        for (const item of ord.items) {
+          const key = item.menuItem ? item.menuItem.toString() : item.name?.trim();
+          if (!key) continue;
+
+          if (!itemSalesMap[key]) {
+            itemSalesMap[key] = {
+              menuItemId: item.menuItem || null,
+              name: item.name || 'Unnamed Item',
+              totalQuantity: 0,
+              ordersCount: 0,
+              totalRevenue: 0
+            };
+          }
+
+          const qty = Number(item.quantity || 1);
+          const price = Number(item.price || 0);
+
+          itemSalesMap[key].totalQuantity += qty;
+          itemSalesMap[key].ordersCount += 1;
+          itemSalesMap[key].totalRevenue += price * qty;
+        }
+      }
+    }
+
+    const popularItems = Object.values(itemSalesMap).sort(
+      (a, b) => b.totalQuantity - a.totalQuantity
+    );
+
+    let bestSellingItem = popularItems.length > 0 ? popularItems[0] : null;
+
+    if (!bestSellingItem && menuItems && menuItems.length > 0) {
+      const featuredMenuItem = menuItems.find((i) => i.isPopular || i.isBestSeller);
+      if (featuredMenuItem) {
+        bestSellingItem = {
+          menuItemId: featuredMenuItem._id,
+          name: featuredMenuItem.name,
+          totalQuantity: 0,
+          ordersCount: 0,
+          totalRevenue: 0,
+          isMenuFeatured: true
+        };
+      }
+    }
+
     res.status(200).json({
       success: true,
       shop,
-      menuItems
+      menuItems,
+      bestSellingItem
     });
   } catch (error) {
     console.error('getMyShop Error:', error);

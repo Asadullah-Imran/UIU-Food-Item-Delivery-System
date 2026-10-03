@@ -32,6 +32,7 @@ const ShopProfile = () => {
 
   // Dynamic profile-page metrics
   const [metrics, setMetrics] = useState(null);
+  const [bestSellingItem, setBestSellingItem] = useState(null);
   const [metricsLoading, setMetricsLoading] = useState(true);
 
   // Security modals
@@ -60,6 +61,9 @@ const ShopProfile = () => {
       if (res.ok && data.shop) {
         setShop(data.shop);
         setLiveStatus(data.shop.isOpen ?? true);
+        if (data.bestSellingItem) {
+          setBestSellingItem(data.bestSellingItem);
+        }
       }
     } catch (e) {
       console.warn('Failed to load shop profile:', e);
@@ -78,6 +82,9 @@ const ShopProfile = () => {
       const data = await res.json();
       if (res.ok && data.dashboard) {
         setMetrics(data.dashboard);
+        if (data.dashboard.bestSellingItem) {
+          setBestSellingItem(data.dashboard.bestSellingItem);
+        }
       }
     } catch (e) {
       console.warn('Failed to load shop metrics:', e);
@@ -243,6 +250,8 @@ const ShopProfile = () => {
     };
   }, [setHeaderActions, setHideGlobalSearch]);
 
+  const activeBestSeller = bestSellingItem || metrics?.bestSellingItem;
+
   return (
     <>
       <div className="max-w-5xl mx-auto pb-10">
@@ -392,23 +401,45 @@ const ShopProfile = () => {
             )}
           </div>
 
-          {/* Best Seller */}
-          <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100">
-            <div className="flex justify-between items-start mb-2">
-              <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
-                <Flame className="w-4 h-4 text-orange-500" />
-              </div>
-            </div>
-            <p className="text-[10px] font-extrabold text-slate-400 tracking-wider mb-1">BEST SELLER</p>
-            {metricsLoading ? (
-              <div className="h-7 w-28 bg-slate-100 rounded-lg animate-pulse mt-1" />
-            ) : (
-              <h3 className="text-lg font-extrabold text-slate-800 leading-tight">
-                {metrics?.bestSellingItem?.name || (
-                  <span className="text-slate-400 text-sm font-semibold">No orders yet</span>
+          {/* Best Seller Item */}
+          <div className="bg-white rounded-3xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between">
+            <div>
+              <div className="flex justify-between items-start mb-2">
+                <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center">
+                  <Flame className="w-4 h-4 text-orange-500" />
+                </div>
+                {activeBestSeller?.totalQuantity > 0 && (
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-100 text-orange-700">
+                    Most Sold
+                  </span>
                 )}
-              </h3>
-            )}
+              </div>
+              <p className="text-[10px] font-extrabold text-slate-400 tracking-wider mb-1">BEST SELLER ITEM</p>
+              {metricsLoading && !activeBestSeller ? (
+                <div className="h-7 w-28 bg-slate-100 rounded-lg animate-pulse mt-1" />
+              ) : (
+                <>
+                  <h3 className="text-lg font-extrabold text-slate-800 leading-tight">
+                    {activeBestSeller?.name || (
+                      <span className="text-slate-400 text-sm font-semibold">No sales yet</span>
+                    )}
+                  </h3>
+                  {activeBestSeller?.totalQuantity > 0 ? (
+                    <p className="text-xs font-bold text-orange-600 mt-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-orange-500 inline-block"></span>
+                      {activeBestSeller.totalQuantity} {activeBestSeller.totalQuantity === 1 ? 'unit' : 'units'} sold
+                      <span className="text-slate-400 font-medium">
+                        ({activeBestSeller.ordersCount || 1} {activeBestSeller.ordersCount === 1 ? 'order' : 'orders'})
+                      </span>
+                    </p>
+                  ) : activeBestSeller?.isMenuFeatured ? (
+                    <p className="text-[11px] font-semibold text-slate-400 mt-1">Featured menu item</p>
+                  ) : (
+                    <p className="text-[11px] font-medium text-slate-400 mt-1">Sales for this shop will appear here</p>
+                  )}
+                </>
+              )}
+            </div>
           </div>
         </div>
 

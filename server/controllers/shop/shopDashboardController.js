@@ -37,7 +37,7 @@ export const getShopDashboard = async (req, res) => {
       allDeliveredOrders,
       recentOrders,
       menuItems,
-      popularItems
+      nonCancelledOrders
     ] = await Promise.all([
       Order.countDocuments({
         shop: shop._id,
@@ -92,45 +92,11 @@ export const getShopDashboard = async (req, res) => {
         shop: shop._id
       }),
 
-      // Aggregate top-selling items from DELIVERED orders
-      Order.aggregate([
-        {
-          $match: {
-            shop: shop._id,
-            status: 'DELIVERED'
-          }
-        },
-        { $unwind: '$items' },
-        {
-          $group: {
-            _id: { $ifNull: ['$items.menuItem', '$items.name'] },
-            menuItemId: { $first: '$items.menuItem' },
-            name: { $first: '$items.name' },
-            totalQuantity: { $sum: '$items.quantity' },
-            ordersCount: { $sum: 1 },
-            totalRevenue: {
-              $sum: {
-                $multiply: [
-                  { $ifNull: ['$items.price', 0] },
-                  { $ifNull: ['$items.quantity', 1] }
-                ]
-              }
-            }
-          }
-        },
-        { $sort: { totalQuantity: -1 } },
-        { $limit: 5 },
-        {
-          $project: {
-            _id: 0,
-            menuItemId: '$_id',
-            name: 1,
-            totalQuantity: 1,
-            ordersCount: 1,
-            totalRevenue: 1
-          }
-        }
-      ])
+      // Fetch all non-cancelled orders belonging strictly to this relevant shop
+      Order.find({
+        shop: shop._id,
+        status: { $nin: ['CANCELLED', 'REJECTED', 'cancelled', 'rejected'] }
+      }).select('items status')
     ]);
 
     const todayRevenue = todayDeliveredOrders.reduce(
@@ -177,7 +143,54 @@ export const getShopDashboard = async (req, res) => {
       ? Number((ratedOrders.reduce((sum, o) => sum + Number(o.ratings.shopRating), 0) / reviewsCount).toFixed(1))
       : 0;
 
-    const bestSellingItem = popularItems && popularItems.length > 0 ? popularItems[0] : null;
+    // Aggregate item sales strictly for this relevant shop
+    const itemSalesMap = {};
+    for (const ord of (nonCancelledOrders || [])) {
+      if (ord.items && Array.isArray(ord.items)) {
+        for (const item of ord.items) {
+          const key = item.menuItem ? item.menuItem.toString() : item.name?.trim();
+          if (!key) continue;
+
+          if (!itemSalesMap[key]) {
+            itemSalesMap[key] = {
+              menuItemId: item.menuItem || null,
+              name: item.name || 'Unnamed Item',
+              totalQuantity: 0,
+              ordersCount: 0,
+              totalRevenue: 0
+            };
+          }
+
+          const qty = Number(item.quantity || 1);
+          const price = Number(item.price || 0);
+
+          itemSalesMap[key].totalQuantity += qty;
+          itemSalesMap[key].ordersCount += 1;
+          itemSalesMap[key].totalRevenue += price * qty;
+        }
+      }
+    }
+
+    const popularItems = Object.values(itemSalesMap).sort(
+      (a, b) => b.totalQuantity - a.totalQuantity
+    );
+
+    let bestSellingItem = popularItems.length > 0 ? popularItems[0] : null;
+
+    // Fallback: If no order sales recorded yet for this shop, check if a menu item is flagged popular or best seller
+    if (!bestSellingItem && menuItems && menuItems.length > 0) {
+      const featuredMenuItem = menuItems.find((i) => i.isPopular || i.isBestSeller);
+      if (featuredMenuItem) {
+        bestSellingItem = {
+          menuItemId: featuredMenuItem._id,
+          name: featuredMenuItem.name,
+          totalQuantity: 0,
+          ordersCount: 0,
+          totalRevenue: 0,
+          isMenuFeatured: true
+        };
+      }
+    }
 
     return res.status(200).json({
       success: true,
