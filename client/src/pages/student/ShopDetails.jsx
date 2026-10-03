@@ -20,6 +20,11 @@ export default function ShopDetails() {
   const [itemQuantities, setItemQuantities] = useState({});
   const [addedAnimation, setAddedAnimation] = useState(null);
   const [reviewSuccess, setReviewSuccess] = useState(false);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewHover, setReviewHover] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchShopDetails = async () => {
@@ -149,7 +154,15 @@ export default function ShopDetails() {
       {/* Hero Header */}
       <div className="bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 mb-8 pb-8">
         <div className="relative h-64 lg:h-72 w-full">
-          <img src={shop.image} alt={shop.name} className="w-full h-full object-cover" />
+          <img
+            src={shop.banner || shop.image}
+            alt={`${shop.name} cover`}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&q=80';
+            }}
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
           
           <button 
@@ -162,9 +175,17 @@ export default function ShopDetails() {
         </div>
         
         <div className="px-8 flex flex-col md:flex-row relative">
-          {/* Logo overlapping banner */}
-          <div className="w-28 h-28 bg-orange-500 rounded-2xl shadow-xl border-4 border-white flex items-center justify-center text-white font-bold text-center leading-tight -mt-14 mb-4 md:mb-0 md:mr-6 flex-shrink-0 z-10">
-            <span className="px-2">{shop.name}</span>
+          {/* Shop profile picture overlapping banner */}
+          <div className="w-28 h-28 rounded-2xl shadow-xl border-4 border-white -mt-14 mb-4 md:mb-0 md:mr-6 flex-shrink-0 z-10 overflow-hidden bg-orange-50">
+            <img
+              src={shop.image}
+              alt={shop.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(shop.name)}&background=F37623&color=fff&size=112&bold=true`;
+              }}
+            />
           </div>
           
           <div className="pt-2 md:pt-4 flex-1">
@@ -266,7 +287,11 @@ export default function ShopDetails() {
                           <h4 className="font-bold text-lg text-slate-800">{item.name}</h4>
                           <span className="font-bold text-orange-600">৳{item.price}</span>
                         </div>
-                        <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">{item.description}</p>
+                        <p className="text-sm text-slate-500 leading-relaxed mb-6 flex-1">
+                          {item.description && item.description.length > 150
+                            ? item.description.slice(0, 150).trimEnd() + '...'
+                            : item.description}
+                        </p>
                         
                         <div className="flex items-center justify-between mt-auto pt-3 border-t border-slate-50">
                           <div className="flex items-center bg-slate-100 rounded-lg p-1">
@@ -314,21 +339,23 @@ export default function ShopDetails() {
           <div className="mb-10">
             <div className="flex justify-between items-end mb-6 border-b border-slate-200 pb-2">
               <h3 className="text-lg font-bold text-slate-800">Student Reviews</h3>
-              <button 
+              <button
                 onClick={() => {
-                  setReviewSuccess(true);
-                  setTimeout(() => setReviewSuccess(false), 3000);
+                  setShowReviewModal(true);
+                  setReviewRating(0);
+                  setReviewComment('');
+                  setReviewSuccess(false);
                 }}
                 className="text-sm font-bold text-orange-600 hover:underline cursor-pointer"
               >
-                {reviewSuccess ? "Review Sent! 🎉" : "Write a Review"}
+                Write a Review
               </button>
             </div>
-            
+
             {reviewSuccess && (
-              <div className="p-4 mb-4 bg-green-50 border border-green-200 rounded-2xl text-green-800 text-sm font-medium flex items-center">
-                <Check className="w-4 h-4 mr-2 text-green-600" />
-                Thank you for your review! It will be verified by campus moderators.
+              <div className="p-4 mb-4 bg-green-50 border border-green-200 rounded-2xl text-green-800 text-sm font-semibold flex items-center gap-2">
+                <Check className="w-4 h-4 text-green-600 flex-shrink-0" />
+                Thank you! Your review has been submitted successfully.
               </div>
             )}
 
@@ -338,6 +365,110 @@ export default function ShopDetails() {
               </div>
             </div>
           </div>
+
+          {/* REVIEW MODAL */}
+          {showReviewModal && (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in">
+              <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 w-full max-w-md overflow-hidden">
+
+                {/* Modal Header */}
+                <div className="bg-gradient-to-r from-orange-500 to-orange-400 p-6 text-white">
+                  <div className="flex items-center justify-between mb-1">
+                    <h3 className="text-lg font-extrabold">Write a Review</h3>
+                    <button
+                      onClick={() => setShowReviewModal(false)}
+                      className="w-8 h-8 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+                      aria-label="Close"
+                    >
+                      <span className="text-white text-lg leading-none">&times;</span>
+                    </button>
+                  </div>
+                  <p className="text-orange-100 text-sm font-medium">{shop.name}</p>
+                </div>
+
+                <div className="p-6 space-y-5">
+                  {/* Star Rating Picker */}
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">Your Rating</p>
+                    <div className="flex items-center gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setReviewRating(star)}
+                          onMouseEnter={() => setReviewHover(star)}
+                          onMouseLeave={() => setReviewHover(0)}
+                          className="transition-transform hover:scale-125 active:scale-110"
+                          aria-label={`${star} star`}
+                        >
+                          <Star
+                            className={`w-9 h-9 transition-colors ${
+                              star <= (reviewHover || reviewRating)
+                                ? 'fill-orange-400 text-orange-400'
+                                : 'text-slate-200 fill-slate-200'
+                            }`}
+                          />
+                        </button>
+                      ))}
+                      <span className="ml-2 text-sm font-bold text-slate-500">
+                        {(reviewHover || reviewRating) > 0 && [
+                          '', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'
+                        ][reviewHover || reviewRating]}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Comment Textarea */}
+                  <div>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Your Comment</p>
+                    <textarea
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value.slice(0, 500))}
+                      placeholder="Tell other students about your experience — food quality, service, packaging..."
+                      rows={4}
+                      className="w-full border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 outline-none focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none transition-all"
+                    />
+                    <p className="text-right text-[10px] text-slate-400 font-semibold mt-1">{reviewComment.length}/500</p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowReviewModal(false)}
+                      className="flex-1 py-3 rounded-2xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      disabled={reviewRating === 0 || reviewSubmitting}
+                      onClick={async () => {
+                        if (reviewRating === 0) return;
+                        setReviewSubmitting(true);
+                        await new Promise((r) => setTimeout(r, 800));
+                        setReviewSubmitting(false);
+                        setShowReviewModal(false);
+                        setReviewSuccess(true);
+                        setTimeout(() => setReviewSuccess(false), 4000);
+                      }}
+                      className="flex-1 py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 shadow-md shadow-orange-500/20"
+                    >
+                      {reviewSubmitting ? (
+                        <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</>
+                      ) : (
+                        <>Submit Review</>
+                      )}
+                    </button>
+                  </div>
+
+                  {reviewRating === 0 && (
+                    <p className="text-center text-xs text-slate-400 font-semibold -mt-2">Please select a star rating to submit</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
         </div>
 
